@@ -1,13 +1,14 @@
 const colors = {
-    primary: '#102027',
-    secondary: '#37474f',
-    background: '#FAFAFA',
+    primary: '#320b86',
+    secondary: '#9a67ea',
+    background: '#E9F0FB',
     icon: '#b0bec5',
     text: {
         light: '#FFF',
         lightOpacity: 'rgba(255,255,255,0.6)',
         dark: '#000',
-        darkOpacity: 'rgba(0,0,0,0.6)'
+        darkOpacity: 'rgba(0,0,0,0.6)',
+        darkPlaceholder: 'rgba(55, 71, 79, 0.3)'
     },
     success: '#00c853',
     warning: '#ffd600',

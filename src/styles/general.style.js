@@ -2,6 +2,7 @@ import {StyleSheet} from 'react-native';
 import colors from './colors.style';
 
 const generalStyles = StyleSheet.create({
+/* CONTAINERS */
   column: {
     flex: 1,
     flexDirection: 'column',
@@ -9,7 +10,6 @@ const generalStyles = StyleSheet.create({
     padding: 8,
   },
   row: {
-    padding: 8,
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -18,6 +18,7 @@ const generalStyles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'stretch',
     backgroundColor: colors.background,
+    padding: 8
   },
   headerContainer: {
     padding: 8,
@@ -26,6 +27,7 @@ const generalStyles = StyleSheet.create({
     justifyContent: 'space-between',
     backgroundColor: 'center',
   },
+ /* EFFECTS */
   shadow: {
     shadowColor: '#000',
     shadowOffset: {
@@ -36,6 +38,41 @@ const generalStyles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
+  /* TEXT */
+  titleDark: {
+    fontFamily: 'JosefinSans-Bold',
+    color: colors.text.dark,
+    fontSize: 24,
+    textAlign: 'center'
+  },
+  titleLight: {
+    fontFamily: 'JosefinSans-Bold',
+    color: colors.text.light,
+    fontSize: 24,
+    textAlign: 'center'
+  },
+  primaryLabel: {
+    fontFamily: 'JosefinSans-Bold',
+    color: colors.text.dark,
+    fontSize: 16
+  },
+  secondaryLabel: {
+    fontFamily: 'JosefinSans-Bold',
+    color: colors.text.darkOpacity,
+    fontSize: 14
+  },
+  /* INPUTS */
+  textInputContainer: {
+    backgroundColor: '#FFF',
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+    marginBottom: 16,
+    borderRadius: 20
+  },
+  textInput: {
+    padding: 0,
+    flex: 1
+  }
 });
 
 export default generalStyles;
