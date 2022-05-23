@@ -1,21 +1,35 @@
 import React, {useState, useRef} from 'react';
-import { View, Image, TextInput, Text, TouchableHighlight } from 'react-native';
+import {View, Image, TextInput, Text, TouchableHighlight} from 'react-native';
 import generalStyles from '../../styles/general.style';
 import styles from './styles';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import colors from '../../styles/colors.style';
 import {CircleIconButton, FlatButton} from '../../components';
+import {createUser} from '../../utils/firebase.utils';
 
-export default function Login() {
+export default function Login(props) {
   /* STATES */
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isSecureTextEntry, setIsSecureTextEntry] = useState(true);
   const [haveAccount, setHaveAccount] = useState(false);
+  const [loadingLoginForm, setLoadingLoginForm] = useState(false);
 
   /* REFS */
   const emailRef = useRef('emailRef');
   const passwordRef = useRef('passwordRef');
+
+  async function onCreatingUser() {
+    setLoadingLoginForm(true);
+    let userCreated = await createUser(email, password);
+    if (userCreated.success == false) {
+      props.handleSnackbar({message: userCreated.message, type: 'warning'});
+      setLoadingLoginForm(false);
+    } else {
+      setLoadingLoginForm(false);
+      props.onAuthStateChanged(userCreated.user.user);
+    }
+  }
 
   return !haveAccount ? (
     <View style={[generalStyles.pageContainer, {justifyContent: 'center'}]}>
@@ -41,6 +55,7 @@ export default function Login() {
               onSubmitEditing={() => passwordRef.current.focus()}
               keyboardType="email-address"
               placeholder="fulanofulanoso@gmail.com"
+              autoCapitalize='none'
               placeholderTextColor={colors.icon}
               style={[
                 generalStyles.textInput,
@@ -58,7 +73,7 @@ export default function Login() {
               ref={passwordRef}
               value={password}
               onChangeText={text => setPassword(text)}
-              secureTextEntry={isPasswordVisible}
+              secureTextEntry={isSecureTextEntry}
               placeholder="senhasupersegura"
               placeholderTextColor={colors.icon}
               style={[
@@ -70,11 +85,11 @@ export default function Login() {
             <CircleIconButton
               buttonSize={30}
               buttonColor="#FFF"
-              iconName={isPasswordVisible ? 'visibility' : 'visibility-off'}
+              iconName={isSecureTextEntry ? 'visibility' : 'visibility-off'}
               iconSize={26}
               iconColor={colors.icon}
               handleCircleIconButtonPress={() =>
-                setIsPasswordVisible(!isPasswordVisible)
+                setIsSecureTextEntry(!isSecureTextEntry)
               }
             />
           </View>
@@ -82,11 +97,20 @@ export default function Login() {
 
         <FlatButton label="Login" />
 
-        <View style={[generalStyles.row, {marginTop: 32, justifyContent: 'center'}]}>
-              <Text style={generalStyles.primaryLabel}>Não tem conta?</Text>
-              <TouchableHighlight underlayColor='transparent' onPress={() => setHaveAccount(!haveAccount)} style={{marginLeft: 8}}>
-                <Text style={[generalStyles.primaryLabel, {color: colors.link}]}>Cadastre-se</Text>
-              </TouchableHighlight>
+        <View
+          style={[
+            generalStyles.row,
+            {marginTop: 32, justifyContent: 'center'},
+          ]}>
+          <Text style={generalStyles.primaryLabel}>Não tem conta?</Text>
+          <TouchableHighlight
+            underlayColor="transparent"
+            onPress={() => setHaveAccount(!haveAccount)}
+            style={{marginLeft: 8}}>
+            <Text style={[generalStyles.primaryLabel, {color: colors.link}]}>
+              Cadastre-se
+            </Text>
+          </TouchableHighlight>
         </View>
       </View>
     </View>
@@ -114,6 +138,7 @@ export default function Login() {
               onSubmitEditing={() => passwordRef.current.focus()}
               keyboardType="email-address"
               placeholder="fulanofulanoso@gmail.com"
+              autoCapitalize='none'
               placeholderTextColor={colors.icon}
               style={[
                 generalStyles.textInput,
@@ -131,7 +156,7 @@ export default function Login() {
               ref={passwordRef}
               value={password}
               onChangeText={text => setPassword(text)}
-              secureTextEntry={isPasswordVisible}
+              secureTextEntry={isSecureTextEntry}
               placeholder="senhasupersegura"
               placeholderTextColor={colors.icon}
               style={[
@@ -143,25 +168,38 @@ export default function Login() {
             <CircleIconButton
               buttonSize={30}
               buttonColor="#FFF"
-              iconName={isPasswordVisible ? 'visibility' : 'visibility-off'}
+              iconName={isSecureTextEntry ? 'visibility' : 'visibility-off'}
               iconSize={26}
               iconColor={colors.icon}
               handleCircleIconButtonPress={() =>
-                setIsPasswordVisible(!isPasswordVisible)
+                setIsSecureTextEntry(!isSecureTextEntry)
               }
             />
           </View>
         </View>
 
-        <FlatButton label="Cadastrar" />
+        <FlatButton
+          label="Cadastrar"
+          handleFlatButtonPress={() => onCreatingUser()}
+          isLoading={loadingLoginForm}
+        />
 
-        <View style={[generalStyles.row, {marginTop: 32, justifyContent: 'center'}]}>
-              <Text style={generalStyles.primaryLabel}>Já tem conta?</Text>
-              <TouchableHighlight underlayColor='transparent' onPress={() => setHaveAccount(!haveAccount)} style={{marginLeft: 8}}>
-                <Text style={[generalStyles.primaryLabel, {color: colors.link}]}>Fazer login</Text>
-              </TouchableHighlight>
+        <View
+          style={[ 
+            generalStyles.row,
+            {marginTop: 32, justifyContent: 'center'},
+          ]}>
+          <Text style={generalStyles.primaryLabel}>Já tem conta?</Text>
+          <TouchableHighlight
+            underlayColor="transparent"
+            onPress={() => setHaveAccount(!haveAccount)}
+            style={{marginLeft: 8}}>
+            <Text style={[generalStyles.primaryLabel, {color: colors.link}]}>
+              Fazer login
+            </Text>
+          </TouchableHighlight>
         </View>
       </View>
     </View>
-  )
+  );
 }

@@ -56,6 +56,11 @@ const generalStyles = StyleSheet.create({
     color: colors.text.dark,
     fontSize: 16
   },
+  primaryLightLabel: {
+    fontFamily: 'JosefinSans-Bold',
+    color: colors.text.light,
+    fontSize: 16
+  },
   secondaryLabel: {
     fontFamily: 'JosefinSans-Bold',
     color: colors.text.darkOpacity,

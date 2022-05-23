@@ -1,9 +1,9 @@
 import React from 'react';
-import {TouchableHighlight, Text} from 'react-native';
+import {TouchableHighlight, Text, ActivityIndicator} from 'react-native';
 import colors from '../../styles/colors.style';
 import generalStyles from '../../styles/general.style';
 
-//label='' labelColor={} buttonColor={} handleFlatButtonPress={() => }
+//label='' labelColor={} buttonColor={} handleFlatButtonPress={() => } isLoading={}
 
 export default function FlatButton(props) {
   return (
@@ -17,13 +17,17 @@ export default function FlatButton(props) {
         justifyContent: 'center',
         alignItems: 'center'
       }}>
-      <Text
-        style={[
-          generalStyles.primaryLabel,
-          {color: props.labelColor ? props.labelColor : '#FFF'},
-        ]}>
-        { props.label }
-      </Text>
+      {
+        props.isLoading ?
+        <ActivityIndicator color={props.labelColor ? props.labelColor : '#FFF'} size='large' /> : 
+        <Text
+          style={[
+            generalStyles.primaryLabel,
+            {color: props.labelColor ? props.labelColor : '#FFF'},
+          ]}>
+          { props.label }
+        </Text>
+      }
     </TouchableHighlight>
   );
 }
