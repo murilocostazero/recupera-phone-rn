@@ -5,7 +5,7 @@ import styles from './styles';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import colors from '../../styles/colors.style';
 import {CircleIconButton, FlatButton} from '../../components';
-import {createUser} from '../../utils/firebase.utils';
+import {createUser, loginUser} from '../../utils/firebase.utils';
 
 export default function Login(props) {
   /* STATES */
@@ -28,6 +28,18 @@ export default function Login(props) {
     } else {
       setLoadingLoginForm(false);
       props.onAuthStateChanged(userCreated.user.user);
+    }
+  }
+
+  async function onLoggin(){
+    setLoadingLoginForm(true);
+    let userLogin = await loginUser(email, password);
+    if(userLogin.success == false){
+      setLoadingLoginForm(false);
+      props.handleSnackbar({message: userLogin.message, type: 'warning'});
+    } else {
+      setLoadingLoginForm(false);
+      props.onAuthStateChanged(userLogin.response.user);
     }
   }
 
@@ -55,7 +67,7 @@ export default function Login(props) {
               onSubmitEditing={() => passwordRef.current.focus()}
               keyboardType="email-address"
               placeholder="fulanofulanoso@gmail.com"
-              autoCapitalize='none'
+              autoCapitalize="none"
               placeholderTextColor={colors.icon}
               style={[
                 generalStyles.textInput,
@@ -95,7 +107,7 @@ export default function Login(props) {
           </View>
         </View>
 
-        <FlatButton label="Login" />
+        <FlatButton label="Login" handleFlatButtonPress={() => onLoggin()} isLoading={loadingLoginForm} />
 
         <View
           style={[
@@ -138,7 +150,7 @@ export default function Login(props) {
               onSubmitEditing={() => passwordRef.current.focus()}
               keyboardType="email-address"
               placeholder="fulanofulanoso@gmail.com"
-              autoCapitalize='none'
+              autoCapitalize="none"
               placeholderTextColor={colors.icon}
               style={[
                 generalStyles.textInput,
@@ -185,19 +197,16 @@ export default function Login(props) {
         />
 
         <View
-          style={[ 
+          style={[
             generalStyles.row,
             {marginTop: 32, justifyContent: 'center'},
           ]}>
           <Text style={generalStyles.primaryLabel}>Já tem conta?</Text>
-          <TouchableHighlight
-            underlayColor="transparent"
+          <Text
             onPress={() => setHaveAccount(!haveAccount)}
-            style={{marginLeft: 8}}>
-            <Text style={[generalStyles.primaryLabel, {color: colors.link}]}>
-              Fazer login
-            </Text>
-          </TouchableHighlight>
+            style={[generalStyles.primaryLabel, {color: colors.link, marginLeft: 8}]}>
+            Fazer login
+          </Text>
         </View>
       </View>
     </View>

@@ -57,3 +57,12 @@ export async function loginUser(email, password) {
 
   return loginResponse;
 }
+
+export async function logout() {
+  let logoutResponse = null;
+  await auth()
+    .signOut()
+    .then(() => (logoutResponse = {success: true}));
+
+  return logoutResponse;
+}
