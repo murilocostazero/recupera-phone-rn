@@ -21,26 +21,40 @@ export default function Login(props) {
   const passwordRef = useRef('passwordRef');
 
   async function onCreatingUser() {
-    setLoadingLoginForm(true);
-    let userCreated = await createUser(email, password, displayName);
-    if (userCreated.success == false) {
-      props.handleSnackbar({message: userCreated.message, type: 'warning'});
-      setLoadingLoginForm(false);
+    if (displayName.length < 1 || email.length < 1 || password.length < 1) {
+      props.handleSnackbar({
+        message: 'Preecha todos os campos',
+        type: 'warning',
+      });
     } else {
-      setLoadingLoginForm(false);
-      props.onAuthStateChanged(userCreated.user.user);
+      setLoadingLoginForm(true);
+      let userCreated = await createUser(email, password, displayName);
+      if (userCreated.success == false) {
+        props.handleSnackbar({message: userCreated.message, type: 'warning'});
+        setLoadingLoginForm(false);
+      } else {
+        setLoadingLoginForm(false);
+        props.onAuthStateChanged(userCreated.user.user);
+      }
     }
   }
 
-  async function onLoggin(){
-    setLoadingLoginForm(true);
-    let userLogin = await loginUser(email, password);
-    if(userLogin.success == false){
-      setLoadingLoginForm(false);
-      props.handleSnackbar({message: userLogin.message, type: 'warning'});
+  async function onLoggin() {
+    if (email.length < 1 || password.length < 1) {
+      props.handleSnackbar({
+        message: 'Preecha todos os campos',
+        type: 'warning',
+      });
     } else {
-      setLoadingLoginForm(false);
-      props.onAuthStateChanged(userLogin.response.user);
+      setLoadingLoginForm(true);
+      let userLogin = await loginUser(email, password);
+      if (userLogin.success == false) {
+        setLoadingLoginForm(false);
+        props.handleSnackbar({message: userLogin.message, type: 'warning'});
+      } else {
+        setLoadingLoginForm(false);
+        props.onAuthStateChanged(userLogin.response.user);
+      }
     }
   }
 
@@ -108,7 +122,11 @@ export default function Login(props) {
           </View>
         </View>
 
-        <FlatButton label="Login" handleFlatButtonPress={() => onLoggin()} isLoading={loadingLoginForm} />
+        <FlatButton
+          label="Login"
+          handleFlatButtonPress={() => onLoggin()}
+          isLoading={loadingLoginForm}
+        />
 
         <View
           style={[
@@ -226,7 +244,10 @@ export default function Login(props) {
           <Text style={generalStyles.primaryLabel}>Já tem conta?</Text>
           <Text
             onPress={() => setHaveAccount(!haveAccount)}
-            style={[generalStyles.primaryLabel, {color: colors.link, marginLeft: 8}]}>
+            style={[
+              generalStyles.primaryLabel,
+              {color: colors.link, marginLeft: 8},
+            ]}>
             Fazer login
           </Text>
         </View>

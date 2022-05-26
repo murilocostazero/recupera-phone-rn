@@ -69,7 +69,7 @@ export default function Home(props) {
         <View style={{marginTop: 30, alignItems: 'center'}}>
           <View style={[styles.profilePictureContainer, generalStyles.shadow]}>
             <MaterialIcons name="person" size={100} color={colors.background} />
-            <View style={{position: 'absolute', right: -24, bottom: 0}}>
+            <View style={{position: 'absolute', right: -20, bottom: 0}}>
               <CircleIconButton
                 buttonSize={28}
                 buttonColor="transparent"
@@ -82,7 +82,7 @@ export default function Home(props) {
           </View>
           <View style={generalStyles.row}>
             <Text style={generalStyles.titleDark}>
-              {loggedUser == null ? 'Carregando...' : loggedUser.displayName}
+              {loggedUser == null ? 'Carregando...' : !loggedUser.displayName ? 'Seu nome' : loggedUser.displayName}
             </Text>
             <CircleIconButton
               buttonSize={28}
