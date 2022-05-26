@@ -8,6 +8,15 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 16,
   },
+  profilePictureContainer: {
+    backgroundColor: colors.icon,
+    width: 120,
+    height: 120,
+    borderRadius: 120 / 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
   floatingMenuContainer: {
     backgroundColor: '#FFF',
     position: 'absolute',
@@ -16,7 +25,7 @@ const styles = StyleSheet.create({
     width: 124,
     borderRadius: 16,
     padding: 8,
-    alignItems: 'center'
+    alignItems: 'center',
   },
 });
 

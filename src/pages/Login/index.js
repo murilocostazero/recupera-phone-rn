@@ -11,6 +11,7 @@ export default function Login(props) {
   /* STATES */
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [displayName, setDisplayName] = useState('');
   const [isSecureTextEntry, setIsSecureTextEntry] = useState(true);
   const [haveAccount, setHaveAccount] = useState(false);
   const [loadingLoginForm, setLoadingLoginForm] = useState(false);
@@ -21,7 +22,7 @@ export default function Login(props) {
 
   async function onCreatingUser() {
     setLoadingLoginForm(true);
-    let userCreated = await createUser(email, password);
+    let userCreated = await createUser(email, password, displayName);
     if (userCreated.success == false) {
       props.handleSnackbar({message: userCreated.message, type: 'warning'});
       setLoadingLoginForm(false);
@@ -141,11 +142,32 @@ export default function Login(props) {
           />
         </View>
         <View style={[generalStyles.textInputContainer, generalStyles.shadow]}>
+          <Text style={generalStyles.secondaryLabel}>Nome</Text>
+          <View style={generalStyles.row}>
+            <MaterialIcons name="person" color={colors.icon} size={22} />
+            <TextInput
+              value={displayName}
+              onChangeText={text => setDisplayName(text)}
+              onSubmitEditing={() => emailRef.current.focus()}
+              keyboardType="default"
+              placeholder="Fulano Fulanoso"
+              autoCapitalize="words"
+              placeholderTextColor={colors.icon}
+              style={[
+                generalStyles.textInput,
+                generalStyles.primaryLabel,
+                {marginLeft: 8},
+              ]}
+            />
+          </View>
+        </View>
+        <View style={[generalStyles.textInputContainer, generalStyles.shadow]}>
           <Text style={generalStyles.secondaryLabel}>Email</Text>
           <View style={generalStyles.row}>
             <MaterialIcons name="email" color={colors.icon} size={22} />
             <TextInput
               value={email}
+              ref={emailRef}
               onChangeText={text => setEmail(text)}
               onSubmitEditing={() => passwordRef.current.focus()}
               keyboardType="email-address"

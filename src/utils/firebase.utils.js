@@ -1,16 +1,24 @@
 import auth from '@react-native-firebase/auth';
 
-export async function createUser(email, password) {
+export async function createUser(email, password, displayName) {
   let userCreated = null;
   await auth()
     .createUserWithEmailAndPassword(email, password)
-    .then(user => {
-      console.log('User account created & signed in!');
-      userCreated = {
-        success: true,
-        message: 'Usuário criado e logado',
-        user: user,
-      };
+    .then(async user => {
+      if (user.user) {
+        await user.user
+          .updateProfile({
+            displayName: displayName,
+          })
+          .then(userUpdated => {
+            console.log('User account created & signed in!');
+            userCreated = {
+              success: true,
+              message: 'Usuário criado e logado',
+              user: user,
+            };
+          });
+      }
     })
     .catch(error => {
       if (error.code === 'auth/email-already-in-use') {
@@ -65,4 +73,8 @@ export async function logout() {
     .then(() => (logoutResponse = {success: true}));
 
   return logoutResponse;
+}
+
+export function currentUser(){
+  return auth().currentUser;
 }
