@@ -8,12 +8,13 @@ export default function SnackBar(props) {
   return (
     <View style={{
         backgroundColor: colors.secondary,
-        padding: 8,
+        paddingVertical: 8,
+        paddingHorizontal: 12,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center'
     }}>
-      <Text style={[generalStyles.primaryLightLabel, {marginRight: 8}]}>{props.snackbar.message}</Text>
+      <Text numberOfLines={2} style={[generalStyles.primaryLightLabel, {marginRight: 8}]}>{props.snackbar.message}</Text>
       {
           props.snackbar.type == 'error' ?
           <MaterialIcons name='error' color='#FFF' size={32} /> :

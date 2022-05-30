@@ -37,19 +37,29 @@ export default function App() {
       <StatusBar
         animated={true}
         backgroundColor={colors.primary}
-        barStyle='light-content'
+        barStyle="light-content"
       />
       <NavigationContainer>
         {user ? (
           <Stack.Navigator>
             <Stack.Screen name="Home" options={{headerShown: false}}>
               {props => (
-                <Home
-                  onAuthStateChanged={loggedUser =>
-                    onAuthStateChanged(loggedUser)
-                  }
-                  {...props}
-                />
+                <>
+                  <Home
+                    handleSnackbar={receivedSnackBar =>
+                      handleSnackbar(receivedSnackBar)
+                    }
+                    onAuthStateChanged={loggedUser =>
+                      onAuthStateChanged(loggedUser)
+                    }
+                    {...props}
+                  />
+                  {isSnackbarVisible ? (
+                    <SnackBar snackbar={snackbar} />
+                  ) : (
+                    <View />
+                  )}
+                </>
               )}
             </Stack.Screen>
           </Stack.Navigator>
@@ -59,7 +69,9 @@ export default function App() {
               {props => (
                 <>
                   <Login
-                    handleSnackbar={snackbar => handleSnackbar(snackbar)}
+                    handleSnackbar={receivedSnackBar =>
+                      handleSnackbar(receivedSnackBar)
+                    }
                     onAuthStateChanged={loggedUser =>
                       onAuthStateChanged(loggedUser)
                     }

@@ -75,6 +75,28 @@ export async function logout() {
   return logoutResponse;
 }
 
-export function currentUser(){
+export async function changeDisplayName(displayName) {
+  let updatedDisplayName = null;
+  await auth()
+    .currentUser.updateProfile({
+      displayName: displayName,
+    })
+    .then(userUpdated => {
+      updatedDisplayName = {
+        success: true,
+        message: 'Nome alterado'
+      };
+    })
+    .catch(error => {
+      updatedDisplayName = {
+        success: false,
+        message: 'Erro ao alterar o nome',
+        error: error
+      }
+    });
+    return updatedDisplayName;
+}
+
+export function currentUser() {
   return auth().currentUser;
 }
