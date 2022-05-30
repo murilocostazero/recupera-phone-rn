@@ -97,6 +97,28 @@ export async function changeDisplayName(displayName) {
     return updatedDisplayName;
 }
 
+export async function changeProfilePicture(url) {
+  let updatedProfilePicture = null;
+  await auth()
+    .currentUser.updateProfile({
+      photoURL: url,
+    })
+    .then(userUpdated => {
+      updatedProfilePicture = {
+        success: true,
+        message: 'Foto de perfil alterada'
+      };
+    })
+    .catch(error => {
+      updatedProfilePicture = {
+        success: false,
+        message: 'Erro ao alterar a foto de perfil',
+        error: error
+      }
+    });
+    return updatedProfilePicture;
+}
+
 export function currentUser() {
   return auth().currentUser;
 }

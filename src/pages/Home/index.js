@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, TextInput, ActivityIndicator} from 'react-native';
+import { View, Text, TextInput, ActivityIndicator, Image } from 'react-native';
 import generalStyles from '../../styles/general.style';
-import {CircleIconButton, FlatButton} from '../../components';
+import {CircleIconButton} from '../../components';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import colors from '../../styles/colors.style';
 import styles from './styles';
@@ -9,7 +9,10 @@ import {
   logout,
   currentUser,
   changeDisplayName,
+  changeProfilePicture,
 } from '../../utils/firebase.utils';
+import {launchImageLibrary} from 'react-native-image-picker';
+import storage from '@react-native-firebase/storage';
 
 export default function Home(props) {
   const [showMenuOptions, setShowMenuOptions] = useState(false);
@@ -18,6 +21,8 @@ export default function Home(props) {
   const [displayName, setDisplayName] = useState('');
   const [loadingDisplayNameUpdate, setLoadingDisplayNameUpdate] =
     useState(false);
+  const [profilePicture, setProfilePicture] = useState(null);
+  const [uploadingProfilePicture, setUploadingProfilePicture] = useState(false);
 
   useEffect(() => {
     getCurrentUser();
@@ -27,6 +32,9 @@ export default function Home(props) {
     let user = await currentUser();
     setLoggedUser(user);
     setDisplayName(user.displayName == null ? '' : user.displayName);
+    setProfilePicture(user.photoURL);
+
+    console.log(user);
   }
 
   async function onLogout() {
@@ -45,11 +53,59 @@ export default function Home(props) {
     } else {
       setLoadingDisplayNameUpdate(true);
       const updatedDisplayName = await changeDisplayName(displayName);
-      console.log(updatedDisplayName);
       setLoadingDisplayNameUpdate(false);
     }
     getCurrentUser();
     setEditingDisplayName(false);
+  }
+
+  function selectImage() {
+    const options = {
+      maxWidth: 2000,
+      maxHeight: 2000,
+      storageOptions: {
+        skipBackup: true,
+        path: 'images',
+      },
+    };
+    launchImageLibrary(options, response => {
+      if (response.didCancel) {
+        console.log('User cancelled image picker');
+      } else if (response.error) {
+        console.log('ImagePicker Error: ', response.error);
+      } else if (response.customButton) {
+        console.log('User tapped custom button: ', response.customButton);
+      } else {
+        const source = {uri: response.assets[0].uri};
+        // console.log(source);
+        uploadImage(source);
+      }
+    });
+  }
+
+  async function uploadImage(image) {
+    const {uri} = image;
+    const reference = storage().ref(
+      'ProfilePictures/' + loggedUser.email + '.jpg',
+    );
+    setUploadingProfilePicture(true);
+    await reference.putFile(uri);
+    setUploadingProfilePicture(false);
+
+    getProfilePicture();
+  }
+
+  async function getProfilePicture() {
+    const url = await storage()
+      .ref('ProfilePictures/' + loggedUser.email + '.jpg')
+      .getDownloadURL();
+
+    let changedProfilePicture = await changeProfilePicture(url);
+    if(!changedProfilePicture.success){
+      props.handleSnackbar({message: 'Erro ao mudar foto de perfil', type: 'error'});
+    } else {
+      getCurrentUser();
+    }
   }
 
   const FloatingMenu = () => {
@@ -66,6 +122,7 @@ export default function Home(props) {
       </View>
     );
   };
+
   return (
     <View style={generalStyles.pageContainer}>
       <View style={styles.profileContainer}>
@@ -93,7 +150,22 @@ export default function Home(props) {
 
         <View style={{marginTop: 30, alignItems: 'center'}}>
           <View style={[styles.profilePictureContainer, generalStyles.shadow]}>
-            <MaterialIcons name="person" size={100} color={colors.background} />
+            {uploadingProfilePicture ? (
+              <ActivityIndicator size="large" color={colors.secondary} />
+            ) : profilePicture ? (
+              <Image
+                source={{
+                  uri: profilePicture,
+                }}
+                style={{width: 120, height: 120, borderRadius: 120 / 2}}
+              />
+            ) : (
+              <MaterialIcons
+                name="person"
+                size={100}
+                color={colors.background}
+              />
+            )}
             <View style={{position: 'absolute', right: -20, bottom: 0}}>
               <CircleIconButton
                 buttonSize={28}
@@ -101,7 +173,7 @@ export default function Home(props) {
                 iconName="edit"
                 iconSize={20}
                 iconColor={colors.secondary}
-                handleCircleIconButtonPress={() => {}}
+                handleCircleIconButtonPress={() => selectImage()}
               />
             </View>
           </View>
