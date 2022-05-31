@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, Image, TouchableHighlight} from 'react-native';
+import {View, Text, Image, TouchableHighlight, FlatList, Alert} from 'react-native';
 import generalStyles from '../../styles/general.style';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import styles from './styles';
@@ -7,13 +7,17 @@ import {
   currentUser,
   changeDisplayName,
   changeProfilePicture,
+  getUserFromCollections,
 } from '../../utils/firebase.utils';
 import {launchImageLibrary} from 'react-native-image-picker';
 import storage from '@react-native-firebase/storage';
 import colors from '../../styles/colors.style';
+import {useIsFocused} from '@react-navigation/native';
+import brandImageArray from '../../utils/brandImageArray.utils';
 
 export default function Home(props) {
   const [loggedUser, setLoggedUser] = useState(null);
+  const [userDoc, setUserDoc] = useState(null);
   const [editingDisplayName, setEditingDisplayName] = useState(false);
   const [displayName, setDisplayName] = useState('');
   const [loadingDisplayNameUpdate, setLoadingDisplayNameUpdate] =
@@ -24,7 +28,7 @@ export default function Home(props) {
 
   useEffect(() => {
     getCurrentUser();
-  }, []);
+  }, [useIsFocused]);
 
   async function getCurrentUser() {
     let user = await currentUser();
@@ -32,6 +36,18 @@ export default function Home(props) {
     setDisplayName(user.displayName == null ? '' : user.displayName);
     setProfilePicture(user.photoURL);
     // console.log(user);
+
+    getUserDoc(user.email);
+  }
+
+  async function getUserDoc(userEmail) {
+    const user = await getUserFromCollections(userEmail);
+    if (!user.success) {
+      props.handleSnackbar({type: 'error', message: 'Usuário não encontrado'});
+    } else {
+      setUserDoc(user.user._data);
+      setDevices(user.user._data.devices);
+    }
   }
 
   async function updateDisplayName() {
@@ -127,10 +143,44 @@ export default function Home(props) {
     );
   };
 
+  const renderDevices = ({item}) => {
+    return (
+      <View
+        style={[
+          styles.deviceContainer,
+          generalStyles.shadow,
+          {backgroundColor: colors.background},
+        ]}>
+        <Image
+          style={{width: 40, height: 40, alignSelf: 'center'}}
+          source={brandImageArray(item.brand)}
+        />
+
+        <View>
+          <Text style={generalStyles.primaryLabel}>
+            {item.brand} {item.model}
+          </Text>
+          <Text style={generalStyles.primaryLabel}>Cor: {item.mainColor}</Text>
+          <Text
+            style={[generalStyles.primaryLabel, {width: 120}]}
+            numberOfLines={1}>
+            Imei: {item.imei}
+          </Text>
+        </View>
+
+        <Text style={[generalStyles.textButton, {alignSelf: 'center'}]} onPress={() => Alert.alert('Ainda não')}>
+          EDITAR
+        </Text>
+      </View>
+    );
+  };
+
   return (
     <View style={generalStyles.pageContainer}>
       <View style={[generalStyles.row, {justifyContent: 'flex-end'}]}>
-        <TouchableHighlight underlayColor='transparent' onPress={() => props.navigation.navigate('UserPage')}>
+        <TouchableHighlight
+          underlayColor="transparent"
+          onPress={() => props.navigation.navigate('UserPage')}>
           <View style={generalStyles.row}>
             <Text style={[generalStyles.primaryLabel, {marginRight: 8}]}>
               Olá, {displayName}
@@ -158,7 +208,14 @@ export default function Home(props) {
             ADICIONAR
           </Text>
         </View>
-        {devices.length < 1 ? <DevicesListEmpty /> : <View />}
+        <FlatList
+          horizontal={true}
+          contentContainerStyle={{paddingVertical: 8}}
+          data={devices}
+          renderItem={renderDevices}
+          keyExtractor={item => item.imei}
+          ListEmptyComponent={<DevicesListEmpty />}
+        />
       </View>
     </View>
   );

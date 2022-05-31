@@ -19,6 +19,7 @@ export async function createUser(email, password, displayName) {
               .doc(email)
               .set({
                 email: email,
+                devices: []
               })
               .then(() => {
                 userCreated = {
@@ -140,6 +141,15 @@ export function currentUser() {
   return auth().currentUser;
 }
 
+export async function getUserFromCollections(userEmail) {
+  const user = await firestore().collection('Users').doc(userEmail).get();
+  if(!user._exists){
+    return{success: false};
+  } else {
+    return{success: true, user: user};
+  }
+}
+
 export async function addDevice(devices, userEmail) {
   let addDeviceResponse = null;
   await firestore()
@@ -152,7 +162,7 @@ export async function addDevice(devices, userEmail) {
       addDeviceResponse = {success: true, message: 'Dispositivo adicionado'};
     })
     .catch(error => {
-      console.error(error)
+      console.error(error);
       addDeviceResponse = {
         success: false,
         message: 'Erro ao salvar dispositivo',

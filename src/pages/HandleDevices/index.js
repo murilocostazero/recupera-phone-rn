@@ -11,7 +11,11 @@ import generalStyles from '../../styles/general.style';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import colors from '../../styles/colors.style';
 import {CircleIconButton} from '../../components';
-import {addDevice, currentUser} from '../../utils/firebase.utils';
+import {
+  addDevice,
+  currentUser,
+  getUserFromCollections,
+} from '../../utils/firebase.utils';
 import {newDeviceFieldsVerification} from '../../utils/fieldsVerification.utils';
 
 export default function HandleDevices(props) {
@@ -49,6 +53,7 @@ export default function HandleDevices(props) {
 
   async function saveNewDevice() {
     setLoadingSaveDevice(true);
+    const userDoc = await getUserFromCollections(loggedUser.email);
     const fieldsVerificationResponse = newDeviceFieldsVerification(
       brand,
       model,
@@ -68,7 +73,14 @@ export default function HandleDevices(props) {
         mainColor: mainColor,
         imei: imei,
       };
-      const addDeviceResponse = await addDevice(device, loggedUser.email);
+
+      const actualDevices = userDoc.user._data.devices;
+      actualDevices.push(device);
+
+      const addDeviceResponse = await addDevice(
+        actualDevices,
+        loggedUser.email,
+      );
       if (!addDeviceResponse.success) {
         props.handleSnackbar({
           message: addDeviceResponse.message,

@@ -20,7 +20,9 @@ const styles = StyleSheet.create({
     height: 200,
     backgroundColor: colors.background,
     borderRadius: 16,
-    justifyContent: 'center',
+    justifyContent: 'space-between',
+    marginRight: 10,
+    padding: 8
   }
 });
 
