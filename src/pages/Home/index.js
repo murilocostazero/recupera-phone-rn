@@ -1,9 +1,7 @@
 import React, {useState, useEffect} from 'react';
-import { View, Text, TextInput, ActivityIndicator, Image } from 'react-native';
+import {View, Text, Image} from 'react-native';
 import generalStyles from '../../styles/general.style';
-import {CircleIconButton} from '../../components';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import colors from '../../styles/colors.style';
 import styles from './styles';
 import {
   logout,
@@ -13,9 +11,9 @@ import {
 } from '../../utils/firebase.utils';
 import {launchImageLibrary} from 'react-native-image-picker';
 import storage from '@react-native-firebase/storage';
+import colors from '../../styles/colors.style';
 
 export default function Home(props) {
-  const [showMenuOptions, setShowMenuOptions] = useState(false);
   const [loggedUser, setLoggedUser] = useState(null);
   const [editingDisplayName, setEditingDisplayName] = useState(false);
   const [displayName, setDisplayName] = useState('');
@@ -23,6 +21,7 @@ export default function Home(props) {
     useState(false);
   const [profilePicture, setProfilePicture] = useState(null);
   const [uploadingProfilePicture, setUploadingProfilePicture] = useState(false);
+  const [devices, setDevices] = useState([]);
 
   useEffect(() => {
     getCurrentUser();
@@ -33,8 +32,7 @@ export default function Home(props) {
     setLoggedUser(user);
     setDisplayName(user.displayName == null ? '' : user.displayName);
     setProfilePicture(user.photoURL);
-
-    console.log(user);
+    // console.log(user);
   }
 
   async function onLogout() {
@@ -101,130 +99,55 @@ export default function Home(props) {
       .getDownloadURL();
 
     let changedProfilePicture = await changeProfilePicture(url);
-    if(!changedProfilePicture.success){
-      props.handleSnackbar({message: 'Erro ao mudar foto de perfil', type: 'error'});
+    if (!changedProfilePicture.success) {
+      props.handleSnackbar({
+        message: 'Erro ao mudar foto de perfil',
+        type: 'error',
+      });
     } else {
       getCurrentUser();
     }
   }
 
-  const FloatingMenu = () => {
-    return (
-      <View
-        style={[
-          styles.floatingMenuContainer,
-          generalStyles.shadow,
-          {display: showMenuOptions ? 'flex' : 'none'},
-        ]}>
-        <Text onPress={() => onLogout()} style={generalStyles.primaryLabel}>
-          Logout
-        </Text>
+  const DevicesListEmpty = () => {
+    return(
+      <View style={[generalStyles.row, {paddingVertical: 8}]}>
+        <View style={[styles.deviceContainer, {borderWidth: 1, borderColor: colors.secondary, borderStyle:'dashed', alignItems: 'center'}]}>
+          <Text style={[generalStyles.secondaryLabel, {textAlign: 'center'}]}>Lista de dispositivos vazia</Text>
+          <MaterialIcons name='sentiment-dissatisfied' color={colors.icon} size={32}/>
+        </View>
       </View>
     );
-  };
+  }
 
   return (
     <View style={generalStyles.pageContainer}>
-      <View style={styles.profileContainer}>
+      <View style={[generalStyles.row, {justifyContent: 'flex-end'}]}>
+        <Text style={[generalStyles.primaryLabel, {marginRight: 8}]}>
+          Olá, {displayName}
+        </Text>
+        <View style={styles.profilePictureContainer}>
+          {!profilePicture ? (
+            <MaterialIcons name="person" size={30} color="#FFF" />
+          ) : (
+            <Image
+              source={{uri: profilePicture}}
+              style={{width: 40, height: 40, borderRadius: 40 / 2}}
+            />
+          )}
+        </View>
+      </View>
+
+      <View style={styles.card}>
         <View style={[generalStyles.row, {justifyContent: 'space-between'}]}>
-          <CircleIconButton
-            buttonSize={30}
-            buttonColor="#FFF"
-            iconName="drag-handle"
-            iconSize={26}
-            iconColor={colors.primary}
-            handleCircleIconButtonPress={() => {}}
-          />
-          <CircleIconButton
-            buttonSize={30}
-            buttonColor="#FFF"
-            iconName={showMenuOptions ? 'close' : 'more-vert'}
-            iconSize={26}
-            iconColor={colors.primary}
-            handleCircleIconButtonPress={() =>
-              setShowMenuOptions(!showMenuOptions)
-            }
-          />
-          <FloatingMenu />
+          <Text style={generalStyles.titleDark}>Meus dispositivos</Text>
+          <Text style={generalStyles.textButton} onPress={() => props.navigation.navigate('HandleDevices')}>ADICIONAR</Text>
         </View>
-
-        <View style={{marginTop: 30, alignItems: 'center'}}>
-          <View style={[styles.profilePictureContainer, generalStyles.shadow]}>
-            {uploadingProfilePicture ? (
-              <ActivityIndicator size="large" color={colors.secondary} />
-            ) : profilePicture ? (
-              <Image
-                source={{
-                  uri: profilePicture,
-                }}
-                style={{width: 120, height: 120, borderRadius: 120 / 2}}
-              />
-            ) : (
-              <MaterialIcons
-                name="person"
-                size={100}
-                color={colors.background}
-              />
-            )}
-            <View style={{position: 'absolute', right: -20, bottom: 0}}>
-              <CircleIconButton
-                buttonSize={28}
-                buttonColor="transparent"
-                iconName="edit"
-                iconSize={20}
-                iconColor={colors.secondary}
-                handleCircleIconButtonPress={() => selectImage()}
-              />
-            </View>
-          </View>
-          <View style={generalStyles.row}>
-            {editingDisplayName ? (
-              <TextInput
-                value={displayName}
-                onChangeText={text => setDisplayName(text)}
-                onSubmitEditing={() => updateDisplayName()}
-                placeholder="Ex.: Pedro Lopes"
-                placeholderTextColor={colors.text.darkPlaceholder}
-                style={[
-                  {
-                    backgroundColor: '#FFF',
-                    width: 200,
-                    height: 40,
-                    borderRadius: 16,
-                  },
-                  generalStyles.shadow,
-                  generalStyles.primaryLabel,
-                ]}
-              />
-            ) : (
-              <Text style={generalStyles.titleDark}>
-                {loggedUser == null
-                  ? 'Carregando...'
-                  : !loggedUser.displayName
-                  ? 'Seu nome'
-                  : loggedUser.displayName}
-              </Text>
-            )}
-            {loadingDisplayNameUpdate ? (
-              <ActivityIndicator size="large" color={colors.secondary} />
-            ) : (
-              <CircleIconButton
-                buttonSize={28}
-                buttonColor="transparent"
-                iconName={editingDisplayName ? 'check' : 'edit'}
-                iconSize={20}
-                iconColor={colors.secondary}
-                handleCircleIconButtonPress={() =>
-                  !editingDisplayName
-                    ? setEditingDisplayName(true)
-                    : updateDisplayName()
-                }
-              />
-            )}
-          </View>
-        </View>
-
-        <View></View>
+        {
+          devices.length < 1 ?
+          <DevicesListEmpty /> : 
+          <View />
+        }
       </View>
     </View>
   );

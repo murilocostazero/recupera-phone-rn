@@ -2,31 +2,26 @@ import {StyleSheet} from 'react-native';
 import colors from '../../styles/colors.style';
 
 const styles = StyleSheet.create({
-  profileContainer: {
-    backgroundColor: '#FFF',
-    margin: 8,
-    padding: 8,
-    borderRadius: 16,
-  },
   profilePictureContainer: {
     backgroundColor: colors.icon,
-    width: 120,
-    height: 120,
-    borderRadius: 120 / 2,
+    width: 40,
+    height: 40,
+    borderRadius: 40 / 2,
     alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
+    justifyContent: 'center'
   },
-  floatingMenuContainer: {
-    backgroundColor: '#FFF',
-    position: 'absolute',
-    right: 20,
-    top: 20,
-    width: 124,
+  card: {
     borderRadius: 16,
     padding: 8,
-    alignItems: 'center',
+    marginTop: 32
   },
+  deviceContainer: {
+    width: 130,
+    height: 200,
+    backgroundColor: colors.background,
+    borderRadius: 16,
+    justifyContent: 'center',
+  }
 });
 
 export default styles;

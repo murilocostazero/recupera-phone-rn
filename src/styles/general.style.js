@@ -77,6 +77,11 @@ const generalStyles = StyleSheet.create({
   textInput: {
     padding: 0,
     flex: 1
+  },
+  textButton: {
+    fontFamily: 'JosefinSans-Bold',
+    color: colors.secondary,
+    fontSize: 12
   }
 });
 
