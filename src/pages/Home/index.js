@@ -1,10 +1,9 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, Image} from 'react-native';
+import {View, Text, Image, TouchableHighlight} from 'react-native';
 import generalStyles from '../../styles/general.style';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import styles from './styles';
 import {
-  logout,
   currentUser,
   changeDisplayName,
   changeProfilePicture,
@@ -33,13 +32,6 @@ export default function Home(props) {
     setDisplayName(user.displayName == null ? '' : user.displayName);
     setProfilePicture(user.photoURL);
     // console.log(user);
-  }
-
-  async function onLogout() {
-    const logoutResponse = await logout();
-    if (logoutResponse.success) {
-      props.onAuthStateChanged(null);
-    }
   }
 
   async function updateDisplayName() {
@@ -110,44 +102,63 @@ export default function Home(props) {
   }
 
   const DevicesListEmpty = () => {
-    return(
+    return (
       <View style={[generalStyles.row, {paddingVertical: 8}]}>
-        <View style={[styles.deviceContainer, {borderWidth: 1, borderColor: colors.secondary, borderStyle:'dashed', alignItems: 'center'}]}>
-          <Text style={[generalStyles.secondaryLabel, {textAlign: 'center'}]}>Lista de dispositivos vazia</Text>
-          <MaterialIcons name='sentiment-dissatisfied' color={colors.icon} size={32}/>
+        <View
+          style={[
+            styles.deviceContainer,
+            {
+              borderWidth: 1,
+              borderColor: colors.secondary,
+              borderStyle: 'dashed',
+              alignItems: 'center',
+            },
+          ]}>
+          <Text style={[generalStyles.secondaryLabel, {textAlign: 'center'}]}>
+            Lista de dispositivos vazia
+          </Text>
+          <MaterialIcons
+            name="sentiment-dissatisfied"
+            color={colors.icon}
+            size={32}
+          />
         </View>
       </View>
     );
-  }
+  };
 
   return (
     <View style={generalStyles.pageContainer}>
       <View style={[generalStyles.row, {justifyContent: 'flex-end'}]}>
-        <Text style={[generalStyles.primaryLabel, {marginRight: 8}]}>
-          Olá, {displayName}
-        </Text>
-        <View style={styles.profilePictureContainer}>
-          {!profilePicture ? (
-            <MaterialIcons name="person" size={30} color="#FFF" />
-          ) : (
-            <Image
-              source={{uri: profilePicture}}
-              style={{width: 40, height: 40, borderRadius: 40 / 2}}
-            />
-          )}
-        </View>
+        <TouchableHighlight underlayColor='transparent' onPress={() => props.navigation.navigate('UserPage')}>
+          <View style={generalStyles.row}>
+            <Text style={[generalStyles.primaryLabel, {marginRight: 8}]}>
+              Olá, {displayName}
+            </Text>
+            <View style={styles.profilePictureContainer}>
+              {!profilePicture ? (
+                <MaterialIcons name="person" size={30} color="#FFF" />
+              ) : (
+                <Image
+                  source={{uri: profilePicture}}
+                  style={{width: 40, height: 40, borderRadius: 40 / 2}}
+                />
+              )}
+            </View>
+          </View>
+        </TouchableHighlight>
       </View>
 
       <View style={styles.card}>
         <View style={[generalStyles.row, {justifyContent: 'space-between'}]}>
           <Text style={generalStyles.titleDark}>Meus dispositivos</Text>
-          <Text style={generalStyles.textButton} onPress={() => props.navigation.navigate('HandleDevices')}>ADICIONAR</Text>
+          <Text
+            style={generalStyles.textButton}
+            onPress={() => props.navigation.navigate('HandleDevices')}>
+            ADICIONAR
+          </Text>
         </View>
-        {
-          devices.length < 1 ?
-          <DevicesListEmpty /> : 
-          <View />
-        }
+        {devices.length < 1 ? <DevicesListEmpty /> : <View />}
       </View>
     </View>
   );

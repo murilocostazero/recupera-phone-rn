@@ -1,9 +1,17 @@
-import React, {useState, useRef} from 'react';
-import {View, Text, TextInput, Alert, ScrollView} from 'react-native';
+import React, {useState, useRef, useEffect} from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  Alert,
+  ScrollView,
+  ActivityIndicator,
+} from 'react-native';
 import generalStyles from '../../styles/general.style';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import colors from '../../styles/colors.style';
 import {CircleIconButton} from '../../components';
+import {addDevice, currentUser} from '../../utils/firebase.utils';
 import {newDeviceFieldsVerification} from '../../utils/fieldsVerification.utils';
 
 export default function HandleDevices(props) {
@@ -12,12 +20,24 @@ export default function HandleDevices(props) {
   const [model, setModel] = useState('');
   const [mainColor, setMainColor] = useState('');
   const [imei, setImei] = useState('');
+  const [loggedUser, setLoggedUser] = useState(null);
+  const [loadingSaveDevice, setLoadingSaveDevice] = useState(false);
 
   /* REFERENCES */
   const brandRef = useRef('brandRef');
   const modelRef = useRef('modelRef');
   const mainColorRef = useRef('mainColorRef');
   const imeiRef = useRef('imeiRef');
+
+  useEffect(() => {
+    getCurrentUser();
+  }, []);
+
+  function getCurrentUser() {
+    const user = currentUser();
+    // console.log(user);
+    setLoggedUser(user);
+  }
 
   function showImeiInfo() {
     Alert.alert(
@@ -27,21 +47,59 @@ export default function HandleDevices(props) {
     );
   }
 
-  function saveNewDevice(){
-    const fieldsVerificationResponse = newDeviceFieldsVerification(brand, model, mainColor, imei);
-    if(!fieldsVerificationResponse.success){
-        props.handleSnackbar({message: fieldsVerificationResponse.message, type: 'error'});
+  async function saveNewDevice() {
+    setLoadingSaveDevice(true);
+    const fieldsVerificationResponse = newDeviceFieldsVerification(
+      brand,
+      model,
+      mainColor,
+      imei,
+    );
+    if (!fieldsVerificationResponse.success) {
+      props.handleSnackbar({
+        message: fieldsVerificationResponse.message,
+        type: 'error',
+      });
+      setLoadingSaveDevice(false);
     } else {
-
+      const device = {
+        brand: brand,
+        model: model,
+        mainColor: mainColor,
+        imei: imei,
+      };
+      const addDeviceResponse = await addDevice(device, loggedUser.email);
+      if (!addDeviceResponse.success) {
+        props.handleSnackbar({
+          message: addDeviceResponse.message,
+          type: 'error',
+        });
+        setLoadingSaveDevice(false);
+      } else {
+        setLoadingSaveDevice(false);
+        props.navigation.goBack();
+      }
     }
   }
 
   const Header = () => {
     return (
       <View style={[generalStyles.row, {justifyContent: 'space-between'}]}>
-        <Text style={generalStyles.textButton} onPress={() => props.navigation.goBack()}>VOLTAR</Text>
+        <Text
+          style={generalStyles.textButton}
+          onPress={() => (loadingSaveDevice ? {} : props.navigation.goBack())}>
+          VOLTAR
+        </Text>
         <Text style={generalStyles.primaryLabel}>Dispositivo</Text>
-        <Text style={generalStyles.textButton} onPress={() => saveNewDevice()}>PRONTO</Text>
+        {loadingSaveDevice ? (
+          <ActivityIndicator size="large" color={colors.secondary} />
+        ) : (
+          <Text
+            style={generalStyles.textButton}
+            onPress={() => saveNewDevice()}>
+            PRONTO
+          </Text>
+        )}
       </View>
     );
   };
@@ -136,7 +194,7 @@ export default function HandleDevices(props) {
                 onChangeText={text => setImei(text)}
                 onSubmitEditing={() => {}}
                 placeholder="Disque *#06# para saber seu imei"
-                keyboardType='phone-pad'
+                keyboardType="phone-pad"
                 placeholderTextColor={colors.icon}
                 style={[
                   generalStyles.textInput,

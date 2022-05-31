@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {View, StatusBar} from 'react-native';
 import auth from '@react-native-firebase/auth';
-import {Login, Home, HandleDevices} from './src/pages';
+import {Login, Home, HandleDevices, UserPage} from './src/pages';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {SnackBar} from './src/components';
@@ -66,6 +66,26 @@ export default function App() {
               {props => (
                 <>
                   <HandleDevices
+                    handleSnackbar={receivedSnackBar =>
+                      handleSnackbar(receivedSnackBar)
+                    }
+                    onAuthStateChanged={loggedUser =>
+                      onAuthStateChanged(loggedUser)
+                    }
+                    {...props}
+                  />
+                  {isSnackbarVisible ? (
+                    <SnackBar snackbar={snackbar} />
+                  ) : (
+                    <View />
+                  )}
+                </>
+              )}
+            </Stack.Screen>
+            <Stack.Screen name="UserPage" options={{headerShown: false}}>
+              {props => (
+                <>
+                  <UserPage
                     handleSnackbar={receivedSnackBar =>
                       handleSnackbar(receivedSnackBar)
                     }

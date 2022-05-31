@@ -1,4 +1,5 @@
 import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
 
 export async function createUser(email, password, displayName) {
   let userCreated = null;
@@ -10,13 +11,29 @@ export async function createUser(email, password, displayName) {
           .updateProfile({
             displayName: displayName,
           })
-          .then(userUpdated => {
+          .then(async userUpdated => {
             console.log('User account created & signed in!');
-            userCreated = {
-              success: true,
-              message: 'Usuário criado e logado',
-              user: user,
-            };
+
+            await firestore()
+              .collection('Users')
+              .doc(email)
+              .set({
+                email: email,
+              })
+              .then(() => {
+                userCreated = {
+                  success: true,
+                  message: 'Usuário criado e logado',
+                  user: user,
+                };
+              })
+              .catch(error => {
+                console.log(error);
+                userCreated = {
+                  success: false,
+                  message: 'Erro ao salvar usuário no banco',
+                };
+              });
           });
       }
     })
@@ -84,17 +101,17 @@ export async function changeDisplayName(displayName) {
     .then(userUpdated => {
       updatedDisplayName = {
         success: true,
-        message: 'Nome alterado'
+        message: 'Nome alterado',
       };
     })
     .catch(error => {
       updatedDisplayName = {
         success: false,
         message: 'Erro ao alterar o nome',
-        error: error
-      }
+        error: error,
+      };
     });
-    return updatedDisplayName;
+  return updatedDisplayName;
 }
 
 export async function changeProfilePicture(url) {
@@ -106,19 +123,41 @@ export async function changeProfilePicture(url) {
     .then(userUpdated => {
       updatedProfilePicture = {
         success: true,
-        message: 'Foto de perfil alterada'
+        message: 'Foto de perfil alterada',
       };
     })
     .catch(error => {
       updatedProfilePicture = {
         success: false,
         message: 'Erro ao alterar a foto de perfil',
-        error: error
-      }
+        error: error,
+      };
     });
-    return updatedProfilePicture;
+  return updatedProfilePicture;
 }
 
 export function currentUser() {
   return auth().currentUser;
+}
+
+export async function addDevice(devices, userEmail) {
+  let addDeviceResponse = null;
+  await firestore()
+    .collection('Users')
+    .doc(userEmail)
+    .update({
+      devices: devices,
+    })
+    .then(() => {
+      addDeviceResponse = {success: true, message: 'Dispositivo adicionado'};
+    })
+    .catch(error => {
+      console.error(error)
+      addDeviceResponse = {
+        success: false,
+        message: 'Erro ao salvar dispositivo',
+      };
+    });
+
+  return addDeviceResponse;
 }
