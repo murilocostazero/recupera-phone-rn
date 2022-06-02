@@ -10,7 +10,7 @@ import {
 import generalStyles from '../../styles/general.style';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import colors from '../../styles/colors.style';
-import {CircleIconButton, FlatButton} from '../../components';
+import {CircleIconButton, FlatButton, Header} from '../../components';
 import {
   addDevice,
   currentUser,
@@ -166,31 +166,15 @@ export default function HandleDevices(props) {
     }
   }
 
-  const Header = () => {
-    return (
-      <View style={[generalStyles.row, {justifyContent: 'space-between'}]}>
-        <Text
-          style={generalStyles.textButton}
-          onPress={() => (loadingSaveDevice ? {} : props.navigation.goBack())}>
-          VOLTAR
-        </Text>
-        <Text style={generalStyles.primaryLabel}>Dispositivo</Text>
-        {loadingSaveDevice ? (
-          <ActivityIndicator size="large" color={colors.secondary} />
-        ) : (
-          <Text
-            style={generalStyles.textButton}
-            onPress={() => saveOrUpdateDevice()}>
-            {!isEditingMode ? 'SALVAR' : 'ATUALIZAR'}
-          </Text>
-        )}
-      </View>
-    );
-  };
-
   return (
     <View style={generalStyles.pageContainer}>
-      <Header />
+      <Header
+        handleGoBackButtonPress={() => {(loadingSaveDevice ? {} : props.navigation.goBack())}}
+        pageTitle="Dispositivos"
+        loadingPrimaryButton={loadingSaveDevice}
+        handlePrimaryButtonPress={() => saveOrUpdateDevice()}
+        primaryButtonLabel={!isEditingMode ? 'SALVAR' : 'ATUALIZAR'}
+      />
 
       <ScrollView>
         <View style={{marginTop: 32}}>

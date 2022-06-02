@@ -5,7 +5,7 @@ import {
   Image,
   TouchableHighlight,
   FlatList,
-  Alert,
+  ScrollView,
 } from 'react-native';
 import generalStyles from '../../styles/general.style';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -162,7 +162,12 @@ export default function Home(props) {
           {backgroundColor: colors.background},
         ]}>
         <Image
-          style={{maxWidth: 60, height: 60, resizeMode: 'contain', alignSelf: 'center'}}
+          style={{
+            maxWidth: 60,
+            height: 60,
+            resizeMode: 'contain',
+            alignSelf: 'center',
+          }}
           source={brandImageArray(item.brand)}
         />
 
@@ -197,7 +202,9 @@ export default function Home(props) {
 
         <Text
           style={[generalStyles.textButton, {alignSelf: 'center'}]}
-          onPress={() => props.navigation.navigate('HandleDevices', {device: item})}>
+          onPress={() =>
+            props.navigation.navigate('HandleDevices', {device: item})
+          }>
           EDITAR
         </Text>
       </View>
@@ -228,24 +235,37 @@ export default function Home(props) {
         </TouchableHighlight>
       </View>
 
-      <View style={styles.card}>
-        <View style={[generalStyles.row, {justifyContent: 'space-between'}]}>
-          <Text style={generalStyles.titleDark}>Meus dispositivos</Text>
-          <Text
-            style={generalStyles.textButton}
-            onPress={() => props.navigation.navigate('HandleDevices', {device: null})}>
-            ADICIONAR
-          </Text>
+      <ScrollView>
+        <View style={styles.card}>
+          <View style={[generalStyles.row, {justifyContent: 'space-between'}]}>
+            <Text style={generalStyles.titleDark}>Meus dispositivos</Text>
+            <Text
+              style={generalStyles.textButton}
+              onPress={() =>
+                props.navigation.navigate('HandleDevices', {device: null})
+              }>
+              ADICIONAR
+            </Text>
+          </View>
+          <FlatList
+            horizontal={true}
+            contentContainerStyle={{paddingVertical: 8}}
+            data={devices}
+            renderItem={renderDevices}
+            keyExtractor={item => item.imei}
+            ListEmptyComponent={<DevicesListEmpty />}
+          />
         </View>
-        <FlatList
-          horizontal={true}
-          contentContainerStyle={{paddingVertical: 8}}
-          data={devices}
-          renderItem={renderDevices}
-          keyExtractor={item => item.imei}
-          ListEmptyComponent={<DevicesListEmpty />}
-        />
-      </View>
+
+        <View style={styles.card}>
+          <View style={[generalStyles.row, {justifyContent: 'space-between'}]}>
+            <Text style={generalStyles.titleDark}>Buscar dispositivos</Text>
+            <Text style={generalStyles.textButton} onPress={() => {}}>
+              BUSCAR
+            </Text>
+          </View>
+        </View>
+      </ScrollView>
     </View>
   );
 }
