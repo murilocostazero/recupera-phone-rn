@@ -195,7 +195,7 @@ export default function Home(props) {
                 {maxWidth: 80, marginLeft: 8},
               ]}
               numberOfLines={1}>
-              {item.brand}
+              {item.imei}
             </Text>
           </View>
         </View>
@@ -260,7 +260,7 @@ export default function Home(props) {
         <View style={styles.card}>
           <View style={[generalStyles.row, {justifyContent: 'space-between'}]}>
             <Text style={generalStyles.titleDark}>Buscar dispositivos</Text>
-            <Text style={generalStyles.textButton} onPress={() => {}}>
+            <Text style={generalStyles.textButton} onPress={() => props.navigation.navigate('SearchPage')}>
               BUSCAR
             </Text>
           </View>

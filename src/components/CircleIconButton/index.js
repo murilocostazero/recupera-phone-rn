@@ -3,7 +3,7 @@ import {TouchableHighlight} from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import generalStyles from '../../styles/general.style';
 
-//buttonSize={} buttonColor={} iconName='' iconSize={} haveShadow={false} iconColor={} handleCircleIconButtonPress={() => {}}
+//buttonSize={0} buttonColor={0} iconName='' iconSize={0} haveShadow={false} iconColor={0} handleCircleIconButtonPress={() => {}}
 
 export default function CircleIconButton(props) {
   return (

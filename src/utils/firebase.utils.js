@@ -19,7 +19,7 @@ export async function createUser(email, password, displayName) {
               .doc(email)
               .set({
                 email: email,
-                devices: []
+                devices: [],
               })
               .then(() => {
                 userCreated = {
@@ -143,10 +143,10 @@ export function currentUser() {
 
 export async function getUserFromCollections(userEmail) {
   const user = await firestore().collection('Users').doc(userEmail).get();
-  if(!user._exists){
-    return{success: false};
+  if (!user._exists) {
+    return {success: false};
   } else {
-    return{success: true, user: user};
+    return {success: true, user: user};
   }
 }
 
@@ -170,4 +170,32 @@ export async function addDevice(devices, userEmail) {
     });
 
   return addDeviceResponse;
+}
+
+export async function findDevice(imei) {
+  let deviceFound = [];
+  await firestore()
+    .collection('Users')
+    .get()
+    .then(querySnapshot => {
+      querySnapshot.forEach(documentSnapshot => {
+        const devicesArray = documentSnapshot.data().devices;
+        if (!devicesArray) {
+          // console.log(documentSnapshot.id + ' não tem dispositivos');
+        } else {
+          // console.log(documentSnapshot.id + ' tem dispositivos');
+          const deviceIndex = devicesArray.findIndex(
+            device => device.imei == imei,
+          );
+          if (deviceIndex == -1) {
+            // console.log(imei + ' não correspondente');
+          } else {
+            // console.log(imei + ' correspondente');
+            deviceFound.push(devicesArray[deviceIndex]);
+          }
+        }
+      });
+    });
+
+  return deviceFound;
 }
