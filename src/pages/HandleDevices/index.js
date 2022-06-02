@@ -10,7 +10,7 @@ import {
 import generalStyles from '../../styles/general.style';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import colors from '../../styles/colors.style';
-import {CircleIconButton} from '../../components';
+import {CircleIconButton, FlatButton} from '../../components';
 import {
   addDevice,
   currentUser,
@@ -27,6 +27,7 @@ export default function HandleDevices(props) {
   const [loggedUser, setLoggedUser] = useState(null);
   const [loadingSaveDevice, setLoadingSaveDevice] = useState(false);
   const [isEditingMode, setIsEditingMode] = useState(false);
+  const [loadingRemovingDevice, setLoadingRemoveDevice] = useState(false);
 
   /* REFERENCES */
   const brandRef = useRef('brandRef');
@@ -130,6 +131,41 @@ export default function HandleDevices(props) {
     }
   }
 
+  function onRemovingDevice() {
+    Alert.alert(
+      'Remover dispositivo?',
+      'Ao continuar, esse dispositivo será removido sem a possibilidade de recuperação.',
+      [
+        {
+          text: 'Cancelar',
+          onPress: () => {},
+          style: 'cancel',
+        },
+        {text: 'CONTINUAR', onPress: () => removeDevice()},
+      ],
+    );
+  }
+
+  async function removeDevice() {
+    setLoadingRemoveDevice(true);
+    const userDoc = await getUserFromCollections(loggedUser.email);
+    const actualDevices = userDoc.user._data.devices;
+    const deviceIndex = actualDevices.findIndex(obj => obj.imei == imei);
+    actualDevices.splice(deviceIndex, 1);
+
+    const addDeviceResponse = await addDevice(actualDevices, loggedUser.email);
+    if (!addDeviceResponse.success) {
+      props.handleSnackbar({
+        message: addDeviceResponse.message,
+        type: 'error',
+      });
+      setLoadingRemoveDevice(false);
+    } else {
+      setLoadingRemoveDevice(false);
+      props.navigation.goBack();
+    }
+  }
+
   const Header = () => {
     return (
       <View style={[generalStyles.row, {justifyContent: 'space-between'}]}>
@@ -151,6 +187,7 @@ export default function HandleDevices(props) {
       </View>
     );
   };
+
   return (
     <View style={generalStyles.pageContainer}>
       <Header />
@@ -259,6 +296,17 @@ export default function HandleDevices(props) {
           </View>
         </View>
       </ScrollView>
+      {isEditingMode ? (
+        <FlatButton
+          label="EXCLUIR DISPOSITIVO"
+          labelColor="#FFF"
+          buttonColor={colors.error}
+          handleFlatButtonPress={() => onRemovingDevice()}
+          isLoading={loadingRemovingDevice}
+        />
+      ) : (
+        <View />
+      )}
     </View>
   );
 }
