@@ -10,6 +10,6 @@ export default function brandImageArray(imageName) {
   } else if (imageName.toLowerCase() == 'lg') {
     return require('../assets/images/brands/lg.png');
   } else {
-    return require('../assets/images/logo.png');
+    return require('../assets/images/brands/smarphone.png');
   }
 }

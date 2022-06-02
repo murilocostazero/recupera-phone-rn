@@ -1,5 +1,12 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, Image, TouchableHighlight, FlatList, Alert} from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  TouchableHighlight,
+  FlatList,
+  Alert,
+} from 'react-native';
 import generalStyles from '../../styles/general.style';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import styles from './styles';
@@ -157,18 +164,30 @@ export default function Home(props) {
         />
 
         <View>
-          <Text style={generalStyles.primaryLabel}>
-            {item.brand} {item.model}
-          </Text>
-          <Text style={generalStyles.primaryLabel}>Cor: {item.mainColor}</Text>
-          <Text
-            style={[generalStyles.primaryLabel, {width: 120}]}
-            numberOfLines={1}>
-            Imei: {item.imei}
-          </Text>
+          <View style={generalStyles.row}>
+              <Text style={[generalStyles.primaryLabel, {maxWidth: 140}]} numberOfLines={1}>
+                {item.brand} {item.model}
+              </Text>
+          </View>
+
+          <View style={generalStyles.row}>
+            <Text style={[generalStyles.primaryLabel, {marginRight: 8}]}>Cor:</Text>
+            <Text style={generalStyles.secondaryLabel}>{item.mainColor}</Text>
+          </View>
+
+          <View style={generalStyles.row}>
+            <Text style={generalStyles.primaryLabel}>Imei:</Text>
+            <Text
+              style={[generalStyles.secondaryLabel, {maxWidth: 80, marginLeft: 8}]}
+              numberOfLines={1}>
+              {item.brand}
+            </Text>
+          </View>
         </View>
 
-        <Text style={[generalStyles.textButton, {alignSelf: 'center'}]} onPress={() => Alert.alert('Ainda não')}>
+        <Text
+          style={[generalStyles.textButton, {alignSelf: 'center'}]}
+          onPress={() => Alert.alert('Ainda não')}>
           EDITAR
         </Text>
       </View>
