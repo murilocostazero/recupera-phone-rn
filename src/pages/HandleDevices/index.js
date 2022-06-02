@@ -26,6 +26,7 @@ export default function HandleDevices(props) {
   const [imei, setImei] = useState('');
   const [loggedUser, setLoggedUser] = useState(null);
   const [loadingSaveDevice, setLoadingSaveDevice] = useState(false);
+  const [isEditingMode, setIsEditingMode] = useState(false);
 
   /* REFERENCES */
   const brandRef = useRef('brandRef');
@@ -35,12 +36,23 @@ export default function HandleDevices(props) {
 
   useEffect(() => {
     getCurrentUser();
+    props.route.params.device == null
+      ? {}
+      : populateFields(props.route.params.device);
   }, []);
 
   function getCurrentUser() {
     const user = currentUser();
     // console.log(user);
     setLoggedUser(user);
+  }
+
+  function populateFields(deviceReceived) {
+    setIsEditingMode(true);
+    setBrand(deviceReceived.brand);
+    setModel(deviceReceived.model);
+    setMainColor(deviceReceived.mainColor);
+    setImei(deviceReceived.imei);
   }
 
   function showImeiInfo() {
@@ -51,7 +63,7 @@ export default function HandleDevices(props) {
     );
   }
 
-  async function saveNewDevice() {
+  async function saveOrUpdateDevice() {
     setLoadingSaveDevice(true);
     const userDoc = await getUserFromCollections(loggedUser.email);
     const fieldsVerificationResponse = newDeviceFieldsVerification(
@@ -74,22 +86,46 @@ export default function HandleDevices(props) {
         imei: imei,
       };
 
-      const actualDevices = userDoc.user._data.devices;
-      actualDevices.push(device);
+      //SAVE NEW
+      if (!isEditingMode) {
+        const actualDevices = userDoc.user._data.devices;
+        actualDevices.push(device);
 
-      const addDeviceResponse = await addDevice(
-        actualDevices,
-        loggedUser.email,
-      );
-      if (!addDeviceResponse.success) {
-        props.handleSnackbar({
-          message: addDeviceResponse.message,
-          type: 'error',
-        });
-        setLoadingSaveDevice(false);
-      } else {
-        setLoadingSaveDevice(false);
-        props.navigation.goBack();
+        const addDeviceResponse = await addDevice(
+          actualDevices,
+          loggedUser.email,
+        );
+        if (!addDeviceResponse.success) {
+          props.handleSnackbar({
+            message: addDeviceResponse.message,
+            type: 'error',
+          });
+          setLoadingSaveDevice(false);
+        } else {
+          setLoadingSaveDevice(false);
+          props.navigation.goBack();
+        }
+      } /* UPDATE DEVICE */ else {
+        const actualDevices = userDoc.user._data.devices;
+        const deviceIndex = actualDevices.findIndex(obj => obj.imei == imei);
+        if (deviceIndex != -1) {
+          actualDevices[deviceIndex] = device;
+
+          const addDeviceResponse = await addDevice(
+            actualDevices,
+            loggedUser.email,
+          );
+          if (!addDeviceResponse.success) {
+            props.handleSnackbar({
+              message: addDeviceResponse.message,
+              type: 'error',
+            });
+            setLoadingSaveDevice(false);
+          } else {
+            setLoadingSaveDevice(false);
+            props.navigation.goBack();
+          }
+        }
       }
     }
   }
@@ -108,8 +144,8 @@ export default function HandleDevices(props) {
         ) : (
           <Text
             style={generalStyles.textButton}
-            onPress={() => saveNewDevice()}>
-            PRONTO
+            onPress={() => saveOrUpdateDevice()}>
+            {!isEditingMode ? 'SALVAR' : 'ATUALIZAR'}
           </Text>
         )}
       </View>
@@ -185,14 +221,18 @@ export default function HandleDevices(props) {
           </View>
 
           <View
-            style={[generalStyles.textInputContainer, generalStyles.shadow]}>
+            style={[
+              generalStyles.textInputContainer,
+              generalStyles.shadow,
+              {backgroundColor: isEditingMode ? '#EEE' : '#FFF'},
+            ]}>
             <View style={generalStyles.row}>
               <Text style={generalStyles.secondaryLabel}>IMEI</Text>
               <CircleIconButton
                 buttonSize={24}
                 buttonColor="#FFF"
                 iconName="info"
-                iconSize={20}
+                iconSize={24}
                 haveShadow={false}
                 iconColor={colors.icon}
                 handleCircleIconButtonPress={() => showImeiInfo()}
@@ -201,6 +241,7 @@ export default function HandleDevices(props) {
             <View style={generalStyles.row}>
               <MaterialIcons name="badge" color={colors.icon} size={22} />
               <TextInput
+                editable={isEditingMode ? false : true}
                 value={imei}
                 ref={imeiRef}
                 onChangeText={text => setImei(text)}

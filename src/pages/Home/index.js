@@ -21,6 +21,7 @@ import storage from '@react-native-firebase/storage';
 import colors from '../../styles/colors.style';
 import {useIsFocused} from '@react-navigation/native';
 import brandImageArray from '../../utils/brandImageArray.utils';
+import {CircleIconButton} from '../../components';
 
 export default function Home(props) {
   const [loggedUser, setLoggedUser] = useState(null);
@@ -33,9 +34,11 @@ export default function Home(props) {
   const [uploadingProfilePicture, setUploadingProfilePicture] = useState(false);
   const [devices, setDevices] = useState([]);
 
+  const isPageFocused = useIsFocused();
+
   useEffect(() => {
     getCurrentUser();
-  }, [useIsFocused]);
+  }, [isPageFocused]);
 
   async function getCurrentUser() {
     let user = await currentUser();
@@ -159,26 +162,33 @@ export default function Home(props) {
           {backgroundColor: colors.background},
         ]}>
         <Image
-          style={{width: 40, height: 40, alignSelf: 'center'}}
+          style={{maxWidth: 60, height: 60, resizeMode: 'contain', alignSelf: 'center'}}
           source={brandImageArray(item.brand)}
         />
 
         <View>
           <View style={generalStyles.row}>
-              <Text style={[generalStyles.primaryLabel, {maxWidth: 140}]} numberOfLines={1}>
-                {item.brand} {item.model}
-              </Text>
+            <Text
+              style={[generalStyles.primaryLabel, {maxWidth: 140}]}
+              numberOfLines={1}>
+              {item.brand} {item.model}
+            </Text>
           </View>
 
           <View style={generalStyles.row}>
-            <Text style={[generalStyles.primaryLabel, {marginRight: 8}]}>Cor:</Text>
+            <Text style={[generalStyles.primaryLabel, {marginRight: 8}]}>
+              Cor:
+            </Text>
             <Text style={generalStyles.secondaryLabel}>{item.mainColor}</Text>
           </View>
 
           <View style={generalStyles.row}>
             <Text style={generalStyles.primaryLabel}>Imei:</Text>
             <Text
-              style={[generalStyles.secondaryLabel, {maxWidth: 80, marginLeft: 8}]}
+              style={[
+                generalStyles.secondaryLabel,
+                {maxWidth: 80, marginLeft: 8},
+              ]}
               numberOfLines={1}>
               {item.brand}
             </Text>
@@ -187,7 +197,7 @@ export default function Home(props) {
 
         <Text
           style={[generalStyles.textButton, {alignSelf: 'center'}]}
-          onPress={() => Alert.alert('Ainda não')}>
+          onPress={() => props.navigation.navigate('HandleDevices', {device: item})}>
           EDITAR
         </Text>
       </View>
@@ -223,7 +233,7 @@ export default function Home(props) {
           <Text style={generalStyles.titleDark}>Meus dispositivos</Text>
           <Text
             style={generalStyles.textButton}
-            onPress={() => props.navigation.navigate('HandleDevices')}>
+            onPress={() => props.navigation.navigate('HandleDevices', {device: null})}>
             ADICIONAR
           </Text>
         </View>
