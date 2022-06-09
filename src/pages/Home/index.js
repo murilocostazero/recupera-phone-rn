@@ -13,11 +13,8 @@ import styles from './styles';
 import {
   currentUser,
   changeDisplayName,
-  changeProfilePicture,
   getUserFromCollections,
 } from '../../utils/firebase.utils';
-import {launchImageLibrary} from 'react-native-image-picker';
-import storage from '@react-native-firebase/storage';
 import colors from '../../styles/colors.style';
 import {useIsFocused} from '@react-navigation/native';
 import brandImageArray from '../../utils/brandImageArray.utils';
@@ -75,58 +72,6 @@ export default function Home(props) {
     setEditingDisplayName(false);
   }
 
-  function selectImage() {
-    const options = {
-      maxWidth: 2000,
-      maxHeight: 2000,
-      storageOptions: {
-        skipBackup: true,
-        path: 'images',
-      },
-    };
-    launchImageLibrary(options, response => {
-      if (response.didCancel) {
-        console.log('User cancelled image picker');
-      } else if (response.error) {
-        console.log('ImagePicker Error: ', response.error);
-      } else if (response.customButton) {
-        console.log('User tapped custom button: ', response.customButton);
-      } else {
-        const source = {uri: response.assets[0].uri};
-        // console.log(source);
-        uploadImage(source);
-      }
-    });
-  }
-
-  async function uploadImage(image) {
-    const {uri} = image;
-    const reference = storage().ref(
-      'ProfilePictures/' + loggedUser.email + '.jpg',
-    );
-    setUploadingProfilePicture(true);
-    await reference.putFile(uri);
-    setUploadingProfilePicture(false);
-
-    getProfilePicture();
-  }
-
-  async function getProfilePicture() {
-    const url = await storage()
-      .ref('ProfilePictures/' + loggedUser.email + '.jpg')
-      .getDownloadURL();
-
-    let changedProfilePicture = await changeProfilePicture(url);
-    if (!changedProfilePicture.success) {
-      props.handleSnackbar({
-        message: 'Erro ao mudar foto de perfil',
-        type: 'error',
-      });
-    } else {
-      getCurrentUser();
-    }
-  }
-
   const DevicesListEmpty = () => {
     return (
       <View style={[generalStyles.row, {paddingVertical: 8}]}>
@@ -154,13 +99,12 @@ export default function Home(props) {
   };
 
   const renderDevices = ({item}) => {
-    let showAlertContainer = false;
     return (
       <View
         style={[
           styles.deviceContainer,
           generalStyles.shadow,
-          {backgroundColor: colors.background},
+          {backgroundColor: '#FFF'},
         ]}>
         <CircleIconButton
           buttonSize={24}
