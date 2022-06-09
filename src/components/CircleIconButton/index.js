@@ -17,7 +17,7 @@ export default function CircleIconButton(props) {
         borderRadius: props.buttonSize / 2,
         alignItems: 'center',
         justifyContent: 'center',
-      }, props.haveShadow ? generalStyles.shadow : {}]}>
+      }, props.haveShadow ? generalStyles.shadow : {}, props.style]}>
       <MaterialIcon
         name={props.iconName}
         size={props.iconSize}

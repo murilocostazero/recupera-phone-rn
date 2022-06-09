@@ -1,11 +1,5 @@
 import React, {useState, useRef, useEffect} from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  Alert,
-  ScrollView
-} from 'react-native';
+import {View, Text, TextInput, Alert, ScrollView, Switch} from 'react-native';
 import generalStyles from '../../styles/general.style';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import colors from '../../styles/colors.style';
@@ -28,7 +22,7 @@ export default function HandleDevices(props) {
   const [loadingSaveDevice, setLoadingSaveDevice] = useState(false);
   const [isEditingMode, setIsEditingMode] = useState(false);
   const [loadingRemovingDevice, setLoadingRemoveDevice] = useState(false);
-  const [copiedImei, setCopiedImei] = useState('');
+  const [hasAlert, setHasAlert] = useState(false);
 
   /* REFERENCES */
   const brandRef = useRef('brandRef');
@@ -55,6 +49,7 @@ export default function HandleDevices(props) {
     setModel(deviceReceived.model);
     setMainColor(deviceReceived.mainColor);
     setImei(deviceReceived.imei);
+    setHasAlert(deviceReceived.hasAlert);
   }
 
   function showImeiInfo() {
@@ -73,6 +68,7 @@ export default function HandleDevices(props) {
       model,
       mainColor,
       imei,
+      hasAlert,
     );
     if (!fieldsVerificationResponse.success) {
       props.handleSnackbar({
@@ -86,6 +82,7 @@ export default function HandleDevices(props) {
         model: model,
         mainColor: mainColor,
         imei: imei,
+        hasAlert: hasAlert,
       };
 
       //SAVE NEW
@@ -179,10 +176,13 @@ export default function HandleDevices(props) {
     }
   }
 
-  function copyToClipboard(stringToSave){
+  function copyToClipboard(stringToSave) {
     Clipboard.setString(stringToSave);
-    props.handleSnackbar({type: 'success', message: 'IMEI copiado para área de transferência'});
-  };
+    props.handleSnackbar({
+      type: 'success',
+      message: 'IMEI copiado para área de transferência',
+    });
+  }
 
   return (
     <View style={generalStyles.pageContainer}>
@@ -298,7 +298,7 @@ export default function HandleDevices(props) {
               />
               <CircleIconButton
                 buttonSize={24}
-                buttonColor='transparent'
+                buttonColor="transparent"
                 iconName="content-copy"
                 iconSize={22}
                 haveShadow={false}
@@ -306,6 +306,18 @@ export default function HandleDevices(props) {
                 handleCircleIconButtonPress={() => copyToClipboard(imei)}
               />
             </View>
+          </View>
+
+          <View style={[generalStyles.row, {padding: 8, marginVertical: 4, justifyContent: 'space-between'}]}>
+            <Text style={generalStyles.secondaryLabel}>
+              Sinalizar com alerta de roubo/furto
+            </Text>
+            <Switch
+              trackColor={{false: '#767577', true: colors.secondary}}
+              thumbColor={hasAlert ? colors.primary : '#f4f3f4'}
+              onValueChange={() => setHasAlert(!hasAlert)}
+              value={hasAlert}
+            />
           </View>
         </View>
       </ScrollView>

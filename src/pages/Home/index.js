@@ -154,6 +154,7 @@ export default function Home(props) {
   };
 
   const renderDevices = ({item}) => {
+    let showAlertContainer = false;
     return (
       <View
         style={[
@@ -161,12 +162,25 @@ export default function Home(props) {
           generalStyles.shadow,
           {backgroundColor: colors.background},
         ]}>
+        <CircleIconButton
+          buttonSize={24}
+          buttonColor="#FFF"
+          iconName={
+            item.hasAlert ? 'notification-important' : 'notifications-off'
+          }
+          iconSize={22}
+          haveShadow={true}
+          iconColor={item.hasAlert ? colors.secondary : colors.icon}
+          handleCircleIconButtonPress={() => console.log('Aqui leva pra área de notificações, assinatura de planos...')}
+          style={{position: 'absolute', top: 8, right: 8}}
+        />
         <Image
           style={{
             maxWidth: 60,
             height: 60,
             resizeMode: 'contain',
             alignSelf: 'center',
+            marginVertical: 4,
           }}
           source={brandImageArray(item.brand)}
         />
@@ -201,7 +215,10 @@ export default function Home(props) {
         </View>
 
         <Text
-          style={[generalStyles.textButton, {alignSelf: 'center'}]}
+          style={[
+            generalStyles.textButton,
+            {alignSelf: 'center', marginTop: 6},
+          ]}
           onPress={() =>
             props.navigation.navigate('HandleDevices', {device: item})
           }>
@@ -260,7 +277,9 @@ export default function Home(props) {
         <View style={styles.card}>
           <View style={[generalStyles.row, {justifyContent: 'space-between'}]}>
             <Text style={generalStyles.titleDark}>Buscar dispositivos</Text>
-            <Text style={generalStyles.textButton} onPress={() => props.navigation.navigate('SearchPage')}>
+            <Text
+              style={generalStyles.textButton}
+              onPress={() => props.navigation.navigate('SearchPage')}>
               BUSCAR
             </Text>
           </View>
