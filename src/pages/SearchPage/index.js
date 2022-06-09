@@ -24,11 +24,11 @@ export default function SearchPage(props) {
     // console.log(deviceFound)
     if (deviceFound.length < 1) {
       setDevice(null);
-      setLoadingSearch(false);
     } else {
       setDevice(deviceFound[0]);
-      setLoadingSearch(false);
     }
+    setLoadingSearch(false);
+    setQuery('');
   }
 
   const DeviceFound = () => {

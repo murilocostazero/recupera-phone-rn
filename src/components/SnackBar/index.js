@@ -20,7 +20,7 @@ export default function SnackBar(props) {
           <MaterialIcons name='error' color='#FFF' size={32} /> :
           props.snackbar.type == 'warning' ?
           <MaterialIcons name='warning' color='#FFF' size={32} /> :
-          <MaterialIcons name='success' color='#FFF' size={32} />
+          <MaterialIcons name='check' color='#FFF' size={32} />
       }
     </View>
   )

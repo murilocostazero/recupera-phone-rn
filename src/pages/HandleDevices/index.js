@@ -4,8 +4,7 @@ import {
   Text,
   TextInput,
   Alert,
-  ScrollView,
-  ActivityIndicator,
+  ScrollView
 } from 'react-native';
 import generalStyles from '../../styles/general.style';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -17,6 +16,7 @@ import {
   getUserFromCollections,
 } from '../../utils/firebase.utils';
 import {newDeviceFieldsVerification} from '../../utils/fieldsVerification.utils';
+import Clipboard from '@react-native-clipboard/clipboard';
 
 export default function HandleDevices(props) {
   /* STATES */
@@ -28,6 +28,7 @@ export default function HandleDevices(props) {
   const [loadingSaveDevice, setLoadingSaveDevice] = useState(false);
   const [isEditingMode, setIsEditingMode] = useState(false);
   const [loadingRemovingDevice, setLoadingRemoveDevice] = useState(false);
+  const [copiedImei, setCopiedImei] = useState('');
 
   /* REFERENCES */
   const brandRef = useRef('brandRef');
@@ -178,6 +179,11 @@ export default function HandleDevices(props) {
     }
   }
 
+  function copyToClipboard(stringToSave){
+    Clipboard.setString(stringToSave);
+    props.handleSnackbar({type: 'success', message: 'IMEI copiado para área de transferência'});
+  };
+
   return (
     <View style={generalStyles.pageContainer}>
       <Header
@@ -265,11 +271,11 @@ export default function HandleDevices(props) {
               <Text style={generalStyles.secondaryLabel}>IMEI</Text>
               <CircleIconButton
                 buttonSize={24}
-                buttonColor="#FFF"
+                buttonColor="transparent"
                 iconName="info"
                 iconSize={24}
                 haveShadow={false}
-                iconColor={colors.icon}
+                iconColor={colors.link}
                 handleCircleIconButtonPress={() => showImeiInfo()}
               />
             </View>
@@ -289,6 +295,15 @@ export default function HandleDevices(props) {
                   generalStyles.primaryLabel,
                   {marginLeft: 8},
                 ]}
+              />
+              <CircleIconButton
+                buttonSize={24}
+                buttonColor='transparent'
+                iconName="content-copy"
+                iconSize={22}
+                haveShadow={false}
+                iconColor={colors.secondary}
+                handleCircleIconButtonPress={() => copyToClipboard(imei)}
               />
             </View>
           </View>
