@@ -90,21 +90,33 @@ export default function HandleDevices(props) {
       //SAVE NEW
       if (!isEditingMode) {
         const actualDevices = userDoc.user._data.devices;
-        actualDevices.push(device);
+        //Verify if imei already exist
+        const deviceIndex = actualDevices.findIndex(obj => obj.imei == imei);
+        if (deviceIndex == -1) {
+          /* If imei doesnt exist */
+          actualDevices.push(device);
 
-        const addDeviceResponse = await addDevice(
-          actualDevices,
-          loggedUser.email,
-        );
-        if (!addDeviceResponse.success) {
+          const addDeviceResponse = await addDevice(
+            actualDevices,
+            loggedUser.email,
+          );
+          if (!addDeviceResponse.success) {
+            props.handleSnackbar({
+              message: addDeviceResponse.message,
+              type: 'error',
+            });
+            setLoadingSaveDevice(false);
+          } else {
+            setLoadingSaveDevice(false);
+            props.navigation.goBack();
+          }
+        } else {
+          /* Imei exists */
           props.handleSnackbar({
-            message: addDeviceResponse.message,
             type: 'error',
+            message: 'O imei informado já está em uso',
           });
           setLoadingSaveDevice(false);
-        } else {
-          setLoadingSaveDevice(false);
-          props.navigation.goBack();
         }
       } /* UPDATE DEVICE */ else {
         const actualDevices = userDoc.user._data.devices;
@@ -169,7 +181,9 @@ export default function HandleDevices(props) {
   return (
     <View style={generalStyles.pageContainer}>
       <Header
-        handleGoBackButtonPress={() => {(loadingSaveDevice ? {} : props.navigation.goBack())}}
+        handleGoBackButtonPress={() => {
+          loadingSaveDevice ? {} : props.navigation.goBack();
+        }}
         pageTitle="Dispositivos"
         loadingPrimaryButton={loadingSaveDevice}
         handlePrimaryButtonPress={() => saveOrUpdateDevice()}

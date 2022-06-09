@@ -12,6 +12,7 @@ export default function SearchPage(props) {
 
   async function searchDevice() {
       const deviceFound = await findDevice(query);
+      console.log(deviceFound)
       if(deviceFound.length < 1){
           setDevice(null);
       } else {
