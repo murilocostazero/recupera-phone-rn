@@ -1,5 +1,12 @@
 import React, {useEffect, useState} from 'react';
-import {View, Text, ScrollView, ActivityIndicator, Image} from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  ActivityIndicator,
+  Image,
+  Alert,
+} from 'react-native';
 import generalStyles from '../../styles/general.style';
 import {CircleIconButton, Header} from '../../components';
 import {
@@ -44,12 +51,26 @@ export default function UserPage(props) {
     }
   }
 
-  async function onLogout() {
-    const logoutResponse = await logout();
-    if (logoutResponse.success) {
-      props.onAuthStateChanged(null);
-    }
+  function onLogout() {
+    Alert.alert(
+      'Deseja sair?',
+      'Ao sair, as suas informações de login serão esquecidas.',
+      [
+        {
+          text: 'Cancelar',
+          onPress: () => console.log('Cancel Pressed'),
+          style: 'cancel',
+        },
+        {text: 'SAIR', onPress: async () => {
+          const logoutResponse = await logout();
+          if (logoutResponse.success) {
+            props.onAuthStateChanged(null);
+          }
+        }},
+      ],
+    );
   }
+
   function selectImage() {
     const options = {
       maxWidth: 2000,
@@ -138,9 +159,7 @@ export default function UserPage(props) {
           </View>
         </View>
 
-        <View style={styles.containerCard}>
-        
-        </View>
+        <View style={styles.containerCard}></View>
       </ScrollView>
     </View>
   );
