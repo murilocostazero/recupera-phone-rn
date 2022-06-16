@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   Image,
   Alert,
+  TouchableHighlight,
 } from 'react-native';
 import generalStyles from '../../styles/general.style';
 import {CircleIconButton, Header} from '../../components';
@@ -61,12 +62,15 @@ export default function UserPage(props) {
           onPress: () => console.log('Cancel Pressed'),
           style: 'cancel',
         },
-        {text: 'SAIR', onPress: async () => {
-          const logoutResponse = await logout();
-          if (logoutResponse.success) {
-            props.onAuthStateChanged(null);
-          }
-        }},
+        {
+          text: 'SAIR',
+          onPress: async () => {
+            const logoutResponse = await logout();
+            if (logoutResponse.success) {
+              props.onAuthStateChanged(null);
+            }
+          },
+        },
       ],
     );
   }
@@ -123,14 +127,22 @@ export default function UserPage(props) {
     }
   }
 
+  const MenuOption = (props) => {
+    return(
+      <TouchableHighlight style={{width: '100%', marginBottom: 16}} underlayColor='transparent' onPress={() => props.handleMenuOption()}>
+        <View style={[generalStyles.row, styles.menuOptionContainer]}>
+          <Text style={generalStyles.secondaryLabel}>{props.label}</Text>
+          <MaterialIcons name={props.iconName} size={32} color={colors.secondaryOpacity} />
+        </View>
+      </TouchableHighlight>
+    );
+  }
+
   return (
     <View style={generalStyles.pageContainer}>
       <Header
         handleGoBackButtonPress={() => props.navigation.goBack()}
-        pageTitle="Minhas informações"
         loadingPrimaryButton={false}
-        handlePrimaryButtonPress={() => onLogout()}
-        primaryButtonLabel="SAIR"
       />
 
       <ScrollView>
@@ -159,7 +171,12 @@ export default function UserPage(props) {
           </View>
         </View>
 
-        <View style={styles.containerCard}></View>
+        <View style={styles.containerCard}>
+          <MenuOption label="Minhas informações" iconName="edit" handleMenuOption={() => Alert.alert('Ainda não')} />
+          <MenuOption label="Meu plano" iconName="receipt-long" handleMenuOption={() => Alert.alert('Ainda não')} />
+          <MenuOption label="Configurações" iconName="settings" handleMenuOption={() => Alert.alert('Ainda não')} />
+          <MenuOption label="Sair da conta" iconName="logout" handleMenuOption={() => onLogout()} />
+        </View>
       </ScrollView>
     </View>
   );

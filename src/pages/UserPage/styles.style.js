@@ -21,6 +21,13 @@ const styles = StyleSheet.create({
     borderRadius: 112 / 2,
     resizeMode: 'cover',
   },
+  menuOptionContainer: {
+    backgroundColor: '#FAFAFA',
+    padding: 8,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'space-between'
+  }
 });
 
 export default styles;
