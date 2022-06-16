@@ -172,7 +172,7 @@ export default function UserPage(props) {
         </View>
 
         <View style={styles.containerCard}>
-          <MenuOption label="Minhas informações" iconName="edit" handleMenuOption={() => Alert.alert('Ainda não')} />
+          <MenuOption label="Minhas informações" iconName="edit" handleMenuOption={() => props.navigation.navigate('MyInfo')} />
           <MenuOption label="Meu plano" iconName="receipt-long" handleMenuOption={() => Alert.alert('Ainda não')} />
           <MenuOption label="Configurações" iconName="settings" handleMenuOption={() => Alert.alert('Ainda não')} />
           <MenuOption label="Sair da conta" iconName="logout" handleMenuOption={() => onLogout()} />

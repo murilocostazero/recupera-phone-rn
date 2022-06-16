@@ -83,10 +83,11 @@ export async function createInstitution(institution) {
               .collection('Users')
               .doc(institution.email)
               .set({
+                name: institution.name,
                 email: institution.email,
                 address: institution.address,
                 phone: institution.phone,
-                userType: 'institution'
+                userType: 'institution',
               })
               .then(() => {
                 userCreated = {
@@ -265,4 +266,27 @@ export async function findDevice(imei) {
     });
 
   return deviceFound;
+}
+
+export async function getAllInstitutions() {
+  let institutions = [];
+  await firestore()
+    .collection('Users')
+    // Filter results
+    .where('userType', '==', 'institution')
+    .get()
+    .then(async querySnapshot => {
+      if (querySnapshot._docs.length == 0) {
+        institutions = [];
+      } else {
+        await querySnapshot.forEach(documentSnapshot => {
+          institutions.push(documentSnapshot.data());
+        });
+      }
+    })
+    .catch(error => {
+      console.error(error);
+    });
+
+  return institutions;
 }

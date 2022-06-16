@@ -179,7 +179,7 @@ export default function Home(props) {
           underlayColor="transparent"
           onPress={() => props.navigation.navigate('UserPage')}>
           <View style={generalStyles.row}>
-            <Text style={[generalStyles.primaryLabel, {marginRight: 8}]}>
+            <Text numberOfLines={1} style={[generalStyles.primaryLabel, {marginRight: 8, maxWidth: 224}]}>
               Olá, {displayName}
             </Text>
             <View style={styles.profilePictureContainer}>
