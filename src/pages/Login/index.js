@@ -1,5 +1,12 @@
 import React, {useState, useRef} from 'react';
-import {View, Image, TextInput, Text, TouchableHighlight} from 'react-native';
+import {
+  View,
+  Image,
+  TextInput,
+  Text,
+  TouchableHighlight,
+  ScrollView,
+} from 'react-native';
 import generalStyles from '../../styles/general.style';
 import styles from './styles';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -57,6 +64,25 @@ export default function Login(props) {
       }
     }
   }
+
+  function changeHaveAccount() {
+    setHaveAccount(!haveAccount);
+    setDisplayName('');
+    setEmail('');
+    setPassword('');
+  }
+
+  const OrComponent = () => {
+    return (
+      <View style={styles.orContainer}>
+        <View style={styles.orLine} />
+        <Text style={[generalStyles.secondaryLabel, {marginHorizontal: 4}]}>
+          Ou
+        </Text>
+        <View style={styles.orLine} />
+      </View>
+    );
+  };
 
   return !haveAccount ? (
     <View style={[generalStyles.pageContainer, {justifyContent: 'center'}]}>
@@ -136,7 +162,7 @@ export default function Login(props) {
           <Text style={generalStyles.primaryLabel}>Não tem conta?</Text>
           <TouchableHighlight
             underlayColor="transparent"
-            onPress={() => setHaveAccount(!haveAccount)}
+            onPress={() => changeHaveAccount()}
             style={{marginLeft: 8}}>
             <Text style={[generalStyles.primaryLabel, {color: colors.link}]}>
               Cadastre-se
@@ -146,112 +172,130 @@ export default function Login(props) {
       </View>
     </View>
   ) : (
-    <View style={[generalStyles.pageContainer, {justifyContent: 'center'}]}>
-      <View
-        style={{
-          alignItems: 'stretch',
-          justifyContent: 'center',
-          padding: 8,
-        }}>
-        <View style={styles.logoContainer}>
-          <Image
-            source={require('../../assets/images/logo.png')}
-            style={styles.logo}
-          />
-        </View>
-        <View style={[generalStyles.textInputContainer, generalStyles.shadow]}>
-          <Text style={generalStyles.secondaryLabel}>Nome</Text>
-          <View style={generalStyles.row}>
-            <MaterialIcons name="person" color={colors.icon} size={22} />
-            <TextInput
-              value={displayName}
-              onChangeText={text => setDisplayName(text)}
-              onSubmitEditing={() => emailRef.current.focus()}
-              keyboardType="default"
-              placeholder="Fulano Fulanoso"
-              autoCapitalize="words"
-              placeholderTextColor={colors.icon}
-              style={[
-                generalStyles.textInput,
-                generalStyles.primaryLabel,
-                {marginLeft: 8},
-              ]}
-            />
-          </View>
-        </View>
-        <View style={[generalStyles.textInputContainer, generalStyles.shadow]}>
-          <Text style={generalStyles.secondaryLabel}>Email</Text>
-          <View style={generalStyles.row}>
-            <MaterialIcons name="email" color={colors.icon} size={22} />
-            <TextInput
-              value={email}
-              ref={emailRef}
-              onChangeText={text => setEmail(text)}
-              onSubmitEditing={() => passwordRef.current.focus()}
-              keyboardType="email-address"
-              placeholder="fulanofulanoso@gmail.com"
-              autoCapitalize="none"
-              placeholderTextColor={colors.icon}
-              style={[
-                generalStyles.textInput,
-                generalStyles.primaryLabel,
-                {marginLeft: 8},
-              ]}
-            />
-          </View>
-        </View>
-        <View style={[generalStyles.textInputContainer, generalStyles.shadow]}>
-          <Text style={generalStyles.secondaryLabel}>Senha</Text>
-          <View style={generalStyles.row}>
-            <MaterialIcons name="lock-open" color={colors.icon} size={22} />
-            <TextInput
-              ref={passwordRef}
-              value={password}
-              onChangeText={text => setPassword(text)}
-              secureTextEntry={isSecureTextEntry}
-              placeholder="senhasupersegura"
-              placeholderTextColor={colors.icon}
-              style={[
-                generalStyles.textInput,
-                generalStyles.primaryLabel,
-                {marginLeft: 8},
-              ]}
-            />
-            <CircleIconButton
-              buttonSize={30}
-              buttonColor="#FFF"
-              iconName={isSecureTextEntry ? 'visibility' : 'visibility-off'}
-              iconSize={26}
-              iconColor={colors.icon}
-              handleCircleIconButtonPress={() =>
-                setIsSecureTextEntry(!isSecureTextEntry)
-              }
-            />
-          </View>
-        </View>
-
-        <FlatButton
-          label="Cadastrar"
-          handleFlatButtonPress={() => onCreatingUser()}
-          isLoading={loadingLoginForm}
-        />
-
+    <ScrollView contentContainerStyle={{justifyContent: 'center', flex: 1}}>
+      <View style={[generalStyles.pageContainer, {justifyContent: 'center'}]}>
         <View
-          style={[
-            generalStyles.row,
-            {marginTop: 32, justifyContent: 'center'},
-          ]}>
-          <Text style={generalStyles.primaryLabel}>Já tem conta?</Text>
-          <Text
-            onPress={() => setHaveAccount(!haveAccount)}
+          style={{
+            alignItems: 'stretch',
+            justifyContent: 'center',
+            padding: 8,
+          }}>
+          <View style={styles.logoContainer}>
+            <Image
+              source={require('../../assets/images/logo.png')}
+              style={styles.logo}
+            />
+          </View>
+          <View
+            style={[generalStyles.textInputContainer, generalStyles.shadow]}>
+            <Text style={generalStyles.secondaryLabel}>Nome</Text>
+            <View style={generalStyles.row}>
+              <MaterialIcons name="person" color={colors.icon} size={22} />
+              <TextInput
+                value={displayName}
+                onChangeText={text => setDisplayName(text)}
+                onSubmitEditing={() => emailRef.current.focus()}
+                keyboardType="default"
+                placeholder="Fulano Fulanoso"
+                autoCapitalize="words"
+                placeholderTextColor={colors.icon}
+                style={[
+                  generalStyles.textInput,
+                  generalStyles.primaryLabel,
+                  {marginLeft: 8},
+                ]}
+              />
+            </View>
+          </View>
+          <View
+            style={[generalStyles.textInputContainer, generalStyles.shadow]}>
+            <Text style={generalStyles.secondaryLabel}>Email</Text>
+            <View style={generalStyles.row}>
+              <MaterialIcons name="email" color={colors.icon} size={22} />
+              <TextInput
+                value={email}
+                ref={emailRef}
+                onChangeText={text => setEmail(text)}
+                onSubmitEditing={() => passwordRef.current.focus()}
+                keyboardType="email-address"
+                placeholder="fulanofulanoso@gmail.com"
+                autoCapitalize="none"
+                placeholderTextColor={colors.icon}
+                style={[
+                  generalStyles.textInput,
+                  generalStyles.primaryLabel,
+                  {marginLeft: 8},
+                ]}
+              />
+            </View>
+          </View>
+          <View
+            style={[generalStyles.textInputContainer, generalStyles.shadow]}>
+            <Text style={generalStyles.secondaryLabel}>Senha</Text>
+            <View style={generalStyles.row}>
+              <MaterialIcons name="lock-open" color={colors.icon} size={22} />
+              <TextInput
+                ref={passwordRef}
+                value={password}
+                onChangeText={text => setPassword(text)}
+                secureTextEntry={isSecureTextEntry}
+                placeholder="senhasupersegura"
+                placeholderTextColor={colors.icon}
+                style={[
+                  generalStyles.textInput,
+                  generalStyles.primaryLabel,
+                  {marginLeft: 8},
+                ]}
+              />
+              <CircleIconButton
+                buttonSize={30}
+                buttonColor="#FFF"
+                iconName={isSecureTextEntry ? 'visibility' : 'visibility-off'}
+                iconSize={26}
+                iconColor={colors.icon}
+                handleCircleIconButtonPress={() =>
+                  setIsSecureTextEntry(!isSecureTextEntry)
+                }
+              />
+            </View>
+          </View>
+
+          <FlatButton
+            label="Cadastrar"
+            handleFlatButtonPress={() => onCreatingUser()}
+            isLoading={loadingLoginForm}
+          />
+
+          <View
             style={[
-              generalStyles.primaryLabel,
-              {color: colors.link, marginLeft: 8},
+              generalStyles.row,
+              {marginTop: 32, justifyContent: 'center'},
             ]}>
-            Fazer login
-          </Text>
+            <Text style={generalStyles.primaryLabel}>Já tem conta?</Text>
+            <Text
+              onPress={() => {
+                changeHaveAccount();
+              }}
+              style={[
+                generalStyles.primaryLabel,
+                {color: colors.link, marginLeft: 8},
+              ]}>
+              Fazer login
+            </Text>
+          </View>
         </View>
+        <OrComponent />
+        <Text style={[generalStyles.secondaryLabel, styles.institutionalLabel]}>
+          Clique{' '}
+          <Text
+            onPress={() => props.navigation.navigate('InstitutionalSingup')}
+            style={{color: colors.link}}>
+            aqui
+          </Text>{' '}
+          e faça o cadastro institucional se deseja cadastrar a delegacia ou
+          batalhão de polícia onde trabalha
+        </Text>
       </View>
-    </View>
+    </ScrollView>
   );
 }

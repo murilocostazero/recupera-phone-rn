@@ -66,6 +66,73 @@ export async function createUser(email, password, displayName) {
   return userCreated;
 }
 
+export async function createInstitution(institution) {
+  let userCreated = null;
+  await auth()
+    .createUserWithEmailAndPassword(institution.email, institution.password)
+    .then(async user => {
+      if (user.user) {
+        await user.user
+          .updateProfile({
+            displayName: institution.name,
+          })
+          .then(async userUpdated => {
+            console.log('User account created & signed in!');
+
+            await firestore()
+              .collection('Users')
+              .doc(institution.email)
+              .set({
+                email: institution.email,
+                address: institution.address,
+                phone: institution.phone,
+                userType: 'institution'
+              })
+              .then(() => {
+                userCreated = {
+                  success: true,
+                  message: 'Usuário criado e logado',
+                  user: user,
+                };
+              })
+              .catch(error => {
+                console.log(error);
+                userCreated = {
+                  success: false,
+                  message: 'Erro ao salvar usuário no banco',
+                };
+              });
+          });
+      }
+    })
+    .catch(error => {
+      if (error.code === 'auth/email-already-in-use') {
+        console.log('That email address is already in use!');
+        userCreated = {success: false, message: 'Este email já está em uso'};
+      } else if (error.code === 'auth/invalid-email') {
+        console.log('That email address is invalid!');
+        userCreated = {
+          success: false,
+          message: 'Este endereço de email é inválido',
+        };
+      } else if (error.code === 'auth/operation-not-allowed') {
+        console.log('Email/password accounts are not enabled');
+        userCreated = {
+          success: false,
+          message: 'Não é possível criar novas contas neste momento',
+        };
+      } else if (error.code === 'auth/weak-password') {
+        console.log('Password is not strong enough');
+        userCreated = {
+          success: false,
+          message: 'Esta senha não é forte o suficiente',
+        };
+      }
+    });
+
+  return userCreated;
+}
+
 export async function loginUser(email, password) {
   let loginResponse = null;
   await auth()

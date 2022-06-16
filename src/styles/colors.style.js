@@ -1,6 +1,8 @@
 const colors = {
     primary: '#320b86',
     secondary: '#9a67ea',
+    primaryOpacity: 'rgba(50, 11, 134, 0.6)',
+    secondaryOpacity: 'rgba(154, 103, 234, 0.6)',
     background: '#E9F0FB',
     icon: '#b0bec5',
     text: {
