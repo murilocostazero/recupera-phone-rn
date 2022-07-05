@@ -20,6 +20,7 @@ export async function createUser(email, password, displayName) {
               .set({
                 email: email,
                 devices: [],
+                userType: 'regular'
               })
               .then(() => {
                 userCreated = {
@@ -209,6 +210,22 @@ export function currentUser() {
   return auth().currentUser;
 }
 
+export async function updateUser(user){
+  let userUpdateResponse = null;
+  await firestore()
+  .collection('Users')
+  .doc(user.email)
+  .update(user)
+  .then(() => {
+    userUpdateResponse = {success: true, message: 'Usuário atualizado'};
+  })
+  .catch((error) => {
+    userUpdateResponse = {success: false, message: error};
+  });
+
+  return userUpdateResponse;
+}
+
 export async function getUserFromCollections(userEmail) {
   const user = await firestore().collection('Users').doc(userEmail).get();
   if (!user._exists) {
@@ -289,4 +306,19 @@ export async function getAllInstitutions() {
     });
 
   return institutions;
+}
+
+export async function getSingleInstitution(email){
+  let institution = null;
+  await firestore()
+  .collection('Users')
+  .doc(email)
+  .get()
+  .then(documentSnapshot => {
+    if (documentSnapshot.exists) {
+      institution = documentSnapshot.data();
+    }
+  });
+
+  return institution;
 }
