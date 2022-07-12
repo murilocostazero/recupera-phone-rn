@@ -1,5 +1,5 @@
 import React, {useState, useRef, useEffect} from 'react';
-import {View, Text, ScrollView, Switch, TextInput} from 'react-native';
+import {View, Text, ScrollView, Switch, TextInput, Alert} from 'react-native';
 import {Header, SelectInstitution} from '../../components';
 import colors from '../../styles/colors.style';
 import generalStyles from '../../styles/general.style';
@@ -59,8 +59,8 @@ export default function MyInfo(props) {
     }
   }
 
-  function changeName() {
-    console.log('Mudar apenas o nome e userType: regular');
+  async function changeName() {
+    Alert.alert('Ainda não!')
   }
 
   async function saveInfo() {
@@ -237,6 +237,18 @@ export default function MyInfo(props) {
             </View>
           )}
         </View>
+        {
+          !user || !user.agentInfo ?
+          <View /> :
+          <Text style={[generalStyles.primaryLabel, {
+            backgroundColor: user.agentInfo.isAgentAuthStatus == 'pending' ? colors.warning : user.agentInfo.isAgentAuthStatus == 'denied' ? colors.error : colors.success,
+            padding: 8,
+            borderRadius: 8,
+            alignItems: 'center',
+            justifyContent: 'center',
+            textAlign: 'center'
+          }]}>Status da autorização: {user.agentInfo.isAgentAuthStatus == 'pending' ? 'Pendente' : user.agentInfo.isAgentAuthStatus == 'denied' ? 'Negado' : 'Ativo'}</Text>
+        }
       </ScrollView>
     </View>
   );

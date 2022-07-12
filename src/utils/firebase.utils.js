@@ -20,7 +20,7 @@ export async function createUser(email, password, displayName) {
               .set({
                 email: email,
                 devices: [],
-                userType: 'regular'
+                userType: 'regular',
               })
               .then(() => {
                 userCreated = {
@@ -89,6 +89,7 @@ export async function createInstitution(institution) {
                 address: institution.address,
                 phone: institution.phone,
                 userType: 'institution',
+                notifications: [],
               })
               .then(() => {
                 userCreated = {
@@ -210,20 +211,113 @@ export function currentUser() {
   return auth().currentUser;
 }
 
-export async function updateUser(user){
+export async function updateUser(user) {
   let userUpdateResponse = null;
   await firestore()
-  .collection('Users')
-  .doc(user.email)
-  .update(user)
-  .then(() => {
-    userUpdateResponse = {success: true, message: 'Usuário atualizado'};
-  })
-  .catch((error) => {
-    userUpdateResponse = {success: false, message: error};
-  });
+    .collection('Users')
+    .doc(user.email)
+    .update(user)
+    .then(async () => {
+      //Pegando a instituição desejada
+      const requestedIntitution = await getSingleInstitution(
+        user.agentInfo.institution,
+      );
+      const localNotifications = requestedIntitution.notifications;
+      /*Montando uma notificação com o nome do usuário, a matrícula e o serviço*/
+      const notification = {
+        email: user.email,
+        registrationNumber: user.agentInfo.registrationNumber,
+        job: user.agentInfo.job,
+      };
+      localNotifications.push(notification);
+
+      await firestore()
+        .collection('Users')
+        .doc(requestedIntitution.email)
+        .update({
+          notifications: localNotifications,
+        })
+        .then(() => {
+          userUpdateResponse = {success: true, message: 'Usuário atualizado'};
+        })
+        .catch(error => {
+          console.error('Update nas notificações', error);
+          userUpdateResponse = {success: false, message: error};
+        });
+    })
+    .catch(error => {
+      console.error('Update no usuário', error);
+      userUpdateResponse = {success: false, message: error};
+    });
 
   return userUpdateResponse;
+}
+
+export async function changeAgentAuthStatus(user, status) {
+  let agentAuthStatus = null;
+  const userFromCollection = await getUserFromCollections(user.email);
+  if (!userFromCollection.success) {
+    agentAuthStatus = {success: false, message: 'Erro ao buscar usuário'};
+  } else {
+    const localUser = userFromCollection.user._data;
+    let newAgentInfo = {
+      institution: localUser.agentInfo.institution,
+      isAgentAuthStatus: status,
+      job: localUser.agentInfo.job,
+      registrationNumber: localUser.agentInfo.registrationNumber,
+    };
+
+    await firestore()
+      .collection('Users')
+      .doc(user.email)
+      .update({
+        agentInfo: newAgentInfo,
+      })
+      .then(async () => {
+        //Remover notificação
+        //Buscar instituição
+        const institutionToRemoveNotification = await getSingleInstitution(
+          localUser.agentInfo.institution,
+        );
+        if (!institutionToRemoveNotification) {
+          agentAuthStatus = {
+            success: false,
+            message:
+              'Não foi possível encontrar instituição para remover notificação',
+          };
+        } else {
+          const institutionNotifications =
+            institutionToRemoveNotification.notifications;
+          //Achar notificação
+          const notifiationIndex = institutionNotifications.findIndex(
+            object => {
+              return object.email == localUser.email;
+            },
+          );
+
+          if (notifiationIndex != -1) {
+            //Remover notificação
+            institutionNotifications.splice(notifiationIndex, 1);
+            //Atualizar
+            await firestore()
+              .collection('Users')
+              .doc(institutionToRemoveNotification.email)
+              .update({
+                notifications: institutionNotifications,
+              })
+              .then(() => {agentAuthStatus = {success: true}})
+              .catch(error => {
+                agentAuthStatus = {success: false, message: error};
+              });
+          }
+        }
+      })
+      .catch(error => {
+        agentAuthStatus = {success: false, message: error};
+        console.error(error);
+      });
+  }
+  return agentAuthStatus;
 }
 
 export async function getUserFromCollections(userEmail) {
@@ -308,17 +402,17 @@ export async function getAllInstitutions() {
   return institutions;
 }
 
-export async function getSingleInstitution(email){
+export async function getSingleInstitution(email) {
   let institution = null;
   await firestore()
-  .collection('Users')
-  .doc(email)
-  .get()
-  .then(documentSnapshot => {
-    if (documentSnapshot.exists) {
-      institution = documentSnapshot.data();
-    }
-  });
+    .collection('Users')
+    .doc(email)
+    .get()
+    .then(documentSnapshot => {
+      if (documentSnapshot.exists) {
+        institution = documentSnapshot.data();
+      }
+    });
 
   return institution;
 }

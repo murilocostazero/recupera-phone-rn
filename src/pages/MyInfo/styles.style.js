@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import colors from '../../styles/colors.style';
 
 const styles = StyleSheet.create({
     optionContainer: {

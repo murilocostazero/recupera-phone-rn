@@ -12,7 +12,6 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import styles from './styles';
 import {
   currentUser,
-  changeDisplayName,
   getUserFromCollections,
 } from '../../utils/firebase.utils';
 import colors from '../../styles/colors.style';
@@ -23,13 +22,10 @@ import {CircleIconButton} from '../../components';
 export default function Home(props) {
   const [loggedUser, setLoggedUser] = useState(null);
   const [userDoc, setUserDoc] = useState(null);
-  const [editingDisplayName, setEditingDisplayName] = useState(false);
   const [displayName, setDisplayName] = useState('');
-  const [loadingDisplayNameUpdate, setLoadingDisplayNameUpdate] =
-    useState(false);
   const [profilePicture, setProfilePicture] = useState(null);
-  const [uploadingProfilePicture, setUploadingProfilePicture] = useState(false);
   const [devices, setDevices] = useState([]);
+  const [haveNotifications, setHaveNotifications] = useState(false);
 
   const isPageFocused = useIsFocused();
 
@@ -54,22 +50,10 @@ export default function Home(props) {
     } else {
       setUserDoc(user.user._data);
       setDevices(user.user._data.devices);
+      if(user.user._data.notifications && user.user._data.notifications.length > 0){
+        setHaveNotifications(true);
+      }
     }
-  }
-
-  async function updateDisplayName() {
-    if (displayName.length < 3) {
-      props.handleSnackbar({
-        message: 'Nome não pode conter menos de 3 caracteres',
-        type: 'warning',
-      });
-    } else {
-      setLoadingDisplayNameUpdate(true);
-      const updatedDisplayName = await changeDisplayName(displayName);
-      setLoadingDisplayNameUpdate(false);
-    }
-    getCurrentUser();
-    setEditingDisplayName(false);
   }
 
   const DevicesListEmpty = () => {
@@ -115,7 +99,11 @@ export default function Home(props) {
           iconSize={22}
           haveShadow={true}
           iconColor={item.hasAlert ? colors.secondary : colors.icon}
-          handleCircleIconButtonPress={() => console.log('Aqui leva pra área de notificações, assinatura de planos...')}
+          handleCircleIconButtonPress={() =>
+            console.log(
+              'Aqui leva pra área de notificações, assinatura de planos...',
+            )
+          }
           style={{position: 'absolute', top: 8, right: 8}}
         />
         <Image
@@ -174,12 +162,27 @@ export default function Home(props) {
 
   return (
     <View style={generalStyles.pageContainer}>
-      <View style={[generalStyles.row, {justifyContent: 'flex-end'}]}>
+      <View style={[generalStyles.row, {justifyContent: 'space-between'}]}>
+        <CircleIconButton
+          buttonSize={32}
+          buttonColor='#FFF'
+          iconName="notifications"
+          iconSize={28}
+          haveShadow={true}
+          iconColor={colors.primary}
+          handleCircleIconButtonPress={() => props.navigation.navigate('Notifications', {user: userDoc})}
+          isNotificationsButton={haveNotifications}
+        />
         <TouchableHighlight
           underlayColor="transparent"
           onPress={() => props.navigation.navigate('UserPage')}>
           <View style={generalStyles.row}>
-            <Text numberOfLines={1} style={[generalStyles.primaryLabel, {marginRight: 8, maxWidth: 224}]}>
+            <Text
+              numberOfLines={1}
+              style={[
+                generalStyles.primaryLabel,
+                {marginRight: 8, maxWidth: 224},
+              ]}>
               Olá, {displayName}
             </Text>
             <View style={styles.profilePictureContainer}>
