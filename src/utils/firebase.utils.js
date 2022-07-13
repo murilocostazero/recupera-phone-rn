@@ -21,6 +21,7 @@ export async function createUser(email, password, displayName) {
                 email: email,
                 devices: [],
                 userType: 'regular',
+                notifications: []
               })
               .then(() => {
                 userCreated = {
@@ -212,6 +213,7 @@ export function currentUser() {
 }
 
 export async function updateUser(user) {
+//DEPOIS MUDAR NOME DESSE MÉTODO. NÃO TEM NADA A VER COM O QUE ELE FAZ
   let userUpdateResponse = null;
   await firestore()
     .collection('Users')
@@ -225,10 +227,9 @@ export async function updateUser(user) {
       const localNotifications = requestedIntitution.notifications;
       /*Montando uma notificação com o nome do usuário, a matrícula e o serviço*/
       const notification = {
-        email: user.email,
-        registrationNumber: user.agentInfo.registrationNumber,
-        job: user.agentInfo.job,
-      };
+        message: 'O usuário ' + user.email + ', de matrícula ' +user.agentInfo.registrationNumber+', está tentando se cadastrar nesta instituição no cargo de ' +user.agentInfo.job+'.',
+        sender: user
+      }
       localNotifications.push(notification);
 
       await firestore()
@@ -253,6 +254,30 @@ export async function updateUser(user) {
   return userUpdateResponse;
 }
 
+export async function addUserNotifications(notification, userEmail){
+  let addNotificationResponse = null;
+
+  const userFound = await getUserFromCollections(userEmail);
+  if(!userFound.success){
+    addNotificationResponse = {success: false, message: 'Usuário não encontrado'}
+  } else {
+    const localNotifications = userFound.user._data.notifications;
+
+    localNotifications.push({message: notification, sender: userFound.user._data.agentInfo.institution});
+
+    await firestore()
+      .collection('Users')
+      .doc(user.email)
+      .update({
+        notifications: localNotifications,
+      })
+      .then(() => { addNotificationResponse = {success: true} })
+      .catch((error) => { addNotificationResponse = {success: false, message: error} });
+  }
+
+  return addNotificationResponse;
+}
+
 export async function changeAgentAuthStatus(user, status) {
   let agentAuthStatus = null;
   const userFromCollection = await getUserFromCollections(user.email);
@@ -267,11 +292,17 @@ export async function changeAgentAuthStatus(user, status) {
       registrationNumber: localUser.agentInfo.registrationNumber,
     };
 
+    //Criar a notificação
+    const localNotifications = localUser.notifications;
+    const notificationMessage = localUser.agentInfo.institution + ( status== 'denied' ? ' negou ' : ' autorizou ' ) + 'a sua solicitação de alteração de conta e asssociação.';
+    localNotifications.push({message: notificationMessage, sender: localUser.agentInfo.institution});
+
     await firestore()
       .collection('Users')
       .doc(user.email)
       .update({
         agentInfo: newAgentInfo,
+        notifications: localNotifications
       })
       .then(async () => {
         //Remover notificação
@@ -289,15 +320,15 @@ export async function changeAgentAuthStatus(user, status) {
           const institutionNotifications =
             institutionToRemoveNotification.notifications;
           //Achar notificação
-          const notifiationIndex = institutionNotifications.findIndex(
+          const notificationIndex = institutionNotifications.findIndex(
             object => {
-              return object.email == localUser.email;
+              return object.sender.email == localUser.email;
             },
           );
 
-          if (notifiationIndex != -1) {
+          if (notificationIndex != -1) {
             //Remover notificação
-            institutionNotifications.splice(notifiationIndex, 1);
+            institutionNotifications.splice(notificationIndex, 1);
             //Atualizar
             await firestore()
               .collection('Users')

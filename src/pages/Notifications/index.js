@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {View, Text, FlatList, TouchableHighlight, Image} from 'react-native';
 import generalStyles from '../../styles/general.style';
-import {Header} from '../../components';
+import {FlatButton, Header} from '../../components';
 import styles from './styles.style';
 import colors from '../../styles/colors.style';
 import {
@@ -16,7 +16,7 @@ export default function Notifications(props) {
   useEffect(() => {
     // console.log(props.route.params.user);
     getUser(props.route.params.user.email);
-  }, [user]);
+  }, []);
 
   async function getUser(email) {
     const userResponse = await getSingleInstitution(email);
@@ -65,20 +65,18 @@ export default function Notifications(props) {
     return (
       <View style={[styles.notificationContainer, generalStyles.shadow]}>
         <Text style={[generalStyles.secondaryLabel, styles.notificationText]}>
-          O usuário <Text style={styles.textEmphasis}>{item.email}</Text>, de
-          matrícula{' '}
-          <Text style={styles.textEmphasis}>{item.registrationNumber}</Text>,
-          está tentando se cadastrar nesta instituição no cargo de{' '}
-          <Text style={styles.textEmphasis}>{item.job}</Text>.
+          {item.message}
         </Text>
-        <View
+        {
+          user.userType == 'institution' ?
+          <View
           style={[
             generalStyles.row,
             {justifyContent: 'space-between', marginVertical: 8},
           ]}>
           <TouchableHighlight
             underlayColor="transparent"
-            onPress={() => authorizeRequest(item, 'denied')}
+            onPress={() => authorizeRequest(item.sender, 'denied')}
             style={[
               styles.notificationButton,
               {backgroundColor: colors.secondaryOpacity},
@@ -89,7 +87,7 @@ export default function Notifications(props) {
           </TouchableHighlight>
           <TouchableHighlight
             underlayColor="transparent"
-            onPress={() => authorizeRequest(item, 'authorized')}
+            onPress={() => authorizeRequest(item.sender, 'authorized')}
             style={[
               styles.notificationButton,
               {backgroundColor: colors.primary},
@@ -98,7 +96,9 @@ export default function Notifications(props) {
               <Text style={styles.notificationButtonText}>AUTORIZAR</Text>
             </View>
           </TouchableHighlight>
-        </View>
+        </View> :
+        <FlatButton label='Ok' labelColor='#FFF' buttonColor={colors.secondary} height={30} handleFlatButtonPress={() => {}} isLoading={false} style={{marginTop: 16, width: 112, alignSelf: 'center'}} />
+        }
       </View>
     );
   };
@@ -117,7 +117,7 @@ export default function Notifications(props) {
         data={!user ? [] : user.notifications}
         renderItem={renderNotifications}
         ListEmptyComponent={EmptyNotifications}
-        keyExtractor={item => item.registrationNumber}
+        keyExtractor={item => item.message}
         extraData={user}
         style={{margin: 8, marginTop: 32}}
         contentContainerStyle={{padding: 8}}
