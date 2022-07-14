@@ -12,6 +12,7 @@ import {
   getSingleInstitution,
   getUserFromCollections,
   requestUserTypeChange,
+  foundUserByRegistrationNumberAndInstitution,
 } from '../../utils/firebase.utils';
 
 export default function MyInfo(props) {
@@ -44,14 +45,21 @@ export default function MyInfo(props) {
       });
     } else {
       setUser(userCollectionResponse.user._data);
-      if(userCollectionResponse.user._data.agentInfo){
+      if (userCollectionResponse.user._data.agentInfo) {
         setIsAgentAccount(true);
         setJob(userCollectionResponse.user._data.agentInfo.job);
-        setRegistrationNumber(userCollectionResponse.user._data.agentInfo.registrationNumber);
-        
-        const institutionGot = await getSingleInstitution(userCollectionResponse.user._data.agentInfo.institution);
-        if(!institutionGot){
-          props.handleSnackbar({type: 'error', message: 'Instituição não encontrada'});
+        setRegistrationNumber(
+          userCollectionResponse.user._data.agentInfo.registrationNumber,
+        );
+
+        const institutionGot = await getSingleInstitution(
+          userCollectionResponse.user._data.agentInfo.institution,
+        );
+        if (!institutionGot) {
+          props.handleSnackbar({
+            type: 'error',
+            message: 'Instituição não encontrada',
+          });
         } else {
           setSelectedInstitution(institutionGot);
         }
@@ -60,7 +68,7 @@ export default function MyInfo(props) {
   }
 
   async function changeName() {
-    Alert.alert('Ainda não!')
+    Alert.alert('Ainda não!');
   }
 
   async function saveInfo() {
@@ -89,38 +97,53 @@ export default function MyInfo(props) {
       });
     } else {
       setLoadingSaveInfo(true);
-      //Primeiro alterar o nome
-      const displayNameUpdateResponse = await changeDisplayName(name);
-      if (!displayNameUpdateResponse.success) {
-        props.handleSnackbar({
-          type: 'error',
-          message: 'Erro ao alterar o nome',
-        });
+      //Verifica se já existe um usuário utilizando uma combinação de instituição e matricula
+      const foundExistingUser =
+        await foundUserByRegistrationNumberAndInstitution(
+          registrationNumber,
+          selectedInstitution.email,
+        );
+      if (foundExistingUser.success) {
         setLoadingSaveInfo(false);
+        props.handleSnackbar({
+          type: 'warning',
+          message:
+            'Já existe um usuário nessa instituição com a matrícula informada',
+        });
       } else {
-        //Pegar o usuário, montar ele todo e alterar
-        const userToUpdate = {
-          email: user.email,
-          devices: user.devices,
-          userType: 'agent',
-          agentInfo: {
-            isAgentAuthStatus: 'pending',
-            registrationNumber: registrationNumber,
-            job: job,
-            institution: selectedInstitution.email,
-          },
-        };
-
-        const userUpdateResponse = await requestUserTypeChange(userToUpdate);
-        if (!userUpdateResponse.success) {
+        //Primeiro alterar o nome
+        const displayNameUpdateResponse = await changeDisplayName(name);
+        if (!displayNameUpdateResponse.success) {
           props.handleSnackbar({
             type: 'error',
-            message: 'Erro ao atualizar usuário',
+            message: 'Erro ao alterar o nome',
           });
           setLoadingSaveInfo(false);
         } else {
-          setLoadingSaveInfo(false);
-          props.navigation.goBack();
+          //Pegar o usuário, montar ele todo e alterar
+          const userToUpdate = {
+            email: user.email,
+            devices: user.devices,
+            userType: 'agent',
+            agentInfo: {
+              isAgentAuthStatus: 'pending',
+              registrationNumber: registrationNumber,
+              job: job,
+              institution: selectedInstitution.email,
+            },
+          };
+
+          const userUpdateResponse = await requestUserTypeChange(userToUpdate);
+          if (!userUpdateResponse.success) {
+            props.handleSnackbar({
+              type: 'error',
+              message: 'Erro ao atualizar usuário',
+            });
+            setLoadingSaveInfo(false);
+          } else {
+            setLoadingSaveInfo(false);
+            props.navigation.goBack();
+          }
         }
       }
     }
@@ -237,18 +260,34 @@ export default function MyInfo(props) {
             </View>
           )}
         </View>
-        {
-          !user || !user.agentInfo ?
-          <View /> :
-          <Text style={[generalStyles.primaryLabel, {
-            backgroundColor: user.agentInfo.isAgentAuthStatus == 'pending' ? colors.warning : user.agentInfo.isAgentAuthStatus == 'denied' ? colors.error : colors.success,
-            padding: 8,
-            borderRadius: 8,
-            alignItems: 'center',
-            justifyContent: 'center',
-            textAlign: 'center'
-          }]}>Status da autorização: {user.agentInfo.isAgentAuthStatus == 'pending' ? 'Pendente' : user.agentInfo.isAgentAuthStatus == 'denied' ? 'Negado' : 'Ativo'}</Text>
-        }
+        {!user || !user.agentInfo ? (
+          <View />
+        ) : (
+          <Text
+            style={[
+              generalStyles.primaryLabel,
+              {
+                backgroundColor:
+                  user.agentInfo.isAgentAuthStatus == 'pending'
+                    ? colors.warning
+                    : user.agentInfo.isAgentAuthStatus == 'denied'
+                    ? colors.error
+                    : colors.success,
+                padding: 8,
+                borderRadius: 8,
+                alignItems: 'center',
+                justifyContent: 'center',
+                textAlign: 'center',
+              },
+            ]}>
+            Status da autorização:{' '}
+            {user.agentInfo.isAgentAuthStatus == 'pending'
+              ? 'Pendente'
+              : user.agentInfo.isAgentAuthStatus == 'denied'
+              ? 'Negado'
+              : 'Ativo'}
+          </Text>
+        )}
       </ScrollView>
     </View>
   );

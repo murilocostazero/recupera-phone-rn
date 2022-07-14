@@ -21,7 +21,7 @@ export async function createUser(email, password, displayName) {
                 email: email,
                 devices: [],
                 userType: 'regular',
-                notifications: []
+                notifications: [],
               })
               .then(() => {
                 userCreated = {
@@ -226,9 +226,16 @@ export async function requestUserTypeChange(user) {
       const localNotifications = requestedIntitution.notifications;
       /*Montando uma notificação com o nome do usuário, a matrícula e o serviço*/
       const notification = {
-        message: 'O usuário ' + user.email + ', de matrícula ' +user.agentInfo.registrationNumber+', está tentando se cadastrar nesta instituição no cargo de ' +user.agentInfo.job+'.',
-        sender: user
-      }
+        message:
+          'O usuário ' +
+          user.email +
+          ', de matrícula ' +
+          user.agentInfo.registrationNumber +
+          ', está tentando se cadastrar nesta instituição no cargo de ' +
+          user.agentInfo.job +
+          '.',
+        sender: user,
+      };
       localNotifications.push(notification);
 
       await firestore()
@@ -253,16 +260,22 @@ export async function requestUserTypeChange(user) {
   return userUpdateResponse;
 }
 
-export async function addUserNotifications(notification, userEmail){
+export async function addUserNotifications(notification, userEmail) {
   let addNotificationResponse = null;
 
   const userFound = await getUserFromCollections(userEmail);
-  if(!userFound.success){
-    addNotificationResponse = {success: false, message: 'Usuário não encontrado'}
+  if (!userFound.success) {
+    addNotificationResponse = {
+      success: false,
+      message: 'Usuário não encontrado',
+    };
   } else {
     const localNotifications = userFound.user._data.notifications;
 
-    localNotifications.push({message: notification, sender: userFound.user._data.agentInfo.institution});
+    localNotifications.push({
+      message: notification,
+      sender: userFound.user._data.agentInfo.institution,
+    });
 
     await firestore()
       .collection('Users')
@@ -270,27 +283,32 @@ export async function addUserNotifications(notification, userEmail){
       .update({
         notifications: localNotifications,
       })
-      .then(() => { addNotificationResponse = {success: true} })
-      .catch((error) => { addNotificationResponse = {success: false, message: error} });
+      .then(() => {
+        addNotificationResponse = {success: true};
+      })
+      .catch(error => {
+        addNotificationResponse = {success: false, message: error};
+      });
   }
 
   return addNotificationResponse;
 }
 
-export async function removeUserNotification(userEmail, notificationContent){
+export async function removeUserNotification(userEmail, notificationContent) {
   let removeNotificationResponse = null;
   const currentUser = await getUserFromCollections(userEmail);
-  if(!currentUser.success){
-    removeNotificationResponse = {success: false, message: 'Email informado não corresponde a nenhum usuário'};
+  if (!currentUser.success) {
+    removeNotificationResponse = {
+      success: false,
+      message: 'Email informado não corresponde a nenhum usuário',
+    };
   } else {
     const currentNotifications = currentUser.user._data.notifications;
-    const notificationIndex = currentNotifications.findIndex(
-      object => {
-        return object.message == notificationContent.message;
-      },
-    );
+    const notificationIndex = currentNotifications.findIndex(object => {
+      return object.message == notificationContent.message;
+    });
 
-    if(notificationIndex != -1){
+    if (notificationIndex != -1) {
       //Remover notificação
       currentNotifications.splice(notificationIndex, 1);
       //Atualizar
@@ -300,14 +318,18 @@ export async function removeUserNotification(userEmail, notificationContent){
         .update({
           notifications: currentNotifications,
         })
-        .then(() => {removeNotificationResponse = {success: true}})
+        .then(() => {
+          removeNotificationResponse = {success: true};
+        })
         .catch(error => {
           removeNotificationResponse = {success: false, message: error};
         });
     } else {
-      removeNotificationResponse = {success: false, message: 'Notificação não encontrada'}
+      removeNotificationResponse = {
+        success: false,
+        message: 'Notificação não encontrada',
+      };
     }
-
   }
   return removeNotificationResponse;
 }
@@ -328,15 +350,21 @@ export async function changeAgentAuthStatus(user, status) {
 
     //Criar a notificação
     const localNotifications = localUser.notifications;
-    const notificationMessage = localUser.agentInfo.institution + ( status== 'denied' ? ' negou ' : ' autorizou ' ) + 'a sua solicitação de alteração de conta e associação.';
-    localNotifications.push({message: notificationMessage, sender: localUser.agentInfo.institution});
+    const notificationMessage =
+      localUser.agentInfo.institution +
+      (status == 'denied' ? ' negou ' : ' autorizou ') +
+      'a sua solicitação de alteração de conta e associação.';
+    localNotifications.push({
+      message: notificationMessage,
+      sender: localUser.agentInfo.institution,
+    });
 
     await firestore()
       .collection('Users')
       .doc(user.email)
       .update({
         agentInfo: newAgentInfo,
-        notifications: localNotifications
+        notifications: localNotifications,
       })
       .then(async () => {
         //Remover notificação
@@ -370,7 +398,9 @@ export async function changeAgentAuthStatus(user, status) {
               .update({
                 notifications: institutionNotifications,
               })
-              .then(() => {agentAuthStatus = {success: true}})
+              .then(() => {
+                agentAuthStatus = {success: true};
+              })
               .catch(error => {
                 agentAuthStatus = {success: false, message: error};
               });
@@ -480,4 +510,30 @@ export async function getSingleInstitution(email) {
     });
 
   return institution;
+}
+
+export async function foundUserByRegistrationNumberAndInstitution(
+  registrationNumber,
+  institution,
+) {
+  let foundExistingUser = null;
+  await firestore()
+    .collection('Users')
+    .get()
+    .then(querySnapshot => {
+      querySnapshot.forEach(documentSnapshot => {
+        const singleUser = documentSnapshot.data();
+        if (!singleUser.agentInfo) return;
+        if (
+          singleUser.agentInfo.institution == institution &&
+          singleUser.agentInfo.registrationNumber == registrationNumber
+        ) {
+          //Retorna true se encontrar
+          foundExistingUser = {success: true};
+        } else {
+          foundExistingUser = {success: false};
+        }
+      });
+    });
+  return foundExistingUser;
 }
