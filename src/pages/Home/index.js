@@ -6,14 +6,12 @@ import {
   TouchableHighlight,
   FlatList,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import generalStyles from '../../styles/general.style';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import styles from './styles';
-import {
-  currentUser,
-  getUserFromCollections,
-} from '../../utils/firebase.utils';
+import {currentUser, getUserFromCollections} from '../../utils/firebase.utils';
 import colors from '../../styles/colors.style';
 import {useIsFocused} from '@react-navigation/native';
 import brandImageArray from '../../utils/brandImageArray.utils';
@@ -26,6 +24,7 @@ export default function Home(props) {
   const [profilePicture, setProfilePicture] = useState(null);
   const [devices, setDevices] = useState([]);
   const [haveNotifications, setHaveNotifications] = useState(false);
+  const [loadingUserData, setLoadingUserData] = useState(false);
 
   const isPageFocused = useIsFocused();
 
@@ -34,7 +33,7 @@ export default function Home(props) {
   }, [isPageFocused]);
 
   async function getCurrentUser() {
-    let user = await currentUser();
+    const user = await currentUser();
     setLoggedUser(user);
     setDisplayName(user.displayName == null ? '' : user.displayName);
     setProfilePicture(user.photoURL);
@@ -44,15 +43,21 @@ export default function Home(props) {
   }
 
   async function getUserDoc(userEmail) {
+    setLoadingUserData(true);
     const user = await getUserFromCollections(userEmail);
     if (!user.success) {
+      setLoadingUserData(false);
       props.handleSnackbar({type: 'error', message: 'Usuário não encontrado'});
     } else {
       setUserDoc(user.user._data);
       setDevices(user.user._data.devices);
-      if(user.user._data.notifications && user.user._data.notifications.length > 0){
+      if (
+        user.user._data.notifications &&
+        user.user._data.notifications.length > 0
+      ) {
         setHaveNotifications(true);
       }
+      setLoadingUserData(false);
     }
   }
 
@@ -160,17 +165,23 @@ export default function Home(props) {
     );
   };
 
-  return (
+  return loadingUserData ? (
+    <View style={[generalStyles.pageContainer, {justifyContent: 'center'}]}>
+      <ActivityIndicator size="large" color={colors.secondary} />
+    </View>
+  ) : (
     <View style={generalStyles.pageContainer}>
       <View style={[generalStyles.row, {justifyContent: 'space-between'}]}>
         <CircleIconButton
           buttonSize={32}
-          buttonColor='#FFF'
+          buttonColor="#FFF"
           iconName="notifications"
           iconSize={28}
           haveShadow={true}
           iconColor={colors.primary}
-          handleCircleIconButtonPress={() => props.navigation.navigate('Notifications', {user: userDoc})}
+          handleCircleIconButtonPress={() =>
+            props.navigation.navigate('Notifications', {user: userDoc})
+          }
           isNotificationsButton={haveNotifications}
         />
         <TouchableHighlight

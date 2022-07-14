@@ -1,5 +1,13 @@
 import React, {useState, useRef, useEffect} from 'react';
-import {View, Text, ScrollView, Switch, TextInput, Alert} from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  Switch,
+  TextInput,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
 import {Header, SelectInstitution} from '../../components';
 import colors from '../../styles/colors.style';
 import generalStyles from '../../styles/general.style';
@@ -187,79 +195,85 @@ export default function MyInfo(props) {
             />
           </View>
         </View>
-        <View style={[styles.optionContainer, {marginTop: 0}]}>
-          <Text style={generalStyles.primaryLabel}>Tipo de conta</Text>
-          <View style={[generalStyles.row, styles.optionRow]}>
-            <Text style={generalStyles.secondaryLabel}>
-              {isAgentAccount
-                ? 'Sou agente de segurança pública'
-                : 'Não sou agente de segurança pública'}
-            </Text>
-            <Switch
-              trackColor={{false: '#767577', true: colors.secondaryOpacity}}
-              thumbColor={isAgentAccount ? colors.secondary : '#f4f3f4'}
-              onValueChange={() => setIsAgentAccount(!isAgentAccount)}
-              value={isAgentAccount}
-            />
-          </View>
-          {!isAgentAccount ? (
-            <View />
-          ) : (
-            <View style={{marginTop: 16}}>
-              <View
-                style={[
-                  generalStyles.textInputContainer,
-                  generalStyles.shadow,
-                ]}>
-                <Text style={generalStyles.secondaryLabel}>Matrícula</Text>
-                <View style={generalStyles.row}>
-                  <Octicons name="number" color={colors.icon} size={22} />
-                  <TextInput
-                    value={registrationNumber}
-                    onChangeText={text => setRegistrationNumber(text)}
-                    onSubmitEditing={() => jobRef.current.focus()}
-                    keyboardType="phone-pad"
-                    placeholder="Ex.: 865489"
-                    placeholderTextColor={colors.icon}
-                    style={[
-                      generalStyles.textInput,
-                      generalStyles.primaryLabel,
-                      {marginLeft: 8},
-                    ]}
-                  />
-                </View>
-              </View>
-              <View
-                style={[
-                  generalStyles.textInputContainer,
-                  generalStyles.shadow,
-                ]}>
-                <Text style={generalStyles.secondaryLabel}>Função</Text>
-                <View style={generalStyles.row}>
-                  <MaterialIcons name="work" color={colors.icon} size={22} />
-                  <TextInput
-                    ref={jobRef}
-                    value={job}
-                    onChangeText={text => setJob(text)}
-                    onSubmitEditing={() => {}}
-                    placeholder="Ex.: P3, Escrivão, Auxiliar de P4..."
-                    placeholderTextColor={colors.icon}
-                    style={[
-                      generalStyles.textInput,
-                      generalStyles.primaryLabel,
-                      {marginLeft: 8},
-                    ]}
-                  />
-                </View>
-              </View>
-
-              <SelectInstitution
-                selectedInstitution={selectedInstitution}
-                selectInstitution={item => setSelectedInstitution(item)}
+        {!user ? (
+          <ActivityIndicator size="large" color={colors.secondary} />
+        ) : user.userType != 'institution' ? (
+          <View style={[styles.optionContainer, {marginTop: 0}]}>
+            <Text style={generalStyles.primaryLabel}>Tipo de conta</Text>
+            <View style={[generalStyles.row, styles.optionRow]}>
+              <Text style={generalStyles.secondaryLabel}>
+                {isAgentAccount
+                  ? 'Sou agente de segurança pública'
+                  : 'Não sou agente de segurança pública'}
+              </Text>
+              <Switch
+                trackColor={{false: '#767577', true: colors.secondaryOpacity}}
+                thumbColor={isAgentAccount ? colors.secondary : '#f4f3f4'}
+                onValueChange={() => setIsAgentAccount(!isAgentAccount)}
+                value={isAgentAccount}
               />
             </View>
-          )}
-        </View>
+            {!isAgentAccount ? (
+              <View />
+            ) : (
+              <View style={{marginTop: 16}}>
+                <View
+                  style={[
+                    generalStyles.textInputContainer,
+                    generalStyles.shadow,
+                  ]}>
+                  <Text style={generalStyles.secondaryLabel}>Matrícula</Text>
+                  <View style={generalStyles.row}>
+                    <Octicons name="number" color={colors.icon} size={22} />
+                    <TextInput
+                      value={registrationNumber}
+                      onChangeText={text => setRegistrationNumber(text)}
+                      onSubmitEditing={() => jobRef.current.focus()}
+                      keyboardType="phone-pad"
+                      placeholder="Ex.: 865489"
+                      placeholderTextColor={colors.icon}
+                      style={[
+                        generalStyles.textInput,
+                        generalStyles.primaryLabel,
+                        {marginLeft: 8},
+                      ]}
+                    />
+                  </View>
+                </View>
+                <View
+                  style={[
+                    generalStyles.textInputContainer,
+                    generalStyles.shadow,
+                  ]}>
+                  <Text style={generalStyles.secondaryLabel}>Função</Text>
+                  <View style={generalStyles.row}>
+                    <MaterialIcons name="work" color={colors.icon} size={22} />
+                    <TextInput
+                      ref={jobRef}
+                      value={job}
+                      onChangeText={text => setJob(text)}
+                      onSubmitEditing={() => {}}
+                      placeholder="Ex.: P3, Escrivão, Auxiliar de P4..."
+                      placeholderTextColor={colors.icon}
+                      style={[
+                        generalStyles.textInput,
+                        generalStyles.primaryLabel,
+                        {marginLeft: 8},
+                      ]}
+                    />
+                  </View>
+                </View>
+
+                <SelectInstitution
+                  selectedInstitution={selectedInstitution}
+                  selectInstitution={item => setSelectedInstitution(item)}
+                />
+              </View>
+            )}
+          </View>
+        ) : (
+          <View />
+        )}
         {!user || !user.agentInfo ? (
           <View />
         ) : (
