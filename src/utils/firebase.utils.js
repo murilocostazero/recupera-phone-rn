@@ -412,7 +412,31 @@ export async function changeAgentAuthStatus(user, status) {
         console.error(error);
       });
   }
+
+  //Se o status==denied, chamar função que apaga o agentInfo do uauário e muda seu userType para regular
+  if (status == 'denied') {
+    reverseUserTypeAndRemoveAgentInfo(user.email);
+  }
   return agentAuthStatus;
+}
+
+async function reverseUserTypeAndRemoveAgentInfo(userEmail) {
+  const userDoc = await getUserFromCollections(userEmail);
+  if (!userDoc.success) {
+    console.error('Erro ao buscar usuário para reverter o agentInfo');
+  } else {
+    await firestore()
+      .collection('Users')
+      .doc(userEmail)
+      .update({
+        userType: 'regular',
+        agentInfo: firestore.FieldValue.delete(),
+      })
+      .then(() =>
+        console.log('Sucesso ao reverter agentInfo e userType do usuário'),
+      )
+      .catch(error => console.error(error));
+  }
 }
 
 export async function getUserFromCollections(userEmail) {
