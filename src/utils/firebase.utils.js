@@ -212,8 +212,7 @@ export function currentUser() {
   return auth().currentUser;
 }
 
-export async function updateUser(user) {
-//DEPOIS MUDAR NOME DESSE MÉTODO. NÃO TEM NADA A VER COM O QUE ELE FAZ
+export async function requestUserTypeChange(user) {
   let userUpdateResponse = null;
   await firestore()
     .collection('Users')
@@ -278,6 +277,41 @@ export async function addUserNotifications(notification, userEmail){
   return addNotificationResponse;
 }
 
+export async function removeUserNotification(userEmail, notificationContent){
+  let removeNotificationResponse = null;
+  const currentUser = await getUserFromCollections(userEmail);
+  if(!currentUser.success){
+    removeNotificationResponse = {success: false, message: 'Email informado não corresponde a nenhum usuário'};
+  } else {
+    const currentNotifications = currentUser.user._data.notifications;
+    const notificationIndex = currentNotifications.findIndex(
+      object => {
+        return object.message == notificationContent.message;
+      },
+    );
+
+    if(notificationIndex != -1){
+      //Remover notificação
+      currentNotifications.splice(notificationIndex, 1);
+      //Atualizar
+      await firestore()
+        .collection('Users')
+        .doc(userEmail)
+        .update({
+          notifications: currentNotifications,
+        })
+        .then(() => {removeNotificationResponse = {success: true}})
+        .catch(error => {
+          removeNotificationResponse = {success: false, message: error};
+        });
+    } else {
+      removeNotificationResponse = {success: false, message: 'Notificação não encontrada'}
+    }
+
+  }
+  return removeNotificationResponse;
+}
+
 export async function changeAgentAuthStatus(user, status) {
   let agentAuthStatus = null;
   const userFromCollection = await getUserFromCollections(user.email);
@@ -294,7 +328,7 @@ export async function changeAgentAuthStatus(user, status) {
 
     //Criar a notificação
     const localNotifications = localUser.notifications;
-    const notificationMessage = localUser.agentInfo.institution + ( status== 'denied' ? ' negou ' : ' autorizou ' ) + 'a sua solicitação de alteração de conta e asssociação.';
+    const notificationMessage = localUser.agentInfo.institution + ( status== 'denied' ? ' negou ' : ' autorizou ' ) + 'a sua solicitação de alteração de conta e associação.';
     localNotifications.push({message: notificationMessage, sender: localUser.agentInfo.institution});
 
     await firestore()

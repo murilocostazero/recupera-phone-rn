@@ -11,7 +11,7 @@ import {
   currentUser,
   getSingleInstitution,
   getUserFromCollections,
-  updateUser,
+  requestUserTypeChange,
 } from '../../utils/firebase.utils';
 
 export default function MyInfo(props) {
@@ -111,7 +111,7 @@ export default function MyInfo(props) {
           },
         };
 
-        const userUpdateResponse = await updateUser(userToUpdate);
+        const userUpdateResponse = await requestUserTypeChange(userToUpdate);
         if (!userUpdateResponse.success) {
           props.handleSnackbar({
             type: 'error',
