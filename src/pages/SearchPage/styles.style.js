@@ -3,7 +3,6 @@ import colors from '../../styles/colors.style';
 
 const styles = StyleSheet.create({
     deviceNotFoundContainer: {
-        flex: 1,
         alignItems: 'center'
     },
     deviceInfoContainer: {

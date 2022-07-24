@@ -149,7 +149,7 @@ export default function SearchPage(props) {
         </View>
       </View>
 
-      <ScrollView>
+      <ScrollView contentContainerStyle={{ alignItems: 'center', justifyContent: 'center', flex: 1 }}>
         {loadingSearch ? (
           <ActivityIndicator size="large" color={colors.secondary} />
         ) : !device ? (

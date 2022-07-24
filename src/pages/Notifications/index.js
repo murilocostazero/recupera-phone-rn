@@ -140,8 +140,8 @@ export default function Notifications(props) {
         ListEmptyComponent={EmptyNotifications}
         keyExtractor={item => item.message}
         extraData={user}
-        style={{margin: 8, marginTop: 32}}
-        contentContainerStyle={{padding: 8}}
+        style={{marginTop: 32}}
+        contentContainerStyle={{padding: 8, flex: 1}}
       />
     </View>
   );

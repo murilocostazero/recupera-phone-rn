@@ -104,6 +104,7 @@ export default function Home(props) {
           iconSize={22}
           haveShadow={true}
           iconColor={item.hasAlert ? colors.secondary : colors.icon}
+          isNotificationsButton={item.hasAlert}
           handleCircleIconButtonPress={() =>
             console.log(
               'Aqui leva pra área de notificações, assinatura de planos...',

@@ -28,7 +28,8 @@ const styles = StyleSheet.create({
     },
     emptyNotificationsContainer: {
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        flex: 1
     }
 });
 
