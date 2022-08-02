@@ -219,14 +219,8 @@ export default function Home(props) {
         }>
         <View style={styles.card}>
           <View style={[generalStyles.row, {justifyContent: 'space-between'}]}>
-            <Text style={generalStyles.titleDark}>Meus dispositivos</Text>
-            <Text
-              style={generalStyles.textButton}
-              onPress={() =>
-                props.navigation.navigate('HandleDevices', {device: null})
-              }>
-              ADICIONAR
-            </Text>
+            <Text style={generalStyles.titleDark}>Meus dispositivos</Text>            
+            <CircleIconButton buttonSize={28} buttonColor='#FFF' iconName='add' iconSize={26} haveShadow={true} iconColor={colors.primary} handleCircleIconButtonPress={() => props.navigation.navigate('HandleDevices', {device: null})} />
           </View>
           <FlatList
             horizontal={true}
@@ -241,11 +235,7 @@ export default function Home(props) {
         <View style={styles.card}>
           <View style={[generalStyles.row, {justifyContent: 'space-between'}]}>
             <Text style={generalStyles.titleDark}>Buscar dispositivos</Text>
-            <Text
-              style={generalStyles.textButton}
-              onPress={() => props.navigation.navigate('SearchPage')}>
-              BUSCAR
-            </Text>
+            <CircleIconButton buttonSize={28} buttonColor='#FFF' iconName='search' iconSize={24} haveShadow={true} iconColor={colors.primary} handleCircleIconButtonPress={() => props.navigation.navigate('SearchPage')} />
           </View>
         </View>
       </ScrollView>

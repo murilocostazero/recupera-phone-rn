@@ -9,7 +9,7 @@ import generalStyles from '../../styles/general.style';
 export default function CircleIconButton(props) {
   return (
     <TouchableHighlight
-      underlayColor="transparent"
+      underlayColor={colors.secondaryOpacity}
       onPress={() => props.handleCircleIconButtonPress()}
       style={[
         {

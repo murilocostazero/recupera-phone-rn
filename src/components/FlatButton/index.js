@@ -8,7 +8,7 @@ import generalStyles from '../../styles/general.style';
 export default function FlatButton(props) {
   return (
     <TouchableHighlight
-      underlayColor="transparent"
+      underlayColor={colors.secondaryOpacity}
       onPress={() => props.handleFlatButtonPress()}
       style={[{
         backgroundColor: props.buttonColor ? props.buttonColor : colors.primary,
