@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -7,16 +7,26 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import generalStyles from '../../styles/general.style';
-import {CircleIconButton, Header} from '../../components';
+import {CircleIconButton, FlatButton, Header} from '../../components';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import colors from '../../styles/colors.style';
-import {findDevice} from '../../utils/firebase.utils';
+import {currentUser, findDevice} from '../../utils/firebase.utils';
 import styles from './styles.style';
 
 export default function SearchPage(props) {
+  const [loggedUser, setLoggedUser] = useState(null);
   const [query, setQuery] = useState('');
   const [device, setDevice] = useState(null);
   const [loadingSearch, setLoadingSearch] = useState(false);
+
+  useEffect(() => {
+    getLoggedUser();
+  }, []);
+
+  async function getLoggedUser(){
+    const localUser = await currentUser();
+    setLoggedUser(localUser);
+  }
 
   async function searchDevice() {
     setLoadingSearch(true);
@@ -26,6 +36,7 @@ export default function SearchPage(props) {
       setDevice(null);
     } else {
       setDevice(deviceFound[0]);
+      // console.log(deviceFound[0])
     }
     setLoadingSearch(false);
     setQuery('');
@@ -39,7 +50,7 @@ export default function SearchPage(props) {
             style={[
               styles.alertContainer,
               {
-                backgroundColor: device.hasAlert
+                backgroundColor: device.deviceInfo.hasAlert
                   ? colors.error
                   : colors.success,
               },
@@ -47,7 +58,7 @@ export default function SearchPage(props) {
             <View style={generalStyles.row}>
               <MaterialIcons name="warning" color="#FFF" size={38} />
               <Text numberOfLines={2} style={styles.alertMessage}>
-                {device.hasAlert
+                {device.deviceInfo.hasAlert
                   ? 'Dispositivo sinalizado pelo proprietário com alerta de roubo/furto.'
                   : 'Dispositivo não possui alerta de roubo/furto.'}
               </Text>
@@ -55,7 +66,7 @@ export default function SearchPage(props) {
             <View style={generalStyles.row}>
               <MaterialIcons name="smartphone" color="#FFF" size={38} />
               <Text style={styles.lightLabel}>
-                {device.brand} {device.model} {device.mainColor}
+                {device.deviceInfo.brand} {device.deviceInfo.model} {device.deviceInfo.mainColor}
               </Text>
             </View>
           </View>
@@ -64,27 +75,34 @@ export default function SearchPage(props) {
             <View
               style={[generalStyles.row, {justifyContent: 'space-between'}]}>
               <Text style={styles.darkLabel}>Marca:</Text>
-              <Text style={generalStyles.secondaryLabel}>{device.brand}</Text>
+              <Text style={generalStyles.secondaryLabel}>{device.deviceInfo.brand}</Text>
             </View>
             <View
               style={[generalStyles.row, {justifyContent: 'space-between'}]}>
               <Text style={styles.darkLabel}>Modelo:</Text>
-              <Text style={generalStyles.secondaryLabel}>{device.model}</Text>
+              <Text style={generalStyles.secondaryLabel}>{device.deviceInfo.model}</Text>
             </View>
             <View
               style={[generalStyles.row, {justifyContent: 'space-between'}]}>
               <Text style={styles.darkLabel}>Cor:</Text>
               <Text style={generalStyles.secondaryLabel}>
-                {device.mainColor}
+                {device.deviceInfo.mainColor}
               </Text>
             </View>
             <View
               style={[generalStyles.row, {justifyContent: 'space-between'}]}>
               <Text style={styles.darkLabel}>IMEI:</Text>
-              <Text style={generalStyles.secondaryLabel}>{device.imei}</Text>
+              <Text style={generalStyles.secondaryLabel}>{device.deviceInfo.imei}</Text>
             </View>
           </View>
         </View>
+        
+{
+  device.owner !== loggedUser.email && device.deviceInfo.hasAlert === true ?
+  <FlatButton label='Encontrei este aparelho' height={48} labelColor='#FFF' buttonColor={colors.primary} handleFlatButtonPress={() => userFoundDevice()} /> :
+  <View />
+}
+
       </View>
     );
   };
@@ -107,6 +125,10 @@ export default function SearchPage(props) {
       </View>
     );
   };
+
+  function userFoundDevice(){
+    props.navigation.navigate('UserFoundDevice', {whoFound: loggedUser, device: device});
+  }
 
   return (
     <View style={generalStyles.pageContainer}>

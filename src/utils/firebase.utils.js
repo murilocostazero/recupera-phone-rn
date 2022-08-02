@@ -477,6 +477,7 @@ export async function findDevice(imei) {
     .get()
     .then(querySnapshot => {
       querySnapshot.forEach(documentSnapshot => {
+        const deviceOwner = documentSnapshot.data().email;
         const devicesArray = documentSnapshot.data().devices;
         if (!devicesArray) {
           // console.log(documentSnapshot.id + ' não tem dispositivos');
@@ -489,7 +490,10 @@ export async function findDevice(imei) {
             // console.log(imei + ' não correspondente');
           } else {
             // console.log(imei + ' correspondente');
-            deviceFound.push(devicesArray[deviceIndex]);
+            deviceFound.push({
+              owner: deviceOwner,
+              deviceInfo: devicesArray[deviceIndex]
+            });
           }
         }
       });

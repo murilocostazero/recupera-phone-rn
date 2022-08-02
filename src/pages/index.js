@@ -6,3 +6,4 @@ export { default as SearchPage } from './SearchPage';
 export { default as InstitutionalSingup } from './InstitutionalSingup';
 export { default as MyInfo } from './MyInfo';
 export { default as Notifications } from './Notifications';
+export { default as UserFoundDevice } from './UserFoundDevice';
