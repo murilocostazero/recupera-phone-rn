@@ -3,27 +3,96 @@ import {View, Text, Alert} from 'react-native';
 import {CircleIconButton, Header, SelectInstitution} from '../../components';
 import colors from '../../styles/colors.style';
 import generalStyles from '../../styles/general.style';
+import {addUserNotifications} from '../../utils/firebase.utils';
 import styles from './styles.style';
 
 export default function UserFoundDevice(props) {
-  const [whoFound, setWhoFound] = useState(null);
+  const [whoFound, setWhoFound] = useState('');
   const [device, setDevice] = useState(null);
-  const [selectedInstitution, setSelectedInstitution] = useState('');
+  const [selectedInstitution, setSelectedInstitution] = useState(null);
+  const [loadingFinishDelivery, setLoadingFinishDelivery] = useState(false);
 
   useEffect(() => {
-    const received = props.route.params;
-    // console.log(props.route.params)
-    setWhoFound(received.whoFound);
-    setDevice(received.device);
+    // console.log(props.route.params);
+    populateReceivedInfo(
+      props.route.params.whoFound,
+      props.route.params.device,
+    );
   }, []);
+
+  function populateReceivedInfo(sender, deviceInfo) {
+    setWhoFound(sender);
+    setDevice(deviceInfo);
+  }
+
+  async function onSendDeviceInfo() {
+    if (selectedInstitution === null) {
+      props.handleSnackbar({
+        type: 'warning',
+        message: 'Escolha a instituição onde o dispositivo está.',
+      });
+    } else {
+      //Enviar notificação
+      const notificationMessage =
+        'Seu dispositivo ' +
+        device.deviceInfo.brand +
+        ' ' +
+        device.deviceInfo.model +
+        ' ' +
+        device.deviceInfo.mainColor +
+        ', de IMEI ' +
+        device.deviceInfo.imei +
+        ', foi encontrado! Você pode dirigir-se até a instituição abaixo para ter mais informações.' +
+        '\n\nInstituição: ' +
+        selectedInstitution.name +
+        '\nEndereço: ' +
+        selectedInstitution.address +
+        '\nEmail: ' +
+        selectedInstitution.email;
+
+      setLoadingFinishDelivery(true);
+      const notificationSent = await addUserNotifications(
+        notificationMessage,
+        whoFound,
+        device.owner,
+      );
+
+      if (!notificationSent.success) {
+        setLoadingFinishDelivery(false);
+        props.handleSnackbar({
+          type: 'error',
+          message: 'Erro ao concluir entrega de dispositivo',
+        });
+        console.log(
+          'Erro ao concluir entrega de dispositivo',
+          notificationSent.message,
+        );
+      } else {
+        setLoadingFinishDelivery(false);
+
+        props.handleSnackbar({
+          type: 'success',
+          message: 'Obrigado! Você ajudou alguém a recuperar um bem.',
+        });
+
+        setTimeout(() => {
+          props.navigation.reset({
+            index: 0,
+            routes: [{name: 'Home'}],
+          });
+        }, 3000);
+      }
+      //Enviar email
+    }
+  }
 
   return (
     <View style={generalStyles.pageContainer}>
       <Header
         handleGoBackButtonPress={() => props.navigation.goBack()}
         pageTitle="Entrega de dispositivo"
-        loadingPrimaryButton={false}
-        handlePrimaryButtonPress={() => {}}
+        loadingPrimaryButton={loadingFinishDelivery}
+        handlePrimaryButtonPress={() => onSendDeviceInfo()}
         primaryButtonLabel="CONCLUIR"
       />
       <View style={generalStyles.pageContainer}>
@@ -63,7 +132,7 @@ export default function UserFoundDevice(props) {
             selectInstitution={item => setSelectedInstitution(item)}
           />
 
-          {whoFound === null || device === null ? (
+          {whoFound.length === 0 || device === null ? (
             <View />
           ) : (
             <>
@@ -71,7 +140,7 @@ export default function UserFoundDevice(props) {
                 <Text style={generalStyles.secondaryLabel}>
                   Quem encontrou:
                 </Text>
-                <Text style={generalStyles.primaryLabel}>{whoFound.email}</Text>
+                <Text style={generalStyles.primaryLabel}>{whoFound}</Text>
               </View>
 
               <View style={styles.section}>

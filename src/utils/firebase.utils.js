@@ -260,26 +260,26 @@ export async function requestUserTypeChange(user) {
   return userUpdateResponse;
 }
 
-export async function addUserNotifications(notification, userEmail) {
+export async function addUserNotifications(notification, sender, receiver) {
   let addNotificationResponse = null;
 
-  const userFound = await getUserFromCollections(userEmail);
-  if (!userFound.success) {
+  const receiverFound = await getUserFromCollections(receiver);
+  if (!receiverFound.success) {
     addNotificationResponse = {
       success: false,
       message: 'Usuário não encontrado',
     };
   } else {
-    const localNotifications = userFound.user._data.notifications;
+    const localNotifications = receiverFound.user._data.notifications;
 
     localNotifications.push({
       message: notification,
-      sender: userFound.user._data.agentInfo.institution,
+      sender: sender,
     });
 
     await firestore()
       .collection('Users')
-      .doc(user.email)
+      .doc(receiver)
       .update({
         notifications: localNotifications,
       })

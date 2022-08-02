@@ -53,12 +53,9 @@ export default function Home(props) {
     } else {
       setUserDoc(user.user._data);
       setDevices(user.user._data.devices);
-      if (
-        user.user._data.notifications &&
-        user.user._data.notifications.length > 0
-      ) {
-        setHaveNotifications(true);
-      }
+      setHaveNotifications(
+        user.user._data.notifications.length > 0 ? true : false,
+      );
       setLoadingUserData(false);
     }
   }

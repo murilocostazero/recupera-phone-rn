@@ -6,58 +6,60 @@ import styles from './styles.style';
 import colors from '../../styles/colors.style';
 import {
   changeAgentAuthStatus,
-  getSingleInstitution,
+  currentUser,
+  getUserFromCollections,
   removeUserNotification,
 } from '../../utils/firebase.utils';
 
 export default function Notifications(props) {
   const [user, setUser] = useState(null);
-  const [loadingAuthStatusChange, setLoadingAuthStatusChange] = useState(false);
+  const [loadingDismissNotification, setLoadingDismissNotification] = useState(false);
 
   useEffect(() => {
-    // console.log(props.route.params.user);
-    getUser(props.route.params.user.email);
+    getUser();
   }, []);
 
-  async function getUser(email) {
-    const userResponse = await getSingleInstitution(email);
-    if (!userResponse) {
+  async function getUser() {
+    const loggedUserReceived = await currentUser();
+
+    const userResponse = await getUserFromCollections(loggedUserReceived.email);
+    if (!userResponse.success) {
       props.handleSnackbar({
         type: 'error',
         message: 'Não foi possível buscar instituição',
       });
     } else {
-      setUser(userResponse);
+      setUser(userResponse.user._data);
     }
   }
 
   async function authorizeRequest(userToAuth, status) {
-    setLoadingAuthStatusChange(true);
+    setLoadingDismissNotification(true);
     const changeAgentAuthStatusResponse = await changeAgentAuthStatus(
       userToAuth,
       status,
     );
 
     if (!changeAgentAuthStatusResponse.success) {
-      setLoadingAuthStatusChange(false);
+      setLoadingDismissNotification(false);
       props.handleSnackbar({
         type: 'error',
         message: changeAgentAuthStatusResponse.message,
       });
     } else {
-      setLoadingAuthStatusChange(false);
+      setLoadingDismissNotification(false);
       getUser(user.email);
     }
   }
 
   async function onDismissUserNotification(notificationContent) {
-    setLoadingAuthStatusChange(true);
+    setLoadingDismissNotification(true);
     const removeNotificationResponse = await removeUserNotification(user.email, notificationContent);
     if(!removeNotificationResponse.success){
-      setLoadingAuthStatusChange(false);
+      setLoadingDismissNotification(false);
       props.handleSnackbar({type: 'error', message: removeNotificationResponse.message});
     } else {
-      setLoadingAuthStatusChange(false);
+      setLoadingDismissNotification(false);
       getUser(user.email)
     }
   }
@@ -129,7 +131,7 @@ export default function Notifications(props) {
       <Header
         handleGoBackButtonPress={() => props.navigation.goBack()}
         pageTitle="Notificações"
-        loadingPrimaryButton={loadingAuthStatusChange}
+        loadingPrimaryButton={loadingDismissNotification}
         handlePrimaryButtonPress={() => {}}
         primaryButtonLabel=""
       />
@@ -142,6 +144,8 @@ export default function Notifications(props) {
         extraData={user}
         style={{marginTop: 32}}
         contentContainerStyle={{padding: 8, flex: 1}}
+        refreshing={loadingDismissNotification}
+        onRefresh={() => getUser()}
       />
     </View>
   );

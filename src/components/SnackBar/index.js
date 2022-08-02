@@ -14,13 +14,13 @@ export default function SnackBar(props) {
         alignItems: 'center',
         justifyContent: 'center'
     }}>
-      <Text numberOfLines={2} style={[generalStyles.primaryLightLabel, {marginRight: 8}]}>{props.snackbar.message}</Text>
+      <Text numberOfLines={2} style={[generalStyles.primaryLightLabel, {marginRight: 4}]}>{props.snackbar.message}</Text>
       {
           props.snackbar.type == 'error' ?
-          <MaterialIcons name='error' color='#FFF' size={32} /> :
+          <MaterialIcons name='error' color='#FFF' size={28} /> :
           props.snackbar.type == 'warning' ?
-          <MaterialIcons name='warning' color='#FFF' size={32} /> :
-          <MaterialIcons name='check' color='#FFF' size={32} />
+          <MaterialIcons name='warning' color='#FFF' size={28} /> :
+          <MaterialIcons name='check' color='#FFF' size={28} />
       }
     </View>
   )

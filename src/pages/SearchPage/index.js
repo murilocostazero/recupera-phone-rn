@@ -127,7 +127,7 @@ export default function SearchPage(props) {
   };
 
   function userFoundDevice(){
-    props.navigation.navigate('UserFoundDevice', {whoFound: loggedUser, device: device});
+    props.navigation.navigate('UserFoundDevice', {whoFound: loggedUser.email, device: device});
   }
 
   return (
