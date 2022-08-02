@@ -1,11 +1,13 @@
 import React, {useState, useEffect} from 'react';
 import {
+  SafeAreaView,
   View,
   Text,
   Image,
   TouchableHighlight,
   FlatList,
   ScrollView,
+  RefreshControl,
   ActivityIndicator,
 } from 'react-native';
 import generalStyles from '../../styles/general.style';
@@ -171,7 +173,7 @@ export default function Home(props) {
       <ActivityIndicator size="large" color={colors.secondary} />
     </View>
   ) : (
-    <View style={generalStyles.pageContainer}>
+    <SafeAreaView style={generalStyles.pageContainer}>
       <View style={[generalStyles.row, {justifyContent: 'space-between'}]}>
         <CircleIconButton
           buttonSize={32}
@@ -211,7 +213,13 @@ export default function Home(props) {
         </TouchableHighlight>
       </View>
 
-      <ScrollView>
+      <ScrollView
+        refreshControl={
+          <RefreshControl
+            refreshing={loadingUserData}
+            onRefresh={() => getCurrentUser()}
+          />
+        }>
         <View style={styles.card}>
           <View style={[generalStyles.row, {justifyContent: 'space-between'}]}>
             <Text style={generalStyles.titleDark}>Meus dispositivos</Text>
@@ -244,6 +252,6 @@ export default function Home(props) {
           </View>
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
