@@ -17,7 +17,8 @@ import {currentUser, getUserFromCollections} from '../../utils/firebase.utils';
 import colors from '../../styles/colors.style';
 import {useIsFocused} from '@react-navigation/native';
 import brandImageArray from '../../utils/brandImageArray.utils';
-import {CircleIconButton} from '../../components';
+import {CircleIconButton, FlatButton} from '../../components';
+import securityTips from '../../utils/securityTips';
 
 export default function Home(props) {
   const [loggedUser, setLoggedUser] = useState(null);
@@ -27,12 +28,19 @@ export default function Home(props) {
   const [devices, setDevices] = useState([]);
   const [haveNotifications, setHaveNotifications] = useState(false);
   const [loadingUserData, setLoadingUserData] = useState(false);
+  const [randomInt, setRandomInt] = useState(0);
 
   const isPageFocused = useIsFocused();
 
   useEffect(() => {
     getCurrentUser();
+    getRandomInt();
   }, [isPageFocused]);
+
+  function getRandomInt(){
+    const randomIntFound = Math.floor(Math.random() * securityTips.length);
+    setRandomInt(randomIntFound);
+  }
 
   async function getCurrentUser() {
     const user = await currentUser();
@@ -88,80 +96,89 @@ export default function Home(props) {
 
   const renderDevices = ({item}) => {
     return (
-      <View
-        style={[
-          styles.deviceContainer,
-          generalStyles.shadow,
-          {backgroundColor: '#FFF'},
-        ]}>
-        <CircleIconButton
-          buttonSize={24}
-          buttonColor="#FFF"
-          iconName={
-            item.hasAlert ? 'notification-important' : 'notifications-off'
-          }
-          iconSize={22}
-          haveShadow={true}
-          iconColor={item.hasAlert ? colors.secondary : colors.icon}
-          isNotificationsButton={item.hasAlert}
-          handleCircleIconButtonPress={() =>
-            console.log(
-              'Aqui leva pra área de notificações, assinatura de planos...',
-            )
-          }
-          style={{position: 'absolute', top: 8, right: 8}}
-        />
-        <Image
-          style={{
-            maxWidth: 60,
-            height: 60,
-            resizeMode: 'contain',
-            alignSelf: 'center',
-            marginVertical: 4,
-          }}
-          source={brandImageArray(item.brand)}
-        />
+      <TouchableHighlight
+        onPress={() =>
+          props.navigation.navigate('HandleDevices', {device: item})
+        }
+        underlayColor="tranparent">
+        <View
+          style={[
+            styles.deviceContainer,
+            generalStyles.shadow,
+            {backgroundColor: '#FFF'},
+          ]}>
+          <Image
+            style={{
+              maxWidth: 60,
+              height: 60,
+              resizeMode: 'contain',
+              alignSelf: 'center',
+              marginVertical: 4,
+            }}
+            source={brandImageArray(item.brand)}
+          />
 
-        <View>
-          <View style={generalStyles.row}>
-            <Text
-              style={[generalStyles.primaryLabel, {maxWidth: 140}]}
-              numberOfLines={1}>
-              {item.brand} {item.model}
-            </Text>
+          <View style={{alignItems: 'center'}}>
+            <View style={generalStyles.row}>
+              <Text
+                style={[generalStyles.primaryLabel, {maxWidth: 140}]}
+                numberOfLines={1}>
+                {item.brand} {item.model}
+              </Text>
+            </View>
+
+            <View style={generalStyles.row}>
+              <Text style={[generalStyles.primaryLabel, {marginRight: 8}]}>
+                Cor:
+              </Text>
+              <Text style={generalStyles.secondaryLabel}>{item.mainColor}</Text>
+            </View>
+
+            <View style={generalStyles.row}>
+              <Text style={generalStyles.primaryLabel}>Imei:</Text>
+              <Text
+                style={[
+                  generalStyles.secondaryLabel,
+                  {maxWidth: 80, marginLeft: 8},
+                ]}
+                numberOfLines={1}>
+                {item.imei}
+              </Text>
+            </View>
           </View>
 
-          <View style={generalStyles.row}>
-            <Text style={[generalStyles.primaryLabel, {marginRight: 8}]}>
-              Cor:
-            </Text>
-            <Text style={generalStyles.secondaryLabel}>{item.mainColor}</Text>
-          </View>
-
-          <View style={generalStyles.row}>
-            <Text style={generalStyles.primaryLabel}>Imei:</Text>
+          <View
+            style={[
+              {
+                borderColor: item.hasAlert ? colors.error : colors.success,
+                borderTopWidth: 0.6,
+                marginVertical: 16,
+                alignItems: 'center',
+                justifyContent: 'center',
+              },
+              generalStyles.row,
+            ]}>
+            <View
+              style={{
+                marginTop: 3,
+                marginRight: 8,
+                width: 10,
+                height: 10,
+                borderRadius: 10 / 2,
+                backgroundColor: item.hasAlert ? colors.error : colors.success,
+              }}
+            />
             <Text
-              style={[
-                generalStyles.secondaryLabel,
-                {maxWidth: 80, marginLeft: 8},
-              ]}
-              numberOfLines={1}>
-              {item.imei}
+              style={{
+                color: colors.text.dark,
+                fontFamily: 'JosefinSans-Bold',
+                textAlign: 'center',
+              }}>
+              {item.hasAlert ? 'Alerta!' : 'Tudo certo!'}
             </Text>
           </View>
         </View>
-
-        <Text
-          style={[
-            generalStyles.textButton,
-            {alignSelf: 'center', marginTop: 6},
-          ]}
-          onPress={() =>
-            props.navigation.navigate('HandleDevices', {device: item})
-          }>
-          EDITAR
-        </Text>
-      </View>
+      </TouchableHighlight>
     );
   };
 
@@ -219,8 +236,18 @@ export default function Home(props) {
         }>
         <View style={styles.card}>
           <View style={[generalStyles.row, {justifyContent: 'space-between'}]}>
-            <Text style={generalStyles.titleDark}>Meus dispositivos</Text>            
-            <CircleIconButton buttonSize={28} buttonColor='#FFF' iconName='add' iconSize={26} haveShadow={true} iconColor={colors.primary} handleCircleIconButtonPress={() => props.navigation.navigate('HandleDevices', {device: null})} />
+            <Text style={generalStyles.titleDark}>Meus dispositivos</Text>
+            <CircleIconButton
+              buttonSize={28}
+              buttonColor="#FFF"
+              iconName="add"
+              iconSize={26}
+              haveShadow={true}
+              iconColor={colors.primary}
+              handleCircleIconButtonPress={() =>
+                props.navigation.navigate('HandleDevices', {device: null})
+              }
+            />
           </View>
           <FlatList
             horizontal={true}
@@ -234,11 +261,46 @@ export default function Home(props) {
 
         <View style={styles.card}>
           <View style={[generalStyles.row, {justifyContent: 'space-between'}]}>
-            <Text style={generalStyles.titleDark}>Buscar dispositivos</Text>
-            <CircleIconButton buttonSize={28} buttonColor='#FFF' iconName='search' iconSize={24} haveShadow={true} iconColor={colors.primary} handleCircleIconButtonPress={() => props.navigation.navigate('SearchPage')} />
+            <Text style={generalStyles.titleDark}>Dicas de segurança</Text>
+            <CircleIconButton
+              buttonSize={28}
+              buttonColor="#FFF"
+              iconName="autorenew"
+              iconSize={26}
+              haveShadow={true}
+              iconColor={colors.primary}
+              handleCircleIconButtonPress={() => getRandomInt()}
+            />
+          </View>
+
+          <View
+            style={{
+              marginVertical: 16,
+              backgroundColor: colors.secondaryOpacity,
+              borderRadius: 16,
+              padding: 8,
+            }}>
+            <Text
+              style={{
+                color: colors.primary,
+                fontFamily: 'JosefinSans-Medium',
+                fontSize: 16,
+                textAlign: 'justify',
+              }}>
+              {securityTips[randomInt].tip}
+            </Text>
           </View>
         </View>
       </ScrollView>
+      <FlatButton
+        label="Buscar dispositivo"
+        height={48}
+        labelColor={colors.text.light}
+        buttonColor={colors.primary}
+        handleFlatButtonPress={() => props.navigation.navigate('SearchPage')}
+        isLoading={false}
+        style={{}}
+      />
     </SafeAreaView>
   );
 }

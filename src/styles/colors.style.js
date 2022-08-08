@@ -3,7 +3,7 @@ const colors = {
     secondary: '#9a67ea',
     primaryOpacity: 'rgba(50, 11, 134, 0.6)',
     secondaryOpacity: 'rgba(154, 103, 234, 0.6)',
-    background: '#E9F0FB',
+    background: '#FAFAFA',
     icon: '#b0bec5',
     text: {
         light: '#FFF',

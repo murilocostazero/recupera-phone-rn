@@ -8,43 +8,45 @@ import generalStyles from '../../styles/general.style';
 
 export default function CircleIconButton(props) {
   return (
-    <TouchableHighlight
-      underlayColor={colors.secondaryOpacity}
-      onPress={() => props.handleCircleIconButtonPress()}
-      style={[
-        {
-          backgroundColor: props.buttonColor,
-          width: props.buttonSize,
-          height: props.buttonSize,
-          borderRadius: props.buttonSize / 2,
-          alignItems: 'center',
-          justifyContent: 'center',
-        },
-        props.haveShadow ? generalStyles.shadow : {},
-        props.style,
-      ]}>
-      <View>
-        <MaterialIcon
-          name={props.iconName}
-          size={props.iconSize}
-          color={props.iconColor}
-        />
-        {props.isNotificationsButton ? (
-          <View
-            style={{
-              backgroundColor: colors.secondary,
-              width: 10,
-              height: 10,
-              borderRadius: 10,
-              position: 'absolute',
-              right: -4,
-              top: -2,
-            }}
+    <View style={props.style}>
+      <TouchableHighlight
+        underlayColor={colors.secondaryOpacity}
+        onPress={() => props.handleCircleIconButtonPress()}
+        style={[
+          {
+            backgroundColor: props.buttonColor,
+            width: props.buttonSize,
+            height: props.buttonSize,
+            borderRadius: props.buttonSize / 2,
+            alignItems: 'center',
+            justifyContent: 'center',
+          },
+          props.haveShadow ? generalStyles.shadow : {},
+          props.style,
+        ]}>
+        <View>
+          <MaterialIcon
+            name={props.iconName}
+            size={props.iconSize}
+            color={props.iconColor}
           />
-        ) : (
-          <View />
-        )}
-      </View>
-    </TouchableHighlight>
+          {props.isNotificationsButton ? (
+            <View
+              style={{
+                backgroundColor: colors.secondary,
+                width: 10,
+                height: 10,
+                borderRadius: 10,
+                position: 'absolute',
+                right: -4,
+                top: -2,
+              }}
+            />
+          ) : (
+            <View />
+          )}
+        </View>
+      </TouchableHighlight>
+    </View>
   );
 }
