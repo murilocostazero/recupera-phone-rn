@@ -5,16 +5,15 @@ const styles = StyleSheet.create({
   logoContainer: {
     // backgroundColor: colors.primary,
     width: 124,
-    height: 124,
-    borderRadius: 124 / 2,
     alignSelf: 'center',
     alignItems: 'center',
     justifyContent: 'center',
+    flexDirection: 'row',
     marginBottom: 32
   },
   logo: {
-    width: 100,
-    height: 100,
+    width: 60,
+    height: 60,
   },
   orContainer: {
     alignItems: 'center',

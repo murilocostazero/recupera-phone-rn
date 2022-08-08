@@ -93,8 +93,15 @@ export default function Login(props) {
           padding: 8,
         }}>
         <View style={styles.logoContainer}>
+          <Text
+            style={[
+              generalStyles.titleDark,
+              {fontSize: 28, color: colors.primary},
+            ]}>
+            Alerta Smart
+          </Text>
           <Image
-            source={require('../../assets/images/logo.png')}
+            source={require('../../assets/images/alarm.png')}
             style={styles.logo}
           />
         </View>
@@ -181,8 +188,15 @@ export default function Login(props) {
             padding: 8,
           }}>
           <View style={styles.logoContainer}>
+            <Text
+              style={[
+                generalStyles.titleDark,
+                {fontSize: 28, color: colors.primary},
+              ]}>
+              Alerta Smart
+            </Text>
             <Image
-              source={require('../../assets/images/logo.png')}
+              source={require('../../assets/images/alarm.png')}
               style={styles.logo}
             />
           </View>
