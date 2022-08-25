@@ -1,5 +1,13 @@
 import React, {useState, useRef, useEffect} from 'react';
-import {View, Text, TextInput, Alert, ScrollView, Switch} from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  Alert,
+  ScrollView,
+  Switch,
+  Image,
+} from 'react-native';
 import generalStyles from '../../styles/general.style';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import colors from '../../styles/colors.style';
@@ -11,6 +19,8 @@ import {
 } from '../../utils/firebase.utils';
 import {newDeviceFieldsVerification} from '../../utils/fieldsVerification.utils';
 import Clipboard from '@react-native-clipboard/clipboard';
+import {launchImageLibrary} from 'react-native-image-picker';
+import storage from '@react-native-firebase/storage';
 
 export default function HandleDevices(props) {
   /* STATES */
@@ -23,6 +33,8 @@ export default function HandleDevices(props) {
   const [isEditingMode, setIsEditingMode] = useState(false);
   const [loadingRemovingDevice, setLoadingRemoveDevice] = useState(false);
   const [hasAlert, setHasAlert] = useState(false);
+  const [fiscalDocumentPicture, setFiscalDocumentPicture] = useState('');
+  const [uploadingFiscalDocument, setUploadingFiscalDocument] = useState(false);
 
   /* REFERENCES */
   const brandRef = useRef('brandRef');
@@ -31,25 +43,36 @@ export default function HandleDevices(props) {
   const imeiRef = useRef('imeiRef');
 
   useEffect(() => {
-    getCurrentUser();
-    props.route.params.device == null
-      ? {}
-      : populateFields(props.route.params.device);
+    getCurrentUser(
+      !props.route.params.device ? null : props.route.params.device,
+    );
   }, []);
 
-  function getCurrentUser() {
+  function getCurrentUser(deviceReceived) {
     const user = currentUser();
     // console.log(user);
     setLoggedUser(user);
+
+    if (deviceReceived !== null) {
+      populateFields(deviceReceived, user.email);
+    }
   }
 
-  function populateFields(deviceReceived) {
+  async function populateFields(deviceReceived, userEmail) {
     setIsEditingMode(true);
     setBrand(deviceReceived.brand);
     setModel(deviceReceived.model);
     setMainColor(deviceReceived.mainColor);
     setImei(deviceReceived.imei);
     setHasAlert(deviceReceived.hasAlert);
+
+    const url = await storage()
+      .ref(`FiscalDocuments/${userEmail}/${deviceReceived.imei}.jpg`)
+      .getDownloadURL();
+    setFiscalDocumentPicture({
+      uri: url,
+      fileName: `${deviceReceived.imei}.jpg`,
+    });
   }
 
   function showImeiInfo() {
@@ -98,6 +121,13 @@ export default function HandleDevices(props) {
             actualDevices,
             loggedUser.email,
           );
+
+          props.handleSnackbar({
+            type: 'success',
+            message: 'Fazendo upload do documento fiscal',
+          });
+          await uploadImage();
+
           if (!addDeviceResponse.success) {
             props.handleSnackbar({
               message: addDeviceResponse.message,
@@ -126,6 +156,13 @@ export default function HandleDevices(props) {
             actualDevices,
             loggedUser.email,
           );
+
+          props.handleSnackbar({
+            type: 'success',
+            message: 'Fazendo upload do documento fiscal',
+          });
+          await uploadImage();
+
           if (!addDeviceResponse.success) {
             props.handleSnackbar({
               message: addDeviceResponse.message,
@@ -171,8 +208,29 @@ export default function HandleDevices(props) {
       });
       setLoadingRemoveDevice(false);
     } else {
-      setLoadingRemoveDevice(false);
-      props.navigation.goBack();
+      //Removendo nota fiscal
+
+      // Create a reference to the file to delete
+      const fiscalDocumentRef = storage().ref(
+        `FiscalDocuments/${loggedUser.email}/${imei}.jpg`,
+      );
+
+      // Delete the file
+      storage().delete(fiscalDocumentRef)
+        .then(() => {
+          // File deleted successfully
+          setLoadingRemoveDevice(false);
+          props.navigation.goBack();
+        })
+        .catch(error => {
+          // Uh-oh, an error occurred!
+          setLoadingRemoveDevice(false);
+          props.handleSnackbar({
+            type: 'error',
+            message: 'Não foi possível excluir documento fiscal',
+          });
+          console.error(error);
+        });
     }
   }
 
@@ -184,13 +242,50 @@ export default function HandleDevices(props) {
     });
   }
 
+  function selectImage() {
+    const options = {
+      maxWidth: 2000,
+      maxHeight: 2000,
+      storageOptions: {
+        skipBackup: true,
+        path: 'images',
+      },
+    };
+    launchImageLibrary(options, response => {
+      if (response.didCancel) {
+        console.log('User cancelled image picker');
+      } else if (response.error) {
+        console.log('ImagePicker Error: ', response.error);
+      } else if (response.customButton) {
+        console.log('User tapped custom button: ', response.customButton);
+      } else {
+        const source = {
+          uri: response.assets[0].uri,
+          fileName: response.assets[0].fileName,
+        };
+        // console.log(response.assets[0]);
+        setFiscalDocumentPicture(source);
+      }
+    });
+  }
+
+  async function uploadImage() {
+    const {uri} = fiscalDocumentPicture;
+    const reference = storage().ref(
+      'FiscalDocuments/' + loggedUser.email + '/' + imei + '.jpg',
+    );
+    setUploadingFiscalDocument(true);
+    await reference.putFile(uri);
+    setUploadingFiscalDocument(false);
+  }
+
   return (
     <View style={generalStyles.pageContainer}>
       <Header
         handleGoBackButtonPress={() => {
           loadingSaveDevice ? {} : props.navigation.goBack();
         }}
-        pageTitle="Dispositivos"
+        pageTitle="Dispositivo"
         loadingPrimaryButton={loadingSaveDevice}
         handlePrimaryButtonPress={() => saveOrUpdateDevice()}
         primaryButtonLabel={!isEditingMode ? 'SALVAR' : 'ATUALIZAR'}
@@ -275,7 +370,7 @@ export default function HandleDevices(props) {
                 iconName="info"
                 iconSize={24}
                 haveShadow={false}
-                iconColor={colors.link}
+                iconColor={colors.secondaryOpacity}
                 handleCircleIconButtonPress={() => showImeiInfo()}
               />
             </View>
@@ -308,7 +403,67 @@ export default function HandleDevices(props) {
             </View>
           </View>
 
-          <View style={[generalStyles.row, {padding: 8, marginVertical: 4, justifyContent: 'space-between'}]}>
+          <View style={{marginVertical: 16}}>
+            <View style={generalStyles.row}>
+              <Text style={generalStyles.secondaryLabel}>Documento fiscal</Text>
+              <CircleIconButton
+                buttonSize={24}
+                buttonColor="transparent"
+                iconName="info"
+                iconSize={22}
+                haveShadow={false}
+                iconColor={colors.secondaryOpacity}
+                handleCircleIconButtonPress={() =>
+                  Alert.alert(
+                    'Nota fiscal do aparelho',
+                    'É importante que você deixe salvo uma foto da nota fiscal do seu aparelho.',
+                  )
+                }
+              />
+            </View>
+            <View style={{alignItems: 'stretch', marginVertical: 16}}>
+              {!fiscalDocumentPicture ? (
+                <View style={{alignItems: 'center'}}>
+                  <Image
+                    source={require('../../assets/images/no-pictures.png')}
+                    style={{width: 120, height: 100}}
+                  />
+                  <Text style={generalStyles.primaryLabel}>
+                    (Nenhuma imagem selecionada)
+                  </Text>
+                </View>
+              ) : (
+                <View style={{alignItems: 'center'}}>
+                  <Image
+                    source={{uri: fiscalDocumentPicture.uri}}
+                    style={{width: 180, height: 180}}
+                  />
+                  <Text style={generalStyles.primaryLabel}>
+                    {fiscalDocumentPicture.fileName}
+                  </Text>
+                </View>
+              )}
+              <FlatButton
+                label={
+                  !fiscalDocumentPicture
+                    ? 'Selecionar imagem'
+                    : 'Escolher outra'
+                }
+                height={48}
+                labelColor="#FFF"
+                buttonColor={colors.primary}
+                handleFlatButtonPress={() => selectImage()}
+                isLoading={false}
+                style={{marginTop: 16}}
+              />
+            </View>
+          </View>
+
+          <View
+            style={[
+              generalStyles.row,
+              {padding: 8, marginVertical: 4, justifyContent: 'space-between'},
+            ]}>
             <Text style={generalStyles.secondaryLabel}>
               Sinalizar com alerta de roubo/furto
             </Text>

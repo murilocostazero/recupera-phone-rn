@@ -23,7 +23,7 @@ export async function createUser(email, password, displayName) {
                 userType: 'regular',
                 notifications: [],
               })
-              .then(() => {
+              .then(() => {                
                 userCreated = {
                   success: true,
                   message: 'Usuário criado e logado',
