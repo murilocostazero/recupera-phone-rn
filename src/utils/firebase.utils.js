@@ -23,7 +23,7 @@ export async function createUser(email, password, displayName) {
                 userType: 'regular',
                 notifications: [],
               })
-              .then(() => {                
+              .then(() => {
                 userCreated = {
                   success: true,
                   message: 'Usuário criado e logado',
@@ -492,7 +492,7 @@ export async function findDevice(imei) {
             // console.log(imei + ' correspondente');
             deviceFound.push({
               owner: deviceOwner,
-              deviceInfo: devicesArray[deviceIndex]
+              deviceInfo: devicesArray[deviceIndex],
             });
           }
         }
@@ -564,4 +564,50 @@ export async function foundUserByRegistrationNumberAndInstitution(
       });
     });
   return foundExistingUser;
+}
+
+export async function whereToFindDevice(device, location) {
+  let whereToFindResponse = null;
+
+  const userCollection = await getUserFromCollections(device.owner);
+  const devices = userCollection.user._data.devices;
+  const deviceFoundIndex = devices.map(element => element.imei).indexOf(device.deviceInfo.imei);
+
+  if (deviceFoundIndex != -1) {
+    const deviceUpdated = {
+      brand: device.deviceInfo.brand,
+      model: device.deviceInfo.model,
+      hasAlert: device.deviceInfo.hasAlert,
+      imei: device.deviceInfo.imei,
+      mainColor: device.deviceInfo.mainColor,
+      whereToFind: location
+    };
+    devices[deviceFoundIndex] = deviceUpdated;
+
+    await firestore()
+      .collection('Users')
+      .doc(device.owner)
+      .update({
+        devices: devices,
+      })
+      .then(() => {
+        whereToFindResponse = {
+          success: true,
+          message: 'Adicionado onde encontrar o dispositivo',
+        };
+      })
+      .catch(error => {
+        console.error(error);
+        whereToFindResponse = {
+          success: false,
+          message: 'Erro ao salvar notificação de dispositivo',
+        };
+      });
+  } else {
+    whereToFindResponse = {
+      success: false,
+      message: 'Não foi possível encontrar o dispositivo',
+    };
+  }
+  return whereToFindResponse;
 }

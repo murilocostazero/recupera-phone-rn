@@ -35,6 +35,7 @@ export default function HandleDevices(props) {
   const [hasAlert, setHasAlert] = useState(false);
   const [fiscalDocumentPicture, setFiscalDocumentPicture] = useState('');
   const [uploadingFiscalDocument, setUploadingFiscalDocument] = useState(false);
+  const [whereToFind, setWhereToFind] = useState(null);
 
   /* REFERENCES */
   const brandRef = useRef('brandRef');
@@ -82,6 +83,10 @@ export default function HandleDevices(props) {
             fileName: `${deviceReceived.imei}.jpg`,
           },
     );
+
+    if (deviceReceived.whereToFind) {
+      setWhereToFind(deviceReceived.whereToFind);
+    }
   }
 
   function showImeiInfo() {
@@ -306,6 +311,33 @@ export default function HandleDevices(props) {
       />
 
       <ScrollView>
+        {!whereToFind ? (
+          <View />
+        ) : (
+          <View style={{marginTop: 32, alignItems: 'center'}}>
+            <Text style={generalStyles.titleDark}>
+              Seu dispositivo foi encontrado!
+            </Text>
+            <Image
+              source={require('../../assets/images/celeb.gif')}
+              style={{width: 200, height: 140}}
+            />
+            <View>
+              <Text style={generalStyles.primaryLabel}>
+                Seu dispositivo está na instituição abaixo:
+              </Text>
+              <Text style={generalStyles.secondaryLabel}>
+                Local: {whereToFind.name}
+              </Text>
+              <Text style={generalStyles.secondaryLabel}>
+                Endereço: {whereToFind.address}
+              </Text>
+              <Text style={generalStyles.secondaryLabel}>
+                Email: {whereToFind.email}
+              </Text>
+            </View>
+          </View>
+        )}
         <View style={{marginTop: 32}}>
           <View
             style={[generalStyles.textInputContainer, generalStyles.shadow]}>
