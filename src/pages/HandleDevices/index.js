@@ -120,6 +120,7 @@ export default function HandleDevices(props) {
         mainColor: mainColor,
         imei: imei,
         hasAlert: hasAlert,
+        whereToFind: whereToFind && hasAlert ? whereToFind : null
       };
 
       //SAVE NEW
