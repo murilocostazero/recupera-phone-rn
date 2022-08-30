@@ -68,11 +68,20 @@ export default function HandleDevices(props) {
 
     const url = await storage()
       .ref(`FiscalDocuments/${userEmail}/${deviceReceived.imei}.jpg`)
-      .getDownloadURL();
-    setFiscalDocumentPicture({
-      uri: url,
-      fileName: `${deviceReceived.imei}.jpg`,
-    });
+      .getDownloadURL()
+      .catch(e => {
+        // console.error('Erro ao buscar imagem', e);
+        return null;
+      });
+
+    setFiscalDocumentPicture(
+      url === null
+        ? ''
+        : {
+            uri: url,
+            fileName: `${deviceReceived.imei}.jpg`,
+          },
+    );
   }
 
   function showImeiInfo() {
@@ -122,11 +131,13 @@ export default function HandleDevices(props) {
             loggedUser.email,
           );
 
-          props.handleSnackbar({
-            type: 'success',
-            message: 'Fazendo upload do documento fiscal',
-          });
-          await uploadImage();
+          if (fiscalDocumentPicture) {
+            props.handleSnackbar({
+              type: 'success',
+              message: 'Fazendo upload do documento fiscal',
+            });
+            await uploadImage();
+          }
 
           if (!addDeviceResponse.success) {
             props.handleSnackbar({
@@ -157,11 +168,13 @@ export default function HandleDevices(props) {
             loggedUser.email,
           );
 
-          props.handleSnackbar({
-            type: 'success',
-            message: 'Fazendo upload do documento fiscal',
-          });
-          await uploadImage();
+          if (fiscalDocumentPicture) {
+            props.handleSnackbar({
+              type: 'success',
+              message: 'Fazendo upload do documento fiscal',
+            });
+            await uploadImage();
+          }
 
           if (!addDeviceResponse.success) {
             props.handleSnackbar({
@@ -216,7 +229,8 @@ export default function HandleDevices(props) {
       );
 
       // Delete the file
-      storage().delete(fiscalDocumentRef)
+      fiscalDocumentRef
+        .delete()
         .then(() => {
           // File deleted successfully
           setLoadingRemoveDevice(false);
