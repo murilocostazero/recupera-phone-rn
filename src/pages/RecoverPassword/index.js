@@ -14,11 +14,13 @@ export default function RecoverPassword(props) {
     setSending(true);
     await auth().sendPasswordResetEmail(email);
     setSending(false);
-    props.handleSnackBar({
+    setEmail('');
+    props.handleSnackbar({
       type: 'success',
       message:
         'Enviamos um email para a recuperação da sua senha. Verifique sua caixa de entrada.',
     });
+    
   }
 
   return (
@@ -44,7 +46,7 @@ export default function RecoverPassword(props) {
             <TextInput
               value={email}
               onChangeText={text => setEmail(text)}
-              onSubmitEditing={() => {}}
+              onSubmitEditing={() => resetPassword()}
               keyboardType="email-address"
               placeholder="fulanofulanoso@gmail.com"
               autoCapitalize="none"
