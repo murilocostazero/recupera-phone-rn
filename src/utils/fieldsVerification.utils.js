@@ -11,7 +11,7 @@ export function newDeviceFieldsVerification(brand, model, mainColor, imei) {
     };
   } else if (mainColor.length < 3) {
     return {success: false, message: 'Cor inválida'};
-  } else if (imei.length > 17 || imei.length < 15) {
+  } else if (isNaN(imei) || (imei.length > 17 || imei.length < 15)) {
     return {success: false, message: 'Número de IMEI inválido'};
   } else {
     return {success: true};

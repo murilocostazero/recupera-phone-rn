@@ -2,23 +2,23 @@ import {StyleSheet} from 'react-native';
 import colors from '../../styles/colors.style';
 
 const styles = StyleSheet.create({
-    containerCard: {
+  containerCard: {
     padding: 8,
     marginTop: 16,
-    alignItems: 'center'
+    alignItems: 'center',
   },
   profilePictureContainer: {
-    width: 112,
-    height: 112,
-    borderRadius: 112 / 2,
+    width: 224,
+    height: 224,
+    borderRadius: 224 / 2,
     backgroundColor: colors.icon,
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
   },
   profilePicture: {
-    width: 112,
-    height: 112,
-    borderRadius: 112 / 2,
+    width: 224,
+    height: 224,
+    borderRadius: 224 / 2,
     resizeMode: 'cover',
   },
   menuOptionContainer: {
@@ -26,8 +26,8 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 16,
     alignItems: 'center',
-    justifyContent: 'space-between'
-  }
+    justifyContent: 'space-between',
+  },
 });
 
 export default styles;

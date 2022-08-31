@@ -159,10 +159,10 @@ export default function UserPage(props) {
               />
             )}
             <CircleIconButton
-              buttonSize={28}
+              buttonSize={36}
               buttonColor="#FFF"
               iconName="edit"
-              iconSize={24}
+              iconSize={32}
               haveShadow={true}
               iconColor={colors.secondary}
               handleCircleIconButtonPress={() => selectImage()}
@@ -173,7 +173,6 @@ export default function UserPage(props) {
 
         <View style={styles.containerCard}>
           <MenuOption label="Minhas informações" iconName="edit" handleMenuOption={() => props.navigation.navigate('MyInfo')} />
-          <MenuOption label="Configurações" iconName="settings" handleMenuOption={() => Alert.alert('Ainda não')} />
           <MenuOption label="Sair da conta" iconName="logout" handleMenuOption={() => onLogout()} />
         </View>
       </ScrollView>

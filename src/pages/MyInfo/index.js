@@ -75,10 +75,6 @@ export default function MyInfo(props) {
     }
   }
 
-  async function changeName() {
-    Alert.alert('Ainda não!');
-  }
-
   async function saveInfo() {
     if (name.length < 3) {
       props.handleSnackbar({
@@ -163,9 +159,7 @@ export default function MyInfo(props) {
         handleGoBackButtonPress={() => props.navigation.goBack()}
         pageTitle="Minhas informações"
         loadingPrimaryButton={loadingSaveInfo}
-        handlePrimaryButtonPress={() =>
-          isAgentAccount ? saveInfo() : changeName()
-        }
+        handlePrimaryButtonPress={() => saveInfo()}
         primaryButtonLabel="PRONTO"
       />
 
@@ -180,6 +174,7 @@ export default function MyInfo(props) {
           <View style={generalStyles.row}>
             <MaterialIcons name="person" color={colors.icon} size={22} />
             <TextInput
+              editable={false}
               ref={nameRef}
               value={name}
               onChangeText={text => setName(text)}

@@ -175,7 +175,15 @@ export default function Login(props) {
               Cadastre-se
             </Text>
           </TouchableHighlight>
-        </View>
+          </View>
+          <Text
+            onPress={() => props.navigation.navigate('RecoverPassword')}
+            style={[
+              generalStyles.primaryLabel,
+              {marginVertical: 8, textAlign: 'center', color: colors.secondary},
+            ]}>
+            Esqueci minha senha
+          </Text>
       </View>
     </View>
   ) : (

@@ -247,9 +247,10 @@ export default function HandleDevices(props) {
           setLoadingRemoveDevice(false);
           props.handleSnackbar({
             type: 'error',
-            message: 'Não foi possível excluir documento fiscal',
+            message: 'Não havia documento fiscal neste dispositivo',
           });
-          console.error(error);
+          props.navigation.goBack();
+          // console.error(error);
         });
     }
   }
