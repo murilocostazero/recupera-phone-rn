@@ -15,8 +15,8 @@ const styles = StyleSheet.create({
     },
     institutionItem: {
         backgroundColor: '#FFF',
-        marginRight: 8,
-        padding: 4,
+        marginVertical: 8,
+        padding: 8,
         borderRadius: 16
     },
     searchInstitutionContainer: {

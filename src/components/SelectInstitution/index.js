@@ -6,12 +6,14 @@ import {
   FlatList,
   ActivityIndicator,
   TextInput,
+  Modal,
 } from 'react-native';
 import styles from './styles.style';
 import generalStyles from '../../styles/general.style';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import colors from '../../styles/colors.style';
 import {getAllInstitutions} from '../../utils/firebase.utils';
+import FlatButton from '../FlatButton';
 
 export default function SelectInstitution(props) {
   const [showInstitutions, setShowInstitutions] = useState(false);
@@ -52,6 +54,7 @@ export default function SelectInstitution(props) {
     setQuery('');
 
     props.selectInstitution(item);
+    setShowInstitutions(false);
   }
 
   const renderInstitutions = ({item}) => {
@@ -62,7 +65,7 @@ export default function SelectInstitution(props) {
         style={styles.institutionItem}>
         <Text
           numberOfLines={1}
-          style={[generalStyles.secondaryLabel, {maxWidth: 224}]}>
+          style={[generalStyles.primaryLabel, {maxWidth: '90%'}]}>
           {item.name}
         </Text>
       </TouchableHighlight>
@@ -99,37 +102,52 @@ export default function SelectInstitution(props) {
               />
             </View>
           </TouchableHighlight>
-          {showInstitutions ? (
-            <View
-              style={[generalStyles.row, styles.searchInstitutionContainer]}>
-              <TextInput
-                placeholder="Filtre o nome do batalhão ou dp"
-                placeholderTextColor={colors.text.darkPlaceholder}
-                style={[styles.searchInput, generalStyles.secondaryLabel]}
-                onChangeText={text => setQuery(text)}
-                onSubmitEditing={() =>
-                  selectInstitution(filteredInstitutions[0])
-                }
+          <Modal
+            animationType="slide"
+            transparent={true}
+            visible={showInstitutions}>
+            <View style={generalStyles.pageContainer}>
+              <View
+                style={[generalStyles.row, styles.searchInstitutionContainer]}>
+                <TextInput
+                  placeholder="Filtre o nome do batalhão ou dp"
+                  placeholderTextColor={colors.text.darkPlaceholder}
+                  style={[styles.searchInput, generalStyles.secondaryLabel]}
+                  onChangeText={text => setQuery(text)}
+                  onSubmitEditing={() =>
+                    selectInstitution(filteredInstitutions[0])
+                  }
+                />
+                <MaterialIcons
+                  name="filter-list"
+                  color={colors.secondary}
+                  size={28}
+                />
+              </View>
+              <FlatList
+                style={{
+                  marginTop: 8,
+                  display: showInstitutions ? 'flex' : 'none',
+                }}
+                data={filteredInstitutions}
+                renderItem={renderInstitutions}
+                keyExtractor={item => item.email}
+                ListEmptyComponent={<EmptyInstitutionList />}
               />
-              <MaterialIcons
-                name="filter-list"
-                color={colors.secondary}
-                size={28}
+              <FlatButton
+                label="Cancelar"
+                height={48}
+                labelColor="#FFF"
+                buttonColor={colors.error}
+                handleFlatButtonPress={() => setShowInstitutions(false)}
+                isLoading={false}
+                style={{}}
               />
             </View>
-          ) : (
-            <View />
-          )}
-          <FlatList
-            style={{marginTop: 8, display: showInstitutions ? 'flex' : 'none'}}
-            horizontal={true}
-            data={filteredInstitutions}
-            renderItem={renderInstitutions}
-            keyExtractor={item => item.email}
-            ListEmptyComponent={<EmptyInstitutionList />}
-          />
+          </Modal>
         </>
       )}
     </View>
   );
 }
+
