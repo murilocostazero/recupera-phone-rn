@@ -571,7 +571,9 @@ export async function whereToFindDevice(device, location) {
 
   const userCollection = await getUserFromCollections(device.owner);
   const devices = userCollection.user._data.devices;
-  const deviceFoundIndex = devices.map(element => element.imei).indexOf(device.deviceInfo.imei);
+  const deviceFoundIndex = devices
+    .map(element => element.imei)
+    .indexOf(device.deviceInfo.imei);
 
   if (deviceFoundIndex != -1) {
     const deviceUpdated = {
@@ -580,7 +582,7 @@ export async function whereToFindDevice(device, location) {
       hasAlert: device.deviceInfo.hasAlert,
       imei: device.deviceInfo.imei,
       mainColor: device.deviceInfo.mainColor,
-      whereToFind: location
+      whereToFind: location,
     };
     devices[deviceFoundIndex] = deviceUpdated;
 
@@ -610,4 +612,47 @@ export async function whereToFindDevice(device, location) {
     };
   }
   return whereToFindResponse;
+}
+
+export async function handleFavoriteDevice(device, deviceLabel, userEmail) {
+  let handleFavoriteDeviceResponse = null;
+  const localUser = await getUserFromCollections(userEmail);
+  const data = localUser.user._data;
+
+  const favoriteDevices = !data.favoriteDevices ? [] : data.favoriteDevices;
+
+  //Verificar se device existe no array
+  const deviceIndex = favoriteDevices.findIndex(object => {
+    return object.imei == device.imei;
+  });
+
+  let deviceResponse = null;
+  if (deviceIndex != -1) {
+    //se sim, remover
+    favoriteDevices.splice(deviceIndex, 1);
+    deviceResponse = {success: true, message: 'Dispositivo removido'};
+  } else {
+    //se não, inserir
+    favoriteDevices.push({imei: device.imei, label: deviceLabel});
+    deviceResponse = {success: true, message: 'Dispositivo adicionado'};
+  }
+
+  await firestore()
+      .collection('Users')
+      .doc(userEmail)
+      .update({
+        favoriteDevices: favoriteDevices,
+      })
+      .then(() => {
+        handleFavoriteDeviceResponse = deviceResponse;
+      })
+      .catch(error => {
+        console.error(error);
+        handleFavoriteDeviceResponse = {
+          success: false,
+          message: 'Erro ao salvar notificação de dispositivo',
+        };
+      });
+
+  return handleFavoriteDeviceResponse;
 }

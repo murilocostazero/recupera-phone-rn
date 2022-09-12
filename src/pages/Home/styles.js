@@ -16,7 +16,8 @@ const styles = StyleSheet.create({
     marginTop: 32
   },
   deviceContainer: {
-    width: 150,
+    // width: 150,
+    padding: 8,
     backgroundColor: colors.background,
     borderRadius: 16,
     justifyContent: 'space-between',

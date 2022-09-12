@@ -9,6 +9,7 @@ import {
   ScrollView,
   RefreshControl,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import generalStyles from '../../styles/general.style';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -26,6 +27,7 @@ export default function Home(props) {
   const [displayName, setDisplayName] = useState('');
   const [profilePicture, setProfilePicture] = useState(null);
   const [devices, setDevices] = useState([]);
+  const [favoriteDevices, setFavoriteDevices] = useState([]);
   const [haveNotifications, setHaveNotifications] = useState(false);
   const [loadingUserData, setLoadingUserData] = useState(false);
   const [randomInt, setRandomInt] = useState(0);
@@ -37,7 +39,7 @@ export default function Home(props) {
     getRandomInt();
   }, [isPageFocused]);
 
-  function getRandomInt(){
+  function getRandomInt() {
     const randomIntFound = Math.floor(Math.random() * securityTips.length);
     setRandomInt(randomIntFound);
   }
@@ -61,6 +63,9 @@ export default function Home(props) {
     } else {
       setUserDoc(user.user._data);
       setDevices(user.user._data.devices);
+      setFavoriteDevices(
+        !user.user._data.favoriteDevices ? [] : user.user._data.favoriteDevices,
+      );
       setHaveNotifications(
         user.user._data.notifications.length > 0 ? true : false,
       );
@@ -182,6 +187,44 @@ export default function Home(props) {
     );
   };
 
+  const renderFavoriteDevices = ({item}) => {
+    return (
+      <TouchableHighlight
+        onPress={() =>
+          props.navigation.navigate('SearchPage', {queryToSearch: item.imei})
+        }
+        underlayColor="tranparent">
+        <View
+          style={[
+            styles.deviceContainer,
+            generalStyles.shadow,
+            {backgroundColor: '#FFF'},
+          ]}>
+          <View style={{alignItems: 'stretch'}}>
+          <Text style={generalStyles.primaryLabel}>{item.label}</Text>
+            <View style={generalStyles.row}>
+              <Text style={generalStyles.primaryLabel}>Imei:</Text>
+              <Text
+                style={[
+                  generalStyles.secondaryLabel,
+                  {maxWidth: 150, marginLeft: 8},
+                ]}
+                numberOfLines={1}>
+                {item.imei}
+              </Text>
+              <MaterialIcons
+                name="arrow-right"
+                size={28}
+                color={colors.icon}
+                style={{alignSelf: 'center'}}
+              />
+            </View>
+          </View>
+        </View>
+      </TouchableHighlight>
+    );
+  };
+
   return loadingUserData ? (
     <View style={[generalStyles.pageContainer, {justifyContent: 'center'}]}>
       <ActivityIndicator size="large" color={colors.secondary} />
@@ -254,6 +297,34 @@ export default function Home(props) {
             contentContainerStyle={{paddingVertical: 8}}
             data={devices}
             renderItem={renderDevices}
+            keyExtractor={item => item.imei}
+            ListEmptyComponent={<DevicesListEmpty />}
+          />
+        </View>
+
+        <View style={styles.card}>
+          <View style={[generalStyles.row, {justifyContent: 'space-between'}]}>
+            <Text style={generalStyles.titleDark}>Favoritos</Text>
+            <CircleIconButton
+              buttonSize={28}
+              buttonColor="#FFF"
+              iconName="lightbulb"
+              iconSize={24}
+              haveShadow={true}
+              iconColor={colors.primary}
+              handleCircleIconButtonPress={() =>
+                Alert.alert(
+                  'Sobre os favoritos',
+                  'Adicione dispositivos a sua lista de favoritos para que você consiga buscá-los com mais praticidade.',
+                )
+              }
+            />
+          </View>
+          <FlatList
+            horizontal={true}
+            contentContainerStyle={{paddingVertical: 8}}
+            data={favoriteDevices}
+            renderItem={renderFavoriteDevices}
             keyExtractor={item => item.imei}
             ListEmptyComponent={<DevicesListEmpty />}
           />

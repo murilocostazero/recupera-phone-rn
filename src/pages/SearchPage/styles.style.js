@@ -34,6 +34,13 @@ const styles = StyleSheet.create({
     fontFamily: 'JosefinSans-Bold',
     fontSize: 14,
   },
+  favoriteButton: {
+    marginTop: 16,
+    paddingVertical: 2,
+    paddingHorizontal: 12,
+    alignSelf: 'center',
+    borderRadius: 16
+  }
 });
 
 export default styles;
