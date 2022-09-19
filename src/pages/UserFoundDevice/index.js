@@ -5,6 +5,7 @@ import colors from '../../styles/colors.style';
 import generalStyles from '../../styles/general.style';
 import {
   addUserNotifications,
+  getUserFromCollections,
   whereToFindDevice,
 } from '../../utils/firebase.utils';
 import styles from './styles.style';
@@ -26,6 +27,36 @@ export default function UserFoundDevice(props) {
   function populateReceivedInfo(sender, deviceInfo) {
     setWhoFound(sender);
     setDevice(deviceInfo);
+  }
+
+  async function sendEmailNotification(to, notificationMessage) {
+    //Sending email notification
+    await fetch(
+      // 'http://localhost:5000/recuperaphone-7e99c/us-central1/mailer',
+      'https://us-central1-recuperaphone-7e99c.cloudfunctions.net/mailer',
+      {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          to: to,
+          subject: 'Comemore! Seu dispositivo está em boas mãos.',
+          message: notificationMessage,
+        }),
+      },
+    )
+      .then(success => {
+        console.log(success);
+      })
+      .catch(error => {
+        console.error(error)
+        props.handleSnackbar({
+          type: 'error',
+          message: 'Houve um problema ao enviar a notificação por email.',
+        });
+      });
   }
 
   async function onSendDeviceInfo() {
@@ -61,7 +92,6 @@ export default function UserFoundDevice(props) {
       );
 
       if (!notificationSent.success) {
-        setLoadingFinishDelivery(false);
         props.handleSnackbar({
           type: 'error',
           message: 'Erro ao concluir entrega de dispositivo',
@@ -76,44 +106,33 @@ export default function UserFoundDevice(props) {
           selectedInstitution,
         );
         if (!whereToFindResponse.success) {
-          setLoadingFinishDelivery(false);
           props.handleSnackbar({
             type: 'error',
             message: whereToFindResponse.message,
           });
         } else {
-          setLoadingFinishDelivery(false);
-
-          //Sending email notification
-          await fetch(
-            'https://us-central1-recuperaphone-7e99c.cloudfunctions.net/mailer',
-            {
-              method: 'POST',
-              headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                to: device.owner,
-                subject: 'Comemore! Seu dispositivo está em boas mãos.',
-                message: notificationMessage,
-              }),
-            },
-          )
-            .then(success => {
-              props.handleSnackbar({
-                type: 'success',
-                message: 'Obrigado! Você ajudou alguém a recuperar um bem.',
-              });
-            })
-            .catch(error => {
-              props.handleSnackbar({
-                type: 'error',
-                message: 'Houve um problema ao enviar a notificação por email.',
-              });
+          await sendEmailNotification(device.owner, notificationMessage);
+          const fullUser = await getUserFromCollections(device.owner);
+          if (!fullUser.success) {
+            props.handleSnackbar({
+              type: 'error',
+              message: 'Não foi possível buscar o usuário.',
             });
+          } else {
+            !fullUser.user._data.secondaryLabel
+              ? setTimeout(() => {
+                  sendEmailNotification(
+                    fullUser.user._data.secondaryEmail,
+                    notificationMessage,
+                  );
+                }, 1500)
+              : {};
+          }
         }
 
+        props.handleSnackbar({type: 'success', message: 'Obrigado! Você ajudou alguém a recuperar um bem.'});
+
+        setLoadingFinishDelivery(false);
         setTimeout(() => {
           props.navigation.reset({
             index: 0,
