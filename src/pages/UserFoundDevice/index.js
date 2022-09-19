@@ -3,7 +3,10 @@ import {View, Text, Alert} from 'react-native';
 import {CircleIconButton, Header, SelectInstitution} from '../../components';
 import colors from '../../styles/colors.style';
 import generalStyles from '../../styles/general.style';
-import {addUserNotifications, whereToFindDevice} from '../../utils/firebase.utils';
+import {
+  addUserNotifications,
+  whereToFindDevice,
+} from '../../utils/firebase.utils';
 import styles from './styles.style';
 
 export default function UserFoundDevice(props) {
@@ -68,8 +71,11 @@ export default function UserFoundDevice(props) {
           notificationSent.message,
         );
       } else {
-        const whereToFindResponse = await whereToFindDevice(device, selectedInstitution);
-        if(!whereToFindResponse.success){
+        const whereToFindResponse = await whereToFindDevice(
+          device,
+          selectedInstitution,
+        );
+        if (!whereToFindResponse.success) {
           setLoadingFinishDelivery(false);
           props.handleSnackbar({
             type: 'error',
@@ -77,10 +83,35 @@ export default function UserFoundDevice(props) {
           });
         } else {
           setLoadingFinishDelivery(false);
-          props.handleSnackbar({
-            type: 'success',
-            message: 'Obrigado! Você ajudou alguém a recuperar um bem.',
-          });
+
+          //Sending email notification
+          await fetch(
+            'https://us-central1-recuperaphone-7e99c.cloudfunctions.net/mailer',
+            {
+              method: 'POST',
+              headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                to: device.owner,
+                subject: 'Comemore! Seu dispositivo está em boas mãos.',
+                message: notificationMessage,
+              }),
+            },
+          )
+            .then(success => {
+              props.handleSnackbar({
+                type: 'success',
+                message: 'Obrigado! Você ajudou alguém a recuperar um bem.',
+              });
+            })
+            .catch(error => {
+              props.handleSnackbar({
+                type: 'error',
+                message: 'Houve um problema ao enviar a notificação por email.',
+              });
+            });
         }
 
         setTimeout(() => {

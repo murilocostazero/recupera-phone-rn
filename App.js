@@ -1,7 +1,19 @@
 import React, {useEffect, useState} from 'react';
 import {View, StatusBar} from 'react-native';
 import auth from '@react-native-firebase/auth';
-import { Login, Home, HandleDevices, UserPage, SearchPage, InstitutionalSingup, MyInfo, Notifications, UserFoundDevice, RecoverPassword } from './src/pages';
+import {
+  Login,
+  Home,
+  HandleDevices,
+  UserPage,
+  SearchPage,
+  InstitutionalSingup,
+  MyInfo,
+  Notifications,
+  UserFoundDevice,
+  RecoverPassword,
+  Settings,
+} from './src/pages';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {SnackBar} from './src/components';
@@ -182,6 +194,26 @@ export default function App() {
                 </>
               )}
             </Stack.Screen>
+            <Stack.Screen name="Settings" options={{headerShown: false}}>
+              {props => (
+                <>
+                  <Settings
+                    handleSnackbar={receivedSnackBar =>
+                      handleSnackbar(receivedSnackBar)
+                    }
+                    onAuthStateChanged={loggedUser =>
+                      onAuthStateChanged(loggedUser)
+                    }
+                    {...props}
+                  />
+                  {isSnackbarVisible ? (
+                    <SnackBar snackbar={snackbar} />
+                  ) : (
+                    <View />
+                  )}
+                </>
+              )}
+            </Stack.Screen>
           </Stack.Navigator>
         ) : (
           <Stack.Navigator>
@@ -205,7 +237,9 @@ export default function App() {
                 </>
               )}
             </Stack.Screen>
-            <Stack.Screen name="InstitutionalSingup" options={{headerShown: false}}>
+            <Stack.Screen
+              name="InstitutionalSingup"
+              options={{headerShown: false}}>
               {props => (
                 <>
                   <InstitutionalSingup
