@@ -22,6 +22,8 @@ export async function createUser(email, password, displayName) {
                 devices: [],
                 userType: 'regular',
                 notifications: [],
+                secondaryEmail: '',
+                smsNumber: '',
               })
               .then(() => {
                 userCreated = {
@@ -638,21 +640,57 @@ export async function handleFavoriteDevice(device, deviceLabel, userEmail) {
   }
 
   await firestore()
-      .collection('Users')
-      .doc(userEmail)
-      .update({
-        favoriteDevices: favoriteDevices,
-      })
-      .then(() => {
-        handleFavoriteDeviceResponse = deviceResponse;
-      })
-      .catch(error => {
-        console.error(error);
-        handleFavoriteDeviceResponse = {
-          success: false,
-          message: 'Erro ao salvar notificação de dispositivo',
-        };
-      });
+    .collection('Users')
+    .doc(userEmail)
+    .update({
+      favoriteDevices: favoriteDevices,
+    })
+    .then(() => {
+      handleFavoriteDeviceResponse = deviceResponse;
+    })
+    .catch(error => {
+      console.error(error);
+      handleFavoriteDeviceResponse = {
+        success: false,
+        message: 'Erro ao salvar notificação de dispositivo',
+      };
+    });
 
   return handleFavoriteDeviceResponse;
+}
+
+export async function addOrRemoveSecondaryEmail(userEmail, secondaryEmail) {
+  let secondaryEmailResponse = null;
+  await firestore()
+    .collection('Users')
+    .doc(userEmail)
+    .update({
+      secondaryEmail: secondaryEmail,
+    })
+    .then(() => {
+      secondaryEmailResponse = {success: true};
+    })
+    .catch(error => {
+      secondaryEmailResponse = {success: false, message: 'Não foi possível alterar email secundário.'};
+    });
+
+  return secondaryEmailResponse;
+}
+
+export async function addOrRemoveSmsNumber(userEmail, smsNumber) {
+  let smsNumberResponse = null;
+  await firestore()
+    .collection('Users')
+    .doc(userEmail)
+    .update({
+      smsNumber: smsNumber,
+    })
+    .then(() => {
+      smsNumberResponse = {success: true};
+    })
+    .catch(error => {
+      smsNumberResponse = {success: false, message: 'Não foi possível alterar o número de sms.'};
+    });
+
+  return smsNumberResponse;
 }
