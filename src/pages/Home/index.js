@@ -20,6 +20,7 @@ import {useIsFocused} from '@react-navigation/native';
 import brandImageArray from '../../utils/brandImageArray.utils';
 import {CircleIconButton, FlatButton} from '../../components';
 import securityTips from '../../utils/securityTips';
+import accountImageArray from '../../utils/accountTypeImage.utils';
 
 export default function Home(props) {
   const [loggedUser, setLoggedUser] = useState(null);
@@ -62,6 +63,8 @@ export default function Home(props) {
       props.handleSnackbar({type: 'error', message: 'Usuário não encontrado'});
     } else {
       setUserDoc(user.user._data);
+
+      console.log('User', user.user._data);
       setDevices(user.user._data.devices);
       setFavoriteDevices(
         !user.user._data.favoriteDevices ? [] : user.user._data.favoriteDevices,
@@ -201,7 +204,7 @@ export default function Home(props) {
             {backgroundColor: '#FFF'},
           ]}>
           <View style={{alignItems: 'stretch'}}>
-          <Text style={generalStyles.primaryLabel}>{item.label}</Text>
+            <Text style={generalStyles.primaryLabel}>{item.label}</Text>
             <View style={generalStyles.row}>
               <Text style={generalStyles.primaryLabel}>Imei:</Text>
               <Text
@@ -232,30 +235,49 @@ export default function Home(props) {
   ) : (
     <SafeAreaView style={generalStyles.pageContainer}>
       <View style={[generalStyles.row, {justifyContent: 'space-between'}]}>
-        <CircleIconButton
-          buttonSize={32}
-          buttonColor="#FFF"
-          iconName="notifications"
-          iconSize={28}
-          haveShadow={true}
-          iconColor={colors.primary}
-          handleCircleIconButtonPress={() =>
-            props.navigation.navigate('Notifications', {user: userDoc})
-          }
-          isNotificationsButton={haveNotifications}
-        />
+        <View
+          style={{
+            flex: 1,
+            alignItems: 'center',
+            justifyContent: 'flex-start',
+            flexDirection: 'row',
+          }}>
+          <CircleIconButton
+            buttonSize={32}
+            buttonColor="#FFF"
+            iconName="notifications"
+            iconSize={28}
+            haveShadow={true}
+            iconColor={colors.primary}
+            handleCircleIconButtonPress={() =>
+              props.navigation.navigate('Notifications', {user: userDoc})
+            }
+            isNotificationsButton={haveNotifications}
+          />
+        </View>
         <TouchableHighlight
           underlayColor="transparent"
           onPress={() => props.navigation.navigate('UserPage')}>
           <View style={generalStyles.row}>
-            <Text
-              numberOfLines={1}
-              style={[
-                generalStyles.primaryLabel,
-                {marginRight: 8, maxWidth: 224},
-              ]}>
-              Olá, {displayName}
-            </Text>
+            <View>
+              <Text
+                numberOfLines={1}
+                style={[
+                  generalStyles.primaryLabel,
+                  {marginRight: 8, maxWidth: 224},
+                ]}>
+                Olá, {displayName}
+              </Text>
+              {!userDoc ? (
+                <Text style={generalStyles.secondaryLabel}>Carregando...</Text>
+              ) : userDoc.userType === 'regular' ? (
+                <View />
+              ) : (
+                <Text style={generalStyles.secondaryLabel}>
+                  {userDoc.userType === 'agent' ? 'Agente' : 'Instituição'}
+                </Text>
+              )}
+            </View>
             <View style={styles.profilePictureContainer}>
               {!profilePicture ? (
                 <MaterialIcons name="person" size={30} color="#FFF" />
