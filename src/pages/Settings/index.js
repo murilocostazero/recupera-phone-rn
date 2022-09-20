@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
-import {View, Text, ScrollView, Switch, TextInput} from 'react-native';
-import {Header} from '../../components';
+import {View, Text, ScrollView, Switch, TextInput, Alert} from 'react-native';
+import {FlatButton, Header} from '../../components';
 import colors from '../../styles/colors.style';
 import generalStyles from '../../styles/general.style';
 import styles from './styles.style';
@@ -9,6 +9,8 @@ import {
   addOrRemoveSecondaryEmail,
   addOrRemoveSmsNumber,
   currentUser,
+  deleteCollection,
+  deleteUser,
 } from '../../utils/firebase.utils';
 import MaskInput from 'react-native-mask-input';
 
@@ -137,6 +139,47 @@ export default function Settings(props) {
     setLoading(false);
   }
 
+  async function deleteAccount() {
+    setLoading(true);
+    //Primeiro excluir no cloud firestore
+    const deleteCollectionResponse = await deleteCollection(user.email);
+    if (!deleteCollectionResponse) {
+      props.handleSnackbar({
+        type: 'error',
+        message: 'Ocorreu um erro ao tentar remover os dados do usuário.',
+      });
+    } else {
+      //Depois excluir a conta
+      const deleteUserResponse = await deleteUser();
+      if (!deleteUserResponse) {
+        props.handleSnackbar({
+          type: 'error',
+          message:
+            'Houve um erro ao tentar excluir as suas credenciais de acesso.',
+        });
+      } else {
+        await props.onAuthStateChanged(null);
+      }
+    }
+
+    setLoading(false);
+  }
+
+  function onDeletingAccount() {
+    Alert.alert(
+      'Está ciente disso?',
+      'Ao pressionar para CONTINUAR, todos os seus dados serão apagados da nossa base e não será possível recuperá-los',
+      [
+        {
+          text: 'CANCELAR',
+          onPress: () => console.log('Cancel Pressed'),
+          style: 'cancel',
+        },
+        {text: 'CONTINUAR', onPress: () => deleteAccount()},
+      ],
+    );
+  }
+
   return (
     <View style={generalStyles.pageContainer}>
       <Header
@@ -236,7 +279,23 @@ export default function Settings(props) {
                 placeholder="(99)98122-3344"
                 autoCapitalize="none"
                 placeholderTextColor={colors.icon}
-                mask={['(', /\d/, /\d/, ')', ' ', /\d/, /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/]}
+                mask={[
+                  '(',
+                  /\d/,
+                  /\d/,
+                  ')',
+                  ' ',
+                  /\d/,
+                  /\d/,
+                  /\d/,
+                  /\d/,
+                  /\d/,
+                  '-',
+                  /\d/,
+                  /\d/,
+                  /\d/,
+                  /\d/,
+                ]}
                 style={[
                   generalStyles.textInput,
                   generalStyles.primaryLabel,
@@ -245,6 +304,24 @@ export default function Settings(props) {
               />
             </View>
           </View>
+        </View>
+
+        <View style={[styles.card, generalStyles.shadow]}>
+          <Text style={generalStyles.primaryLabel}>Excluir conta</Text>
+          <Text style={[generalStyles.secondaryLabel]}>
+            Ao excluir sua conta, todos os seus dados serão apagados da nossa
+            base de dados, não sendo possível recuperá-los uma vez que a
+            exclusão tenha sido concluida.
+          </Text>
+          <FlatButton
+            label="EXCLUIR MINHA CONTA"
+            height={48}
+            labelColor="#FFF"
+            buttonColor={colors.error}
+            handleFlatButtonPress={() => onDeletingAccount()}
+            isLoading={loading}
+            style={{marginTop: 16}}
+          />
         </View>
       </ScrollView>
     </View>

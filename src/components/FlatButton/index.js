@@ -9,25 +9,33 @@ export default function FlatButton(props) {
   return (
     <TouchableHighlight
       underlayColor={colors.secondaryOpacity}
-      onPress={() => props.handleFlatButtonPress()}
-      style={[{
-        backgroundColor: props.buttonColor ? props.buttonColor : colors.primary,
-        height: !props.height ? 56 : props.height,
-        borderRadius: 20,
-        justifyContent: 'center',
-        alignItems: 'center'
-      }, props.style]}>
-      {
-        props.isLoading ?
-        <ActivityIndicator color={props.labelColor ? props.labelColor : '#FFF'} size='large' /> : 
+      onPress={() => (props.isLoading ? {} : props.handleFlatButtonPress())}
+      style={[
+        {
+          backgroundColor: props.buttonColor
+            ? props.buttonColor
+            : colors.primary,
+          height: !props.height ? 56 : props.height,
+          borderRadius: 20,
+          justifyContent: 'center',
+          alignItems: 'center',
+        },
+        props.style,
+      ]}>
+      {props.isLoading ? (
+        <ActivityIndicator
+          color={props.labelColor ? props.labelColor : '#FFF'}
+          size="large"
+        />
+      ) : (
         <Text
           style={[
             generalStyles.primaryLabel,
             {color: props.labelColor ? props.labelColor : '#FFF'},
           ]}>
-          { props.label }
+          {props.label}
         </Text>
-      }
+      )}
     </TouchableHighlight>
   );
 }

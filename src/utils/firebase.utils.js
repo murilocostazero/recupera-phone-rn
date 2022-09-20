@@ -671,7 +671,10 @@ export async function addOrRemoveSecondaryEmail(userEmail, secondaryEmail) {
       secondaryEmailResponse = {success: true};
     })
     .catch(error => {
-      secondaryEmailResponse = {success: false, message: 'Não foi possível alterar email secundário.'};
+      secondaryEmailResponse = {
+        success: false,
+        message: 'Não foi possível alterar email secundário.',
+      };
     });
 
   return secondaryEmailResponse;
@@ -689,8 +692,37 @@ export async function addOrRemoveSmsNumber(userEmail, smsNumber) {
       smsNumberResponse = {success: true};
     })
     .catch(error => {
-      smsNumberResponse = {success: false, message: 'Não foi possível alterar o número de sms.'};
+      smsNumberResponse = {
+        success: false,
+        message: 'Não foi possível alterar o número de sms.',
+      };
     });
 
   return smsNumberResponse;
+}
+
+export async function deleteCollection(userEmail) {
+  let deleteCollectionResponse = false;
+  await firestore()
+    .collection('Users')
+    .doc(userEmail)
+    .delete()
+    .then(() => {
+      deleteCollectionResponse = true;
+    })
+    .catch(error => {
+      console.error('Erro ao remover user collection', error);
+    });
+
+  return deleteCollectionResponse;
+}
+
+export async function deleteUser() {
+  let deleteUserResponse = false;
+  let user = await auth().currentUser;
+  await user
+    .delete()
+    .then(() => (deleteUserResponse = true))
+    .catch(error => console.log('Erro ao remover user', error));
+  return deleteUserResponse;
 }
