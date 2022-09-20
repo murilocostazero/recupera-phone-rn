@@ -201,7 +201,7 @@ export default function Settings(props) {
               <Text style={[generalStyles.secondaryLabel]}>
                 Ative se você deseja ser alertado via email secundário quando
                 seu dispositivo for encontrado. Atenção: Você já será notificado
-                em seu email de cadastro.
+                na sua conta e em seu email de cadastro.
               </Text>
             </View>
             <Switch
@@ -241,7 +241,7 @@ export default function Settings(props) {
           </View>
         </View>
 
-        <View style={[styles.card, generalStyles.shadow]}>
+        {/*<View style={[styles.card, generalStyles.shadow]}>
           <View style={[generalStyles.row, {marginBottom: 12}]}>
             <View style={{marginRight: 8, flex: 2}}>
               <Text style={generalStyles.primaryLabel}>
@@ -304,7 +304,7 @@ export default function Settings(props) {
               />
             </View>
           </View>
-        </View>
+              </View>*/}
 
         <View style={[styles.card, generalStyles.shadow]}>
           <Text style={generalStyles.primaryLabel}>Excluir conta</Text>

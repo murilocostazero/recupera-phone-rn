@@ -117,7 +117,7 @@ export default function MyInfo(props) {
           const userToUpdate = {
             email: user.email,
             devices: user.devices,
-            userType: 'agent',
+            // userType: 'agent',
             agentInfo: {
               isAgentAuthStatus: 'pending',
               registrationNumber: registrationNumber,

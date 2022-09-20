@@ -382,7 +382,8 @@ export async function changeAgentAuthStatus(user, status) {
       .collection('Users')
       .doc(user.email)
       .update({
-        agentInfo: newAgentInfo,
+        userType: status == 'denied' ? 'regular' : 'agent',
+        agentInfo: status == 'denied' ? firestore.FieldValue.delete() : newAgentInfo,
         notifications: localNotifications,
       })
       .then(async () => {
