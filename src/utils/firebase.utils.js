@@ -175,7 +175,7 @@ export async function changeDisplayName(displayName) {
     .then(userUpdated => {
       updatedDisplayName = {
         success: true,
-        message: 'Nome alterado',
+        message: 'Nome alterado com sucesso',
       };
     })
     .catch(error => {
@@ -260,6 +260,23 @@ export async function requestUserTypeChange(user) {
     });
 
   return userUpdateResponse;
+}
+
+export async function agentToRegular(userEmail) {
+  let agentToRegularResponse = false;
+  await firestore()
+    .collection('Users')
+    .doc(userEmail)
+    .update({
+      userType: 'regular',
+      agentInfo: firestore.FieldValue.delete(),
+    })
+    .then(() => (agentToRegularResponse = true))
+    .catch(error => {
+      console.error('Erro ao mudar de agente para normal', error);
+    });
+
+  return agentToRegularResponse;
 }
 
 export async function addUserNotifications(notification, sender, receiver) {
@@ -553,8 +570,9 @@ export async function foundUserByRegistrationNumberAndInstitution(
     .then(querySnapshot => {
       querySnapshot.forEach(documentSnapshot => {
         const singleUser = documentSnapshot.data();
-        if (!singleUser.agentInfo) return;
-        if (
+        if (!singleUser.agentInfo) {
+          foundExistingUser = {success: false};
+        } else if (
           singleUser.agentInfo.institution == institution &&
           singleUser.agentInfo.registrationNumber == registrationNumber
         ) {

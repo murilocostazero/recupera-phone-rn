@@ -5,10 +5,9 @@ import {
   ScrollView,
   Switch,
   TextInput,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
-import {Header, SelectInstitution} from '../../components';
+import {FlatButton, Header, SelectInstitution} from '../../components';
 import colors from '../../styles/colors.style';
 import generalStyles from '../../styles/general.style';
 import styles from './styles.style';
@@ -21,6 +20,7 @@ import {
   getUserFromCollections,
   requestUserTypeChange,
   foundUserByRegistrationNumberAndInstitution,
+  agentToRegular,
 } from '../../utils/firebase.utils';
 
 export default function MyInfo(props) {
@@ -28,9 +28,11 @@ export default function MyInfo(props) {
   const [isAgentAccount, setIsAgentAccount] = useState(false);
   const [registrationNumber, setRegistrationNumber] = useState('');
   const [name, setName] = useState('');
+  const [previousName, setPreviousName] = useState('');
   const [job, setJob] = useState('');
   const [selectedInstitution, setSelectedInstitution] = useState(null);
   const [loadingSaveInfo, setLoadingSaveInfo] = useState(false);
+  const [loadingSaveName, setLoadingSaveName] = useState(false);
 
   const nameRef = useRef('nameRef');
   const jobRef = useRef('jobRef');
@@ -42,7 +44,7 @@ export default function MyInfo(props) {
   async function getUser() {
     const userResponse = await currentUser();
     setName(userResponse.displayName);
-
+    setPreviousName(userResponse.displayName);
     const userCollectionResponse = await getUserFromCollections(
       userResponse.email,
     );
@@ -76,55 +78,42 @@ export default function MyInfo(props) {
   }
 
   async function saveInfo() {
-    if (name.length < 3) {
-      props.handleSnackbar({
-        type: 'warning',
-        message: 'Nome não pode ter menos de 3 caracteres',
-      });
-    } else if (
-      isAgentAccount &&
-      (isNaN(registrationNumber) || registrationNumber.length < 4)
-    ) {
-      props.handleSnackbar({
-        type: 'warning',
-        message: 'Matrícula precisa ser um número maior que 4',
-      });
-    } else if (isAgentAccount && job.length < 3) {
-      props.handleSnackbar({
-        type: 'warning',
-        message: 'Função não pode ser menor que 3 caracteres',
-      });
-    } else if (isAgentAccount && !selectedInstitution) {
-      props.handleSnackbar({
-        type: 'warning',
-        message: 'Selecione uma instituição',
-      });
-    } else {
-      setLoadingSaveInfo(true);
-      //Verifica se já existe um usuário utilizando uma combinação de instituição e matricula
-      const foundExistingUser =
-        await foundUserByRegistrationNumberAndInstitution(
-          registrationNumber,
-          selectedInstitution.email,
-        );
-      if (foundExistingUser.success) {
-        setLoadingSaveInfo(false);
+    //Verificar se usuário já é agente
+    if (isAgentAccount) {
+      //Torná-lo agente
+      if (isNaN(registrationNumber) || registrationNumber.length < 4) {
         props.handleSnackbar({
           type: 'warning',
-          message:
-            'Já existe um usuário nessa instituição com a matrícula informada',
+          message: 'Matrícula precisa ser um número maior que 4',
+        });
+      } else if (job.length < 3) {
+        props.handleSnackbar({
+          type: 'warning',
+          message: 'Função não pode ser menor que 3 caracteres',
+        });
+      } else if (!selectedInstitution) {
+        props.handleSnackbar({
+          type: 'warning',
+          message: 'Selecione uma instituição',
         });
       } else {
-        //Primeiro alterar o nome
-        const displayNameUpdateResponse = await changeDisplayName(name);
-        if (!displayNameUpdateResponse.success) {
-          props.handleSnackbar({
-            type: 'error',
-            message: 'Erro ao alterar o nome',
-          });
+        setLoadingSaveInfo(true);
+        //Verifica se já existe um usuário utilizando uma combinação de instituição e matricula
+        const foundExistingUser =
+          await foundUserByRegistrationNumberAndInstitution(
+            registrationNumber,
+            selectedInstitution.email,
+          );
+        if (foundExistingUser.success) {
           setLoadingSaveInfo(false);
+          props.handleSnackbar({
+            type: 'warning',
+            message:
+              'Já existe um usuário nessa instituição com a matrícula informada',
+          });
         } else {
           //Pegar o usuário, montar ele todo e alterar
+          //Precisa montar todo para poder montar a notificação - ALTERAR ISSO DEPOIS
           const userToUpdate = {
             email: user.email,
             devices: user.devices,
@@ -150,6 +139,37 @@ export default function MyInfo(props) {
           }
         }
       }
+    } else {
+      //Torná-lo regular
+      setLoadingSaveInfo(true);
+      const agentToRegularResponse = await agentToRegular(user.email);
+      setLoadingSaveInfo(false);
+      if (!agentToRegularResponse) {
+        props.handleSnackbar({
+          type: 'error',
+          message: 'Houve um problema ao mudar o tipo de conta.',
+        });
+      } else {
+        getUser();
+      }
+    }
+  }
+
+  async function onChangingDisplayName() {
+    setLoadingSaveName(true);
+    const changeNameResponse = await changeDisplayName(name);
+    setLoadingSaveName(false);
+    if (!changeNameResponse.success) {
+      props.handleSnackbar({
+        type: 'error',
+        message: changeNameResponse.message,
+      });
+    } else {
+      props.handleSnackbar({
+        type: 'success',
+        message: changeNameResponse.message,
+      });
+      getUser();
     }
   }
 
@@ -164,31 +184,49 @@ export default function MyInfo(props) {
       />
 
       <ScrollView contentContainerStyle={{padding: 8, flex: 1}}>
-        <View
-          style={[
-            generalStyles.textInputContainer,
-            generalStyles.shadow,
-            {marginTop: 32},
-          ]}>
-          <Text style={generalStyles.secondaryLabel}>Nome</Text>
-          <View style={generalStyles.row}>
-            <MaterialIcons name="person" color={colors.icon} size={22} />
-            <TextInput
-              editable={false}
-              ref={nameRef}
-              value={name}
-              onChangeText={text => setName(text)}
-              onSubmitEditing={() => {}}
-              keyboardType="default"
-              placeholder="Ex.: Fulano Fulanoso"
-              placeholderTextColor={colors.icon}
-              style={[
-                generalStyles.textInput,
-                generalStyles.primaryLabel,
-                {marginLeft: 8},
-              ]}
-            />
+        <View>
+          <View
+            style={[
+              generalStyles.textInputContainer,
+              generalStyles.shadow,
+              {marginTop: 32},
+            ]}>
+            <Text style={generalStyles.secondaryLabel}>Nome</Text>
+            <View style={generalStyles.row}>
+              <MaterialIcons name="person" color={colors.icon} size={22} />
+              <TextInput
+                editable={true}
+                ref={nameRef}
+                value={name}
+                onChangeText={text => setName(text)}
+                onSubmitEditing={() => onChangingDisplayName()}
+                keyboardType="default"
+                placeholder="Ex.: Fulano Fulanoso"
+                placeholderTextColor={colors.icon}
+                style={[
+                  generalStyles.textInput,
+                  generalStyles.primaryLabel,
+                  {marginLeft: 8},
+                ]}
+              />
+            </View>
           </View>
+
+          {loadingSaveName ? (
+            <ActivityIndicator size="large" color={colors.secondary} />
+          ) : name !== previousName ? (
+            <FlatButton
+              label="Salvar novo nome"
+              height={48}
+              labelColor="#FFF"
+              buttonColor={colors.secondary}
+              handleFlatButtonPress={() => onChangingDisplayName()}
+              isLoading={false}
+              style={{}}
+            />
+          ) : (
+            <View />
+          )}
         </View>
         {!user ? (
           <ActivityIndicator size="large" color={colors.secondary} />
