@@ -24,6 +24,7 @@ export async function createUser(email, password, displayName) {
                 notifications: [],
                 secondaryEmail: '',
                 smsNumber: '',
+                favoriteDevices: []
               })
               .then(() => {
                 userCreated = {

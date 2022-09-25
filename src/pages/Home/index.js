@@ -64,7 +64,6 @@ export default function Home(props) {
     } else {
       setUserDoc(user.user._data);
 
-      console.log('User', user.user._data);
       setDevices(user.user._data.devices);
       setFavoriteDevices(
         !user.user._data.favoriteDevices ? [] : user.user._data.favoriteDevices,

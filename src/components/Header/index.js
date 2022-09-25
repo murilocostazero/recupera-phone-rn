@@ -8,13 +8,13 @@ import CircleIconButton from '../CircleIconButton';
 
 export default function Header(props) {
   return (
-    <View style={[generalStyles.row, {justifyContent: 'space-between'}]}>
+    <View style={[generalStyles.row, {justifyContent: 'space-between', padding: 2}]}>
       {!props.loadingPrimaryButton ? (
         <CircleIconButton
           buttonSize={30}
           buttonColor={colors.background}
           iconName="arrow-back"
-          iconSize={26}
+          iconSize={24}
           haveShadow={false}
           iconColor={colors.secondary}
           handleCircleIconButtonPress={() => props.handleGoBackButtonPress()}

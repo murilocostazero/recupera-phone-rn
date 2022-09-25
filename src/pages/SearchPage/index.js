@@ -47,7 +47,7 @@ export default function SearchPage(props) {
         message: 'Não foi possível buscar usuário',
       });
     } else {
-      setUser(userFromCollection.user._data);
+      await setUser(userFromCollection.user._data);
       if (searchedQuery) {
         setQuery(searchedQuery);
         searchDevice(searchedQuery, userFromCollection.user._data);
