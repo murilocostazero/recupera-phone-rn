@@ -162,11 +162,11 @@ export default function UserPage(props) {
               buttonSize={36}
               buttonColor="#FFF"
               iconName="edit"
-              iconSize={32}
+              iconSize={24}
               haveShadow={true}
               iconColor={colors.secondary}
               handleCircleIconButtonPress={() => selectImage()}
-              style={{position: 'absolute', bottom: 0, right: 0}}
+              style={{position: 'absolute', bottom: 0, right: 12}}
             />
           </View>
         </View>

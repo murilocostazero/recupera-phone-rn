@@ -8,21 +8,27 @@ import CircleIconButton from '../CircleIconButton';
 
 export default function Header(props) {
   return (
-    <View style={[generalStyles.row, {justifyContent: 'space-between', padding: 2}]}>
-      {!props.loadingPrimaryButton ? (
-        <CircleIconButton
-          buttonSize={30}
-          buttonColor={colors.background}
-          iconName="arrow-back"
-          iconSize={24}
-          haveShadow={false}
-          iconColor={colors.secondary}
-          handleCircleIconButtonPress={() => props.handleGoBackButtonPress()}
-          style={{flex: 1}}
-        />
-      ) : (
-        <Text style={[generalStyles.textButton, {flex: 1}]}>AGUARDE</Text>
-      )}
+    <View
+      style={[
+        generalStyles.row,
+        {justifyContent: 'space-between'},
+      ]}>
+      <View style={{flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start'}}>
+        {!props.loadingPrimaryButton ? (
+          <CircleIconButton
+            buttonSize={30}
+            buttonColor={colors.background}
+            iconName="arrow-back"
+            iconSize={24}
+            haveShadow={false}
+            iconColor={colors.secondary}
+            handleCircleIconButtonPress={() => props.handleGoBackButtonPress()}
+            style={{}}
+          />
+        ) : (
+          <Text style={[generalStyles.textButton, {flex: 1}]}>AGUARDE</Text>
+        )}
+      </View>
       <Text
         style={[generalStyles.primaryLabel, {flex: 1, textAlign: 'center'}]}>
         {props.pageTitle}
