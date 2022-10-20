@@ -1,6 +1,6 @@
-import React, {useState} from 'react';
-import {View, Text, ScrollView, TextInput} from 'react-native';
-import {FlatButton, Header} from '../../components';
+import React, { useState } from 'react';
+import { View, Text, ScrollView, TextInput } from 'react-native';
+import { FlatButton, Header } from '../../components';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import generalStyles from '../../styles/general.style';
 import colors from '../../styles/colors.style';
@@ -12,15 +12,26 @@ export default function RecoverPassword(props) {
 
   async function resetPassword() {
     setSending(true);
-    await auth().sendPasswordResetEmail(email);
+
+    await auth()
+      .sendPasswordResetEmail(email)
+      .then((success) => {
+        setEmail('');
+        props.handleSnackbar({
+          type: 'success',
+          message:
+            'Enviamos um email para a recuperação da sua senha. Verifique sua caixa de entrada ou sua caixa de spam.',
+        });
+      })
+      .catch((error) => {
+        props.handleSnackbar({
+          type: 'error',
+          message:
+            'Não foi possível enviar um email de recuperação. Verifique se este email está vinculado a uma conta ou se você está conectado à internet.',
+        });
+      });
+
     setSending(false);
-    setEmail('');
-    props.handleSnackbar({
-      type: 'success',
-      message:
-        'Enviamos um email para a recuperação da sua senha. Verifique sua caixa de entrada.',
-    });
-    
   }
 
   return (
@@ -29,13 +40,13 @@ export default function RecoverPassword(props) {
         handleGoBackButtonPress={() => props.navigation.goBack()}
         pageTitle=""
         loadingPrimaryButton={false}
-        handlePrimaryButtonPress={() => {}}
+        handlePrimaryButtonPress={() => { }}
         primaryButtonLabel=""
       />
 
-      <ScrollView style={{marginTop: 32}}>
+      <ScrollView style={{ marginTop: 32 }}>
         <Text style={generalStyles.titleDark}>Esqueci minha senha</Text>
-        <Text style={[generalStyles.primaryLabel, {marginVertical: 16}]}>
+        <Text style={[generalStyles.primaryLabel, { marginVertical: 16 }]}>
           Informe o seu email cadastrado no Alerta Smart e nós te enviaremos um
           email com instruções para recuperar a sua senha.
         </Text>
@@ -54,7 +65,7 @@ export default function RecoverPassword(props) {
               style={[
                 generalStyles.textInput,
                 generalStyles.primaryLabel,
-                {marginLeft: 8},
+                { marginLeft: 8 },
               ]}
             />
           </View>

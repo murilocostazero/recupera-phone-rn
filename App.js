@@ -41,7 +41,7 @@ export default function App() {
     setTimeout(() => {
       setIsSnackbarVisible(false);
       setSnackbar(null);
-    }, 2500);
+    }, 3000);
   }
 
   return (
