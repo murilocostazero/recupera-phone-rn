@@ -8,7 +8,7 @@ que o dispositivo que está cadastrado é recuperado, a devolução ocorre de fo
 <p><h3>Home</h3>
 <image src="https://github.com/murilocostazero/recupera-phone-rn/blob/main/src/assets/images/prints/home.jpg" alt="tela-de-login" width="280" height="600" /></p>
 <p><h3>Busca de dispositivos</h3>
-<image src="https://github.com/murilocostazero/recupera-phone-rn/blob/main/src/assets/images/prints/search.jpg" alt="tela-de-login" width="280" height="600" /></p>
+<image src="https://github.com/murilocostazero/recupera-phone-rn/blob/main/src/assets/images/prints/search-page.jpg" alt="tela-de-login" width="280" height="600" /></p>
 <p><h3>Perfil</h3>
 <image src="https://github.com/murilocostazero/recupera-phone-rn/blob/main/src/assets/images/prints/profile.jpg" alt="tela-de-login" width="280" height="600" /></p>
 <p><h3>Informações para agentes</h3>
