@@ -1,4 +1,4 @@
-import React, {useState, useRef, useEffect} from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,15 +11,16 @@ import {
 import generalStyles from '../../styles/general.style';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import colors from '../../styles/colors.style';
-import {CircleIconButton, FlatButton, Header} from '../../components';
+import { CircleIconButton, FlatButton, Header } from '../../components';
 import {
   addDevice,
+  associateDevice,
   currentUser,
   getUserFromCollections,
 } from '../../utils/firebase.utils';
-import {newDeviceFieldsVerification} from '../../utils/fieldsVerification.utils';
+import { newDeviceFieldsVerification } from '../../utils/fieldsVerification.utils';
 import Clipboard from '@react-native-clipboard/clipboard';
-import {launchImageLibrary} from 'react-native-image-picker';
+import { launchImageLibrary } from 'react-native-image-picker';
 import storage from '@react-native-firebase/storage';
 
 export default function HandleDevices(props) {
@@ -33,6 +34,7 @@ export default function HandleDevices(props) {
   const [isEditingMode, setIsEditingMode] = useState(false);
   const [loadingRemovingDevice, setLoadingRemoveDevice] = useState(false);
   const [hasAlert, setHasAlert] = useState(false);
+  const [isAssociated, setIsAssociated] = useState(false);
   const [fiscalDocumentPicture, setFiscalDocumentPicture] = useState('');
   const [uploadingFiscalDocument, setUploadingFiscalDocument] = useState(false);
   const [whereToFind, setWhereToFind] = useState(null);
@@ -66,6 +68,7 @@ export default function HandleDevices(props) {
     setMainColor(deviceReceived.mainColor);
     setImei(deviceReceived.imei);
     setHasAlert(deviceReceived.hasAlert);
+    setIsAssociated(deviceReceived.isAssociated);
 
     const url = await storage()
       .ref(`FiscalDocuments/${userEmail}/${deviceReceived.imei}.jpg`)
@@ -79,9 +82,9 @@ export default function HandleDevices(props) {
       url === null
         ? ''
         : {
-            uri: url,
-            fileName: `${deviceReceived.imei}.jpg`,
-          },
+          uri: url,
+          fileName: `${deviceReceived.imei}.jpg`,
+        },
     );
 
     if (deviceReceived.whereToFind) {
@@ -93,7 +96,7 @@ export default function HandleDevices(props) {
     Alert.alert(
       'Número de IMEI',
       'O IMEI é um número, composto de 15 a 17 dígitos, também conhecido como a identidade do aparelho. Há duas formas para descobrir este número: Com o aparelho ligado, digite *#06# Se o aparelho estiver desligado, verifique na nota fiscal ou retire a bateria e consulte o número de IMEI ou ESN na etiqueta do equipamento.',
-      [{text: 'ENTENDI', onPress: () => {}}],
+      [{ text: 'ENTENDI', onPress: () => { } }],
     );
   }
 
@@ -105,7 +108,7 @@ export default function HandleDevices(props) {
       model,
       mainColor,
       imei,
-      hasAlert,
+      hasAlert
     );
     if (!fieldsVerificationResponse.success) {
       props.handleSnackbar({
@@ -120,6 +123,7 @@ export default function HandleDevices(props) {
         mainColor: mainColor,
         imei: imei,
         hasAlert: hasAlert,
+        isAssociated: isAssociated,
         whereToFind: whereToFind && hasAlert ? whereToFind : null
       };
 
@@ -152,6 +156,13 @@ export default function HandleDevices(props) {
             });
             setLoadingSaveDevice(false);
           } else {
+            const associateDeviceResponse = await associateDevice(device);
+            if (!associateDeviceResponse.success) {
+              props.handleSnackbar({ type: 'error', message: associateDeviceResponse.message });
+            } else {
+
+            }
+
             setLoadingSaveDevice(false);
             props.navigation.goBack();
           }
@@ -189,6 +200,10 @@ export default function HandleDevices(props) {
             });
             setLoadingSaveDevice(false);
           } else {
+            const associateDeviceResponse = await associateDevice(device);
+            if (!associateDeviceResponse.success) {
+              props.handleSnackbar({ type: 'error', message: associateDeviceResponse.message });
+            }
             setLoadingSaveDevice(false);
             props.navigation.goBack();
           }
@@ -204,10 +219,10 @@ export default function HandleDevices(props) {
       [
         {
           text: 'Cancelar',
-          onPress: () => {},
+          onPress: () => { },
           style: 'cancel',
         },
-        {text: 'CONTINUAR', onPress: () => removeDevice()},
+        { text: 'CONTINUAR', onPress: () => removeDevice() },
       ],
     );
   }
@@ -291,7 +306,7 @@ export default function HandleDevices(props) {
   }
 
   async function uploadImage() {
-    const {uri} = fiscalDocumentPicture;
+    const { uri } = fiscalDocumentPicture;
     const reference = storage().ref(
       'FiscalDocuments/' + loggedUser.email + '/' + imei + '.jpg',
     );
@@ -316,13 +331,13 @@ export default function HandleDevices(props) {
         {!whereToFind ? (
           <View />
         ) : (
-          <View style={{marginTop: 32, alignItems: 'center'}}>
+          <View style={{ marginTop: 32, alignItems: 'center' }}>
             <Text style={generalStyles.titleDark}>
               Seu dispositivo foi encontrado!
             </Text>
             <Image
               source={require('../../assets/images/celeb.gif')}
-              style={{width: 200, height: 140}}
+              style={{ width: 200, height: 140 }}
             />
             <View>
               <Text style={generalStyles.primaryLabel}>
@@ -340,7 +355,7 @@ export default function HandleDevices(props) {
             </View>
           </View>
         )}
-        <View style={{marginTop: 32}}>
+        <View style={{ marginTop: 32 }}>
           <View
             style={[generalStyles.textInputContainer, generalStyles.shadow]}>
             <Text style={generalStyles.secondaryLabel}>Marca</Text>
@@ -356,7 +371,7 @@ export default function HandleDevices(props) {
                 style={[
                   generalStyles.textInput,
                   generalStyles.primaryLabel,
-                  {marginLeft: 8},
+                  { marginLeft: 8 },
                 ]}
               />
             </View>
@@ -377,7 +392,7 @@ export default function HandleDevices(props) {
                 style={[
                   generalStyles.textInput,
                   generalStyles.primaryLabel,
-                  {marginLeft: 8},
+                  { marginLeft: 8 },
                 ]}
               />
             </View>
@@ -398,7 +413,7 @@ export default function HandleDevices(props) {
                 style={[
                   generalStyles.textInput,
                   generalStyles.primaryLabel,
-                  {marginLeft: 8},
+                  { marginLeft: 8 },
                 ]}
               />
             </View>
@@ -408,7 +423,7 @@ export default function HandleDevices(props) {
             style={[
               generalStyles.textInputContainer,
               generalStyles.shadow,
-              {backgroundColor: isEditingMode ? '#EEE' : '#FFF'},
+              { backgroundColor: isEditingMode ? '#EEE' : '#FFF' },
             ]}>
             <View style={generalStyles.row}>
               <Text style={generalStyles.secondaryLabel}>IMEI</Text>
@@ -429,14 +444,14 @@ export default function HandleDevices(props) {
                 value={imei}
                 ref={imeiRef}
                 onChangeText={text => setImei(text)}
-                onSubmitEditing={() => {}}
+                onSubmitEditing={() => { }}
                 placeholder="Disque *#06# para saber seu imei"
                 keyboardType="phone-pad"
                 placeholderTextColor={colors.icon}
                 style={[
                   generalStyles.textInput,
                   generalStyles.primaryLabel,
-                  {marginLeft: 8},
+                  { marginLeft: 8 },
                 ]}
               />
               <CircleIconButton
@@ -451,7 +466,7 @@ export default function HandleDevices(props) {
             </View>
           </View>
 
-          <View style={{marginVertical: 16}}>
+          <View style={{ marginVertical: 16 }}>
             <View style={generalStyles.row}>
               <Text style={generalStyles.secondaryLabel}>Documento fiscal</Text>
               <CircleIconButton
@@ -469,22 +484,22 @@ export default function HandleDevices(props) {
                 }
               />
             </View>
-            <View style={{alignItems: 'stretch', marginVertical: 16}}>
+            <View style={{ alignItems: 'stretch', marginVertical: 16 }}>
               {!fiscalDocumentPicture ? (
-                <View style={{alignItems: 'center'}}>
+                <View style={{ alignItems: 'center' }}>
                   <Image
                     source={require('../../assets/images/no-pictures.png')}
-                    style={{width: 120, height: 100}}
+                    style={{ width: 120, height: 100 }}
                   />
                   <Text style={generalStyles.primaryLabel}>
                     (Nenhuma imagem selecionada)
                   </Text>
                 </View>
               ) : (
-                <View style={{alignItems: 'center'}}>
+                <View style={{ alignItems: 'center' }}>
                   <Image
-                    source={{uri: fiscalDocumentPicture.uri}}
-                    style={{width: 180, height: 180}}
+                    source={{ uri: fiscalDocumentPicture.uri }}
+                    style={{ width: 180, height: 180 }}
                   />
                   <Text style={generalStyles.primaryLabel}>
                     {fiscalDocumentPicture.fileName}
@@ -502,7 +517,7 @@ export default function HandleDevices(props) {
                 buttonColor={colors.primary}
                 handleFlatButtonPress={() => selectImage()}
                 isLoading={false}
-                style={{marginTop: 16}}
+                style={{ marginTop: 16 }}
               />
             </View>
           </View>
@@ -510,16 +525,38 @@ export default function HandleDevices(props) {
           <View
             style={[
               generalStyles.row,
-              {padding: 8, marginVertical: 4, justifyContent: 'space-between'},
+              { padding: 8, marginVertical: 4, justifyContent: 'space-between' },
             ]}>
-            <Text style={generalStyles.secondaryLabel}>
+            <Text style={generalStyles.primaryLabel}>
               Sinalizar com alerta de roubo/furto
             </Text>
             <Switch
-              trackColor={{false: '#767577', true: colors.secondary}}
+              trackColor={{ false: '#767577', true: colors.secondary }}
               thumbColor={hasAlert ? colors.primary : '#f4f3f4'}
               onValueChange={() => setHasAlert(!hasAlert)}
               value={hasAlert}
+            />
+          </View>
+
+          <View
+            style={[
+              generalStyles.row,
+              { padding: 8, marginVertical: 4, justifyContent: 'space-between' },
+            ]}>
+            <View style={{ flex: 2 }}>
+              <Text style={generalStyles.primaryLabel}>
+                Associar este cadastro a esse dispositivo
+              </Text>
+              <Text style={generalStyles.secondaryLabel}>
+                Ao marcar, a localização desse dispositivo será associada a este cadastro. Assim você terá acesso a localização deste dispositivo quando ele não estiver em sua posse.
+              </Text>
+            </View>
+            <Switch
+              style={{ flex: 1 }}
+              trackColor={{ false: '#767577', true: colors.secondary }}
+              thumbColor={isAssociated ? colors.primary : '#f4f3f4'}
+              onValueChange={() => hasAlert ? props.handleSnackbar({ type: 'warning', message: 'Não é possível pegar a localização de um dispositivo que não está em sua posse.' }) : setIsAssociated(!isAssociated)}
+              value={isAssociated}
             />
           </View>
         </View>

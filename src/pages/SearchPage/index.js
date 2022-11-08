@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,7 @@ import {
   TouchableHighlight,
 } from 'react-native';
 import generalStyles from '../../styles/general.style';
-import {CircleIconButton, FlatButton, Header} from '../../components';
+import { CircleIconButton, FlatButton, Header } from '../../components';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import colors from '../../styles/colors.style';
 import {
@@ -26,7 +26,7 @@ export default function SearchPage(props) {
   const [device, setDevice] = useState(null);
   const [loadingSearch, setLoadingSearch] = useState(false);
   const [loadingFavorite, setLoadingFavorite] = useState(false);
-  const [deviceFound, setDeviceFound] = useState({imei: 0});
+  const [deviceFound, setDeviceFound] = useState({ imei: 0 });
   const [deviceLabel, setDeviceLabel] = useState('');
 
   useEffect(() => {
@@ -68,15 +68,27 @@ export default function SearchPage(props) {
       setDeviceFound(userToUse.favoriteDevices[deviceIndex]);
       setDeviceLabel(userToUse.favoriteDevices[deviceIndex].label);
     } else {
-      setDeviceFound({imei: 0});
+      setDeviceFound({ imei: 0 });
     }
   }
 
   async function searchDevice(searchedQuery, userReceived) {
     setLoadingSearch(true);
-    const deviceFoundResponse = await findDevice(query ? query : searchedQuery);
+    const imeiToSearch = query ? query : searchedQuery;
+    const deviceFoundResponse = await findDevice(imeiToSearch);
 
     if (deviceFoundResponse.length < 1) {
+      props.handleSnackbar({ type: 'warning', message: 'O dispositivo buscado não pertence a nossa base de dados. Estamos buscando-o na base global.' });
+
+      //Se o dispositivo não existe na base, buscá-lo globalmente
+
+      //Ao encontrar globalmente, oferecer opção de adicioná-lo a nossa base
+      //ou como favorito (pertencente a outra pessoa) ou como sendo da propria pessoa
+
+      //Se como favorito, é apenas adicionado aos favoritos da conta deste usuário
+
+      //Se como sendo do usuário, adicioná-lo aos dispositivos dele.
+
       setDevice(null);
     } else {
       // await setDevice(deviceFoundResponse[0]);
@@ -115,7 +127,7 @@ export default function SearchPage(props) {
         <Text
           style={[
             generalStyles.secondaryLabel,
-            {fontSize: 20, marginBottom: 8},
+            { fontSize: 20, marginBottom: 8 },
           ]}>
           Dispositivo não encontrado
         </Text>
@@ -141,16 +153,16 @@ export default function SearchPage(props) {
         handleGoBackButtonPress={() => props.navigation.goBack()}
         pageTitle="Buscar dispositivo"
         loadingPrimaryButton={false}
-        handlePrimaryButtonPress={() => {}}
+        handlePrimaryButtonPress={() => { }}
         primaryButtonLabel=""
       />
-      <View style={{marginVertical: 20}}>
+      <View style={{ marginVertical: 20 }}>
         <View
           style={[
             generalStyles.textInputContainer,
             generalStyles.row,
             generalStyles.shadow,
-            {height: 48},
+            { height: 48 },
           ]}>
           <TextInput
             value={query}
@@ -232,7 +244,7 @@ export default function SearchPage(props) {
                 <View
                   style={[
                     generalStyles.row,
-                    {justifyContent: 'space-between'},
+                    { justifyContent: 'space-between' },
                   ]}>
                   <Text style={styles.darkLabel}>Marca:</Text>
                   <Text style={generalStyles.secondaryLabel}>
@@ -242,7 +254,7 @@ export default function SearchPage(props) {
                 <View
                   style={[
                     generalStyles.row,
-                    {justifyContent: 'space-between'},
+                    { justifyContent: 'space-between' },
                   ]}>
                   <Text style={styles.darkLabel}>Modelo:</Text>
                   <Text style={generalStyles.secondaryLabel}>
@@ -252,7 +264,7 @@ export default function SearchPage(props) {
                 <View
                   style={[
                     generalStyles.row,
-                    {justifyContent: 'space-between'},
+                    { justifyContent: 'space-between' },
                   ]}>
                   <Text style={styles.darkLabel}>Cor:</Text>
                   <Text style={generalStyles.secondaryLabel}>
@@ -262,7 +274,7 @@ export default function SearchPage(props) {
                 <View
                   style={[
                     generalStyles.row,
-                    {justifyContent: 'space-between'},
+                    { justifyContent: 'space-between' },
                   ]}>
                   <Text style={styles.darkLabel}>IMEI:</Text>
                   <Text style={generalStyles.secondaryLabel}>
@@ -273,7 +285,7 @@ export default function SearchPage(props) {
             </View>
 
             {device.owner !== loggedUser.email &&
-            device.deviceInfo.hasAlert === true ? (
+              device.deviceInfo.hasAlert === true ? (
               <FlatButton
                 label="Encontrei este aparelho"
                 height={48}
@@ -299,7 +311,7 @@ export default function SearchPage(props) {
             <TextInput
               value={deviceLabel}
               onChangeText={text => setDeviceLabel(text)}
-              onSubmitEditing={() => {}}
+              onSubmitEditing={() => { }}
               keyboardType="default"
               placeholder="Celular do Fulano"
               autoCapitalize="sentences"
@@ -307,7 +319,7 @@ export default function SearchPage(props) {
               style={[
                 generalStyles.textInput,
                 generalStyles.primaryLabel,
-                {marginLeft: 8},
+                { marginLeft: 8 },
               ]}
             />
             {loadingFavorite ? (

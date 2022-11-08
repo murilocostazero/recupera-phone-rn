@@ -46,7 +46,7 @@ export async function createUser(email, password, displayName) {
     .catch(error => {
       if (error.code === 'auth/email-already-in-use') {
         console.log('That email address is already in use!');
-        userCreated = {success: false, message: 'Este email já está em uso'};
+        userCreated = { success: false, message: 'Este email já está em uso' };
       } else if (error.code === 'auth/invalid-email') {
         console.log('That email address is invalid!');
         userCreated = {
@@ -115,7 +115,7 @@ export async function createInstitution(institution) {
     .catch(error => {
       if (error.code === 'auth/email-already-in-use') {
         console.log('That email address is already in use!');
-        userCreated = {success: false, message: 'Este email já está em uso'};
+        userCreated = { success: false, message: 'Este email já está em uso' };
       } else if (error.code === 'auth/invalid-email') {
         console.log('That email address is invalid!');
         userCreated = {
@@ -145,14 +145,14 @@ export async function loginUser(email, password) {
   await auth()
     .signInWithEmailAndPassword(email, password)
     .then(
-      loginSuccess => (loginResponse = {success: true, response: loginSuccess}),
+      loginSuccess => (loginResponse = { success: true, response: loginSuccess }),
     )
     .catch(
       loginError =>
-        (loginResponse = {
-          success: false,
-          message: 'Verifique os dados de login e tente novamente',
-        }),
+      (loginResponse = {
+        success: false,
+        message: 'Verifique os dados de login e tente novamente',
+      }),
     );
 
   return loginResponse;
@@ -162,7 +162,7 @@ export async function logout() {
   let logoutResponse = null;
   await auth()
     .signOut()
-    .then(() => (logoutResponse = {success: true}));
+    .then(() => (logoutResponse = { success: true }));
 
   return logoutResponse;
 }
@@ -248,16 +248,16 @@ export async function requestUserTypeChange(user) {
           notifications: localNotifications,
         })
         .then(() => {
-          userUpdateResponse = {success: true, message: 'Usuário atualizado'};
+          userUpdateResponse = { success: true, message: 'Usuário atualizado' };
         })
         .catch(error => {
           console.error('Update nas notificações', error);
-          userUpdateResponse = {success: false, message: error};
+          userUpdateResponse = { success: false, message: error };
         });
     })
     .catch(error => {
       console.error('Update no usuário', error);
-      userUpdateResponse = {success: false, message: error};
+      userUpdateResponse = { success: false, message: error };
     });
 
   return userUpdateResponse;
@@ -304,10 +304,10 @@ export async function addUserNotifications(notification, sender, receiver) {
         notifications: localNotifications,
       })
       .then(() => {
-        addNotificationResponse = {success: true};
+        addNotificationResponse = { success: true };
       })
       .catch(error => {
-        addNotificationResponse = {success: false, message: error};
+        addNotificationResponse = { success: false, message: error };
       });
   }
 
@@ -339,10 +339,10 @@ export async function removeUserNotification(userEmail, notificationContent) {
           notifications: currentNotifications,
         })
         .then(() => {
-          removeNotificationResponse = {success: true};
+          removeNotificationResponse = { success: true };
         })
         .catch(error => {
-          removeNotificationResponse = {success: false, message: error};
+          removeNotificationResponse = { success: false, message: error };
         });
     } else {
       removeNotificationResponse = {
@@ -358,7 +358,7 @@ export async function changeAgentAuthStatus(user, status) {
   let agentAuthStatus = null;
   const userFromCollection = await getUserFromCollections(user.email);
   if (!userFromCollection.success) {
-    agentAuthStatus = {success: false, message: 'Erro ao buscar usuário'};
+    agentAuthStatus = { success: false, message: 'Erro ao buscar usuário' };
   } else {
     const localUser = userFromCollection.user._data;
     let newAgentInfo = {
@@ -420,16 +420,16 @@ export async function changeAgentAuthStatus(user, status) {
                 notifications: institutionNotifications,
               })
               .then(() => {
-                agentAuthStatus = {success: true};
+                agentAuthStatus = { success: true };
               })
               .catch(error => {
-                agentAuthStatus = {success: false, message: error};
+                agentAuthStatus = { success: false, message: error };
               });
           }
         }
       })
       .catch(error => {
-        agentAuthStatus = {success: false, message: error};
+        agentAuthStatus = { success: false, message: error };
         console.error(error);
       });
   }
@@ -463,9 +463,9 @@ async function reverseUserTypeAndRemoveAgentInfo(userEmail) {
 export async function getUserFromCollections(userEmail) {
   const user = await firestore().collection('Users').doc(userEmail).get();
   if (!user._exists) {
-    return {success: false};
+    return { success: false };
   } else {
-    return {success: true, user: user};
+    return { success: true, user: user };
   }
 }
 
@@ -478,7 +478,7 @@ export async function addDevice(devices, userEmail) {
       devices: devices,
     })
     .then(() => {
-      addDeviceResponse = {success: true, message: 'Dispositivo adicionado'};
+      addDeviceResponse = { success: true, message: 'Dispositivo adicionado' };
     })
     .catch(error => {
       console.error(error);
@@ -573,15 +573,15 @@ export async function foundUserByRegistrationNumberAndInstitution(
       querySnapshot.forEach(documentSnapshot => {
         const singleUser = documentSnapshot.data();
         if (!singleUser.agentInfo) {
-          foundExistingUser = {success: false};
+          foundExistingUser = { success: false };
         } else if (
           singleUser.agentInfo.institution == institution &&
           singleUser.agentInfo.registrationNumber == registrationNumber
         ) {
           //Retorna true se encontrar
-          foundExistingUser = {success: true};
+          foundExistingUser = { success: true };
         } else {
-          foundExistingUser = {success: false};
+          foundExistingUser = { success: false };
         }
       });
     });
@@ -636,6 +636,45 @@ export async function whereToFindDevice(device, location) {
   return whereToFindResponse;
 }
 
+export async function associateDevice(device) {
+  //Device já vem com isAssociated;
+  let associateDeviceResponse = null;
+
+  const { email } = await auth().currentUser;
+  const fullUser = await getUserFromCollections(email);
+  const userDevices = fullUser.user._data.devices;
+
+  const deviceAssociatedIndex = await userDevices.findIndex(element => element.isAssociated === true);
+  if(deviceAssociatedIndex !== -1){
+    userDevices[deviceAssociatedIndex].isAssociated = false;
+  }
+
+  for(let i = 0;i < userDevices.length;i++){
+    if(userDevices[i].isAssociated){
+      userDevices[i].isAssociated = false;
+    }
+  }
+
+  const deviceToReplaceIndex = await userDevices.findIndex(element => element.imei === device.imei);
+  if(deviceToReplaceIndex !== -1){
+    if(userDevices[deviceToReplaceIndex].hasAlert){
+      associateDeviceResponse = {success: false, message: 'Não é possível pegar a localização de um dispositivo que não está em sua posse.'};
+    } else {
+    userDevices[deviceToReplaceIndex] = device;
+    const addDeviceResponse = await addDevice(userDevices, email);
+    if(!addDeviceResponse.success){
+      associateDeviceResponse = {success: false, message: addDeviceResponse.message};
+    } else {
+      associateDeviceResponse = {success: true};
+    }
+  }
+  } else {
+    associateDeviceResponse = {success: false, message: 'O imei recebido não corresponde a nenhum dispositivo deste uruário'};
+  }
+
+  return associateDeviceResponse;
+}
+
 export async function handleFavoriteDevice(device, deviceLabel, userEmail) {
   let handleFavoriteDeviceResponse = null;
   const localUser = await getUserFromCollections(userEmail);
@@ -652,11 +691,11 @@ export async function handleFavoriteDevice(device, deviceLabel, userEmail) {
   if (deviceIndex != -1) {
     //se sim, remover
     favoriteDevices.splice(deviceIndex, 1);
-    deviceResponse = {success: true, message: 'Dispositivo removido'};
+    deviceResponse = { success: true, message: 'Dispositivo removido' };
   } else {
     //se não, inserir
-    favoriteDevices.push({imei: device.imei, label: deviceLabel});
-    deviceResponse = {success: true, message: 'Dispositivo adicionado'};
+    favoriteDevices.push({ imei: device.imei, label: deviceLabel });
+    deviceResponse = { success: true, message: 'Dispositivo adicionado' };
   }
 
   await firestore()
@@ -688,7 +727,7 @@ export async function addOrRemoveSecondaryEmail(userEmail, secondaryEmail) {
       secondaryEmail: secondaryEmail,
     })
     .then(() => {
-      secondaryEmailResponse = {success: true};
+      secondaryEmailResponse = { success: true };
     })
     .catch(error => {
       secondaryEmailResponse = {
@@ -709,7 +748,7 @@ export async function addOrRemoveSmsNumber(userEmail, smsNumber) {
       smsNumber: smsNumber,
     })
     .then(() => {
-      smsNumberResponse = {success: true};
+      smsNumberResponse = { success: true };
     })
     .catch(error => {
       smsNumberResponse = {

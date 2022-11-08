@@ -18,6 +18,7 @@ export default function Settings(props) {
   const [receiveNotificationEmail, setReceiveNotificationEmail] =
     useState(false);
   const [receiveNotificationSMS, setReceiveNotificationSMS] = useState(false);
+  const [saveLocation, setSaveLocation] = useState(false);
   const [email, setEmail] = useState('');
   const [smsNumber, setSMSNumber] = useState('');
   const [user, setUser] = useState(null);
@@ -238,6 +239,28 @@ export default function Settings(props) {
                 ]}
               />
             </View>
+          </View>
+        </View>
+
+        <View style={[styles.card, generalStyles.shadow]}>
+          <View style={[generalStyles.row, {marginBottom: 12}]}>
+            <View style={{marginRight: 8, flex: 2}}>
+              <Text style={generalStyles.primaryLabel}>
+                Salvar última localização
+              </Text>
+              <Text style={[generalStyles.secondaryLabel]}>
+                Ative se você deseja que a localização deste dispositivo seja guardada de tempos em tempos.
+              </Text>
+            </View>
+            <Switch
+              style={{flex: 1}}
+              trackColor={{false: '#767577', true: colors.secondaryOpacity}}
+              thumbColor={
+                saveLocation ? colors.secondary : '#f4f3f4'
+              }
+              onValueChange={() => {}}
+              value={saveLocation}
+            />
           </View>
         </View>
 
