@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   SafeAreaView,
   View,
@@ -14,11 +14,11 @@ import {
 import generalStyles from '../../styles/general.style';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import styles from './styles';
-import {currentUser, getUserFromCollections} from '../../utils/firebase.utils';
+import { currentUser, getUserFromCollections } from '../../utils/firebase.utils';
 import colors from '../../styles/colors.style';
-import {useIsFocused} from '@react-navigation/native';
+import { useIsFocused } from '@react-navigation/native';
 import brandImageArray from '../../utils/brandImageArray.utils';
-import {CircleIconButton, FlatButton} from '../../components';
+import { CircleIconButton, FlatButton } from '../../components';
 import securityTips from '../../utils/securityTips';
 import accountImageArray from '../../utils/accountTypeImage.utils';
 
@@ -60,7 +60,7 @@ export default function Home(props) {
     const user = await getUserFromCollections(userEmail);
     if (!user.success) {
       setLoadingUserData(false);
-      props.handleSnackbar({type: 'error', message: 'Usuário não encontrado'});
+      props.handleSnackbar({ type: 'error', message: 'Usuário não encontrado' });
     } else {
       setUserDoc(user.user._data);
 
@@ -77,7 +77,7 @@ export default function Home(props) {
 
   const DevicesListEmpty = () => {
     return (
-      <View style={[generalStyles.row, {paddingVertical: 8}]}>
+      <View style={[generalStyles.row, { paddingVertical: 8 }]}>
         <View
           style={[
             styles.deviceContainer,
@@ -88,7 +88,7 @@ export default function Home(props) {
               alignItems: 'center',
             },
           ]}>
-          <Text style={[generalStyles.secondaryLabel, {textAlign: 'center'}]}>
+          <Text style={[generalStyles.secondaryLabel, { textAlign: 'center' }]}>
             Lista de dispositivos vazia
           </Text>
           <MaterialIcons
@@ -101,19 +101,22 @@ export default function Home(props) {
     );
   };
 
-  const renderDevices = ({item}) => {
+  const renderDevices = ({ item }) => {
     return (
       <TouchableHighlight
         onPress={() =>
-          props.navigation.navigate('HandleDevices', {device: item})
+          props.navigation.navigate('HandleDevices', { device: item })
         }
         underlayColor="tranparent">
         <View
           style={[
             styles.deviceContainer,
             generalStyles.shadow,
-            {backgroundColor: '#FFF'},
+            { backgroundColor: '#FFF' },
           ]}>
+          {
+            item.isAssociated ? <MaterialIcons name='mobile-friendly' color={colors.secondary} size={20} style={{ position: 'absolute', right: 4, top: 4 }} /> : <View />
+          }
           <Image
             style={{
               maxWidth: 60,
@@ -125,17 +128,17 @@ export default function Home(props) {
             source={brandImageArray(item.brand)}
           />
 
-          <View style={{alignItems: 'center'}}>
+          <View style={{ alignItems: 'center' }}>
             <View style={generalStyles.row}>
               <Text
-                style={[generalStyles.primaryLabel, {maxWidth: 140}]}
+                style={[generalStyles.primaryLabel, { maxWidth: 140 }]}
                 numberOfLines={1}>
                 {item.brand} {item.model}
               </Text>
             </View>
 
             <View style={generalStyles.row}>
-              <Text style={[generalStyles.primaryLabel, {marginRight: 8}]}>
+              <Text style={[generalStyles.primaryLabel, { marginRight: 8 }]}>
                 Cor:
               </Text>
               <Text style={generalStyles.secondaryLabel}>{item.mainColor}</Text>
@@ -146,7 +149,7 @@ export default function Home(props) {
               <Text
                 style={[
                   generalStyles.secondaryLabel,
-                  {maxWidth: 80, marginLeft: 8},
+                  { maxWidth: 80, marginLeft: 8 },
                 ]}
                 numberOfLines={1}>
                 {item.imei}
@@ -189,27 +192,27 @@ export default function Home(props) {
     );
   };
 
-  const renderFavoriteDevices = ({item}) => {
+  const renderFavoriteDevices = ({ item }) => {
     return (
       <TouchableHighlight
         onPress={() =>
-          props.navigation.navigate('SearchPage', {queryToSearch: item.imei})
+          props.navigation.navigate('SearchPage', { queryToSearch: item.imei })
         }
         underlayColor="tranparent">
         <View
           style={[
             styles.deviceContainer,
             generalStyles.shadow,
-            {backgroundColor: '#FFF'},
+            { backgroundColor: '#FFF' },
           ]}>
-          <View style={{alignItems: 'stretch'}}>
+          <View style={{ alignItems: 'stretch' }}>
             <Text style={generalStyles.primaryLabel}>{item.label}</Text>
             <View style={generalStyles.row}>
               <Text style={generalStyles.primaryLabel}>Imei:</Text>
               <Text
                 style={[
                   generalStyles.secondaryLabel,
-                  {maxWidth: 150, marginLeft: 8},
+                  { maxWidth: 150, marginLeft: 8 },
                 ]}
                 numberOfLines={1}>
                 {item.imei}
@@ -218,7 +221,7 @@ export default function Home(props) {
                 name="arrow-right"
                 size={28}
                 color={colors.icon}
-                style={{alignSelf: 'center'}}
+                style={{ alignSelf: 'center' }}
               />
             </View>
           </View>
@@ -228,12 +231,12 @@ export default function Home(props) {
   };
 
   return loadingUserData ? (
-    <View style={[generalStyles.pageContainer, {justifyContent: 'center'}]}>
+    <View style={[generalStyles.pageContainer, { justifyContent: 'center' }]}>
       <ActivityIndicator size="large" color={colors.secondary} />
     </View>
   ) : (
     <SafeAreaView style={generalStyles.pageContainer}>
-      <View style={[generalStyles.row, {justifyContent: 'space-between'}]}>
+      <View style={[generalStyles.row, { justifyContent: 'space-between' }]}>
         <View
           style={{
             flex: 1,
@@ -249,7 +252,7 @@ export default function Home(props) {
             haveShadow={true}
             iconColor={colors.primary}
             handleCircleIconButtonPress={() =>
-              props.navigation.navigate('Notifications', {user: userDoc})
+              props.navigation.navigate('Notifications', { user: userDoc })
             }
             isNotificationsButton={haveNotifications}
           />
@@ -263,7 +266,7 @@ export default function Home(props) {
                 numberOfLines={1}
                 style={[
                   generalStyles.primaryLabel,
-                  {marginRight: 8, maxWidth: 224},
+                  { marginRight: 8, maxWidth: 224 },
                 ]}>
                 Olá, {displayName}
               </Text>
@@ -282,8 +285,8 @@ export default function Home(props) {
                 <MaterialIcons name="person" size={30} color="#FFF" />
               ) : (
                 <Image
-                  source={{uri: profilePicture}}
-                  style={{width: 40, height: 40, borderRadius: 40 / 2}}
+                  source={{ uri: profilePicture }}
+                  style={{ width: 40, height: 40, borderRadius: 40 / 2 }}
                 />
               )}
             </View>
@@ -299,7 +302,7 @@ export default function Home(props) {
           />
         }>
         <View style={styles.card}>
-          <View style={[generalStyles.row, {justifyContent: 'space-between'}]}>
+          <View style={[generalStyles.row, { justifyContent: 'space-between' }]}>
             <Text style={generalStyles.titleDark}>Meus dispositivos</Text>
             <CircleIconButton
               buttonSize={28}
@@ -309,13 +312,13 @@ export default function Home(props) {
               haveShadow={true}
               iconColor={colors.primary}
               handleCircleIconButtonPress={() =>
-                props.navigation.navigate('HandleDevices', {device: null})
+                props.navigation.navigate('HandleDevices', { device: null })
               }
             />
           </View>
           <FlatList
             horizontal={true}
-            contentContainerStyle={{paddingVertical: 8}}
+            contentContainerStyle={{ paddingVertical: 8 }}
             data={devices}
             renderItem={renderDevices}
             keyExtractor={item => item.imei}
@@ -324,7 +327,7 @@ export default function Home(props) {
         </View>
 
         <View style={styles.card}>
-          <View style={[generalStyles.row, {justifyContent: 'space-between'}]}>
+          <View style={[generalStyles.row, { justifyContent: 'space-between' }]}>
             <Text style={generalStyles.titleDark}>Favoritos</Text>
             <CircleIconButton
               buttonSize={28}
@@ -343,7 +346,7 @@ export default function Home(props) {
           </View>
           <FlatList
             horizontal={true}
-            contentContainerStyle={{paddingVertical: 8}}
+            contentContainerStyle={{ paddingVertical: 8 }}
             data={favoriteDevices}
             renderItem={renderFavoriteDevices}
             keyExtractor={item => item.imei}
@@ -352,7 +355,7 @@ export default function Home(props) {
         </View>
 
         <View style={styles.card}>
-          <View style={[generalStyles.row, {justifyContent: 'space-between'}]}>
+          <View style={[generalStyles.row, { justifyContent: 'space-between' }]}>
             <Text style={generalStyles.titleDark}>Dicas de segurança</Text>
             <CircleIconButton
               buttonSize={28}
