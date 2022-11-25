@@ -1,6 +1,6 @@
-import React, {useEffect, useState} from 'react';
-import {View, Text, ScrollView, Switch, TextInput, Alert} from 'react-native';
-import {FlatButton, Header} from '../../components';
+import React, { useEffect, useState } from 'react';
+import { View, Text, ScrollView, Switch, TextInput, Alert } from 'react-native';
+import { FlatButton, Header } from '../../components';
 import colors from '../../styles/colors.style';
 import generalStyles from '../../styles/general.style';
 import styles from './styles.style';
@@ -12,7 +12,7 @@ import {
   deleteCollection,
   deleteUser,
 } from '../../utils/firebase.utils';
-import MaskInput from 'react-native-mask-input';
+import { getSetting, storeSetting } from '../../utils/asyncStorage.utils';
 
 export default function Settings(props) {
   const [receiveNotificationEmail, setReceiveNotificationEmail] =
@@ -23,10 +23,23 @@ export default function Settings(props) {
   const [smsNumber, setSMSNumber] = useState('');
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [loadingHeader, setLoadingHeader] = useState(false);
+  const [settingData, setSettingData] = useState(null);
 
   useEffect(() => {
     getLoggedUser();
+    getSettingData();
   }, []);
+
+  async function getSettingData() {
+    const settingResponse = await getSetting();
+    if (!settingResponse.success) {
+      props.handleSnackbar({ type: 'error', message: 'Erro ao buscar configurações.Tente reiniciar o app.' });
+    } else {
+      if (settingResponse.data) setSaveLocation(settingResponse.data.saveLastLocation);
+      setSettingData(settingResponse.data);
+    }
+  }
 
   async function getLoggedUser() {
     const userResponse = await currentUser();
@@ -176,9 +189,22 @@ export default function Settings(props) {
           onPress: () => console.log('Cancel Pressed'),
           style: 'cancel',
         },
-        {text: 'CONTINUAR', onPress: () => deleteAccount()},
+        { text: 'CONTINUAR', onPress: () => deleteAccount() },
       ],
     );
+  }
+
+  async function saveLastLocation() {
+    setLoadingHeader(true);
+    const settingData = { saveLastLocation: !saveLocation };
+    const storeSettingResponse = await storeSetting(settingData);
+    if (!storeSettingResponse.success) {
+      props.handleSnackbar({ type: 'error', message: 'Erro ao salvar configuração' });
+    } else {
+      props.handleSnackbar({ type: 'success', message: 'Configuração salva com sucesso.' });
+      setSaveLocation(!saveLocation);
+    }
+    setLoadingHeader(false);
   }
 
   return (
@@ -186,16 +212,16 @@ export default function Settings(props) {
       <Header
         handleGoBackButtonPress={() => props.navigation.goBack()}
         pageTitle="Configurações"
-        loadingPrimaryButton={loading}
-        handlePrimaryButtonPress={() => {}}
+        loadingPrimaryButton={loadingHeader}
+        handlePrimaryButtonPress={() => { }}
         primaryButtonLabel=""
       />
 
       <ScrollView
-        contentContainerStyle={{flexGrow: 1, padding: 8, marginTop: 32}}>
+        contentContainerStyle={{ flexGrow: 1, padding: 8, marginTop: 32 }}>
         <View style={[styles.card, generalStyles.shadow]}>
-          <View style={[generalStyles.row, {marginBottom: 12}]}>
-            <View style={{marginRight: 8, flex: 2}}>
+          <View style={[generalStyles.row, { marginBottom: 12 }]}>
+            <View style={{ marginRight: 8, flex: 2 }}>
               <Text style={generalStyles.primaryLabel}>
                 Receber notificação por email
               </Text>
@@ -206,8 +232,8 @@ export default function Settings(props) {
               </Text>
             </View>
             <Switch
-              style={{flex: 1}}
-              trackColor={{false: '#767577', true: colors.secondaryOpacity}}
+              style={{ flex: 1 }}
+              trackColor={{ false: '#767577', true: colors.secondaryOpacity }}
               thumbColor={
                 receiveNotificationEmail ? colors.secondary : '#f4f3f4'
               }
@@ -219,7 +245,7 @@ export default function Settings(props) {
             style={[
               generalStyles.textInputContainer,
               generalStyles.shadow,
-              {marginBottom: 0},
+              { marginBottom: 0 },
             ]}>
             <Text style={generalStyles.secondaryLabel}>Email alternativo</Text>
             <View style={generalStyles.row}>
@@ -227,7 +253,7 @@ export default function Settings(props) {
               <TextInput
                 value={email}
                 onChangeText={text => setEmail(text)}
-                onSubmitEditing={() => {}}
+                onSubmitEditing={() => { }}
                 keyboardType="email-address"
                 placeholder="fulanofulanoso@gmail.com"
                 autoCapitalize="none"
@@ -235,7 +261,7 @@ export default function Settings(props) {
                 style={[
                   generalStyles.textInput,
                   generalStyles.primaryLabel,
-                  {marginLeft: 8},
+                  { marginLeft: 8 },
                 ]}
               />
             </View>
@@ -243,8 +269,8 @@ export default function Settings(props) {
         </View>
 
         <View style={[styles.card, generalStyles.shadow]}>
-          <View style={[generalStyles.row, {marginBottom: 12}]}>
-            <View style={{marginRight: 8, flex: 2}}>
+          <View style={[generalStyles.row, { marginBottom: 12 }]}>
+            <View style={{ marginRight: 8, flex: 2 }}>
               <Text style={generalStyles.primaryLabel}>
                 Salvar última localização
               </Text>
@@ -253,81 +279,16 @@ export default function Settings(props) {
               </Text>
             </View>
             <Switch
-              style={{flex: 1}}
-              trackColor={{false: '#767577', true: colors.secondaryOpacity}}
+              style={{ flex: 1 }}
+              trackColor={{ false: '#767577', true: colors.secondaryOpacity }}
               thumbColor={
                 saveLocation ? colors.secondary : '#f4f3f4'
               }
-              onValueChange={() => {}}
+              onValueChange={() => saveLastLocation()}
               value={saveLocation}
             />
           </View>
         </View>
-
-        {/*<View style={[styles.card, generalStyles.shadow]}>
-          <View style={[generalStyles.row, {marginBottom: 12}]}>
-            <View style={{marginRight: 8, flex: 2}}>
-              <Text style={generalStyles.primaryLabel}>
-                Receber notificação por SMS
-              </Text>
-              <Text style={[generalStyles.secondaryLabel]}>
-                Ative se você deseja receber um alerta via SMS quando seu
-                dispositivo for encontrado.
-              </Text>
-            </View>
-            <Switch
-              style={{flex: 1}}
-              trackColor={{false: '#767577', true: colors.secondaryOpacity}}
-              thumbColor={receiveNotificationSMS ? colors.secondary : '#f4f3f4'}
-              onValueChange={() => addOrRemoveSMS()}
-              value={receiveNotificationSMS}
-            />
-          </View>
-          <View
-            style={[
-              generalStyles.textInputContainer,
-              generalStyles.shadow,
-              {marginBottom: 0},
-            ]}>
-            <Text style={generalStyles.secondaryLabel}>
-              Número de celular (Apenas números)
-            </Text>
-            <View style={generalStyles.row}>
-              <MaterialIcons name="call" color={colors.icon} size={22} />
-              <MaskInput
-                value={smsNumber}
-                onChangeText={(masked, unmasked) => setSMSNumber(unmasked)}
-                onSubmitEditing={() => {}}
-                keyboardType="phone-pad"
-                placeholder="(99)98122-3344"
-                autoCapitalize="none"
-                placeholderTextColor={colors.icon}
-                mask={[
-                  '(',
-                  /\d/,
-                  /\d/,
-                  ')',
-                  ' ',
-                  /\d/,
-                  /\d/,
-                  /\d/,
-                  /\d/,
-                  /\d/,
-                  '-',
-                  /\d/,
-                  /\d/,
-                  /\d/,
-                  /\d/,
-                ]}
-                style={[
-                  generalStyles.textInput,
-                  generalStyles.primaryLabel,
-                  {marginLeft: 8},
-                ]}
-              />
-            </View>
-          </View>
-              </View>*/}
 
         <View style={[styles.card, generalStyles.shadow]}>
           <Text style={generalStyles.primaryLabel}>Excluir conta</Text>
@@ -343,7 +304,7 @@ export default function Settings(props) {
             buttonColor={colors.error}
             handleFlatButtonPress={() => onDeletingAccount()}
             isLoading={loading}
-            style={{marginTop: 16}}
+            style={{ marginTop: 16 }}
           />
         </View>
       </ScrollView>

@@ -21,6 +21,7 @@ import brandImageArray from '../../utils/brandImageArray.utils';
 import { CircleIconButton, FlatButton } from '../../components';
 import securityTips from '../../utils/securityTips';
 import accountImageArray from '../../utils/accountTypeImage.utils';
+import { getSetting } from '../../utils/asyncStorage.utils';
 
 export default function Home(props) {
   const [loggedUser, setLoggedUser] = useState(null);
@@ -32,12 +33,15 @@ export default function Home(props) {
   const [haveNotifications, setHaveNotifications] = useState(false);
   const [loadingUserData, setLoadingUserData] = useState(false);
   const [randomInt, setRandomInt] = useState(0);
+  const [associatedDevice, setAssociatedDevice] = useState(null);
+  const [settingData, setSettingData] = useState(null);
 
   const isPageFocused = useIsFocused();
 
   useEffect(() => {
     getCurrentUser();
     getRandomInt();
+    getSettingData();
   }, [isPageFocused]);
 
   function getRandomInt() {
@@ -63,8 +67,10 @@ export default function Home(props) {
       props.handleSnackbar({ type: 'error', message: 'Usuário não encontrado' });
     } else {
       setUserDoc(user.user._data);
-
       setDevices(user.user._data.devices);
+
+      thereIsAnyAssociated(user.user._data.devices);
+
       setFavoriteDevices(
         !user.user._data.favoriteDevices ? [] : user.user._data.favoriteDevices,
       );
@@ -72,6 +78,22 @@ export default function Home(props) {
         user.user._data.notifications.length > 0 ? true : false,
       );
       setLoadingUserData(false);
+    }
+  }
+
+  async function getSettingData() {
+    const settingResponse = await getSetting();
+    if (!settingResponse.success) {
+      props.handleSnackbar({ type: 'error', message: 'Erro ao buscar configurações.Tente reiniciar o app.' });
+    } else {
+      setSettingData(settingResponse.data);
+    }
+  }
+
+  function thereIsAnyAssociated(userDevices) {
+    const associatedIndex = userDevices.findIndex(element => element.isAssociated == true);
+    if (associatedIndex !== -1) {
+      setAssociatedDevice(userDevices[associatedIndex]);
     }
   }
 
@@ -352,6 +374,17 @@ export default function Home(props) {
             keyExtractor={item => item.imei}
             ListEmptyComponent={<DevicesListEmpty />}
           />
+        </View>
+
+        <View style={styles.card}>
+          <View style={[generalStyles.row, { justifyContent: 'space-between' }]}>
+            <Text style={generalStyles.titleDark}>Localização</Text>
+          </View>
+          {
+            settingData == null || !settingData.saveLastLocation ?
+              <Text style={generalStyles.secondaryLabel}>Habilite o app a salvar sua localização para uma maior segurança.</Text> :
+              <Text>Mapa</Text>
+          }
         </View>
 
         <View style={styles.card}>
