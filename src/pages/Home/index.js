@@ -22,6 +22,8 @@ import { CircleIconButton, FlatButton } from '../../components';
 import securityTips from '../../utils/securityTips';
 import accountImageArray from '../../utils/accountTypeImage.utils';
 import { getSetting } from '../../utils/asyncStorage.utils';
+import MapView, { Marker } from 'react-native-maps';
+import Geolocation from '@react-native-community/geolocation';
 
 export default function Home(props) {
   const [loggedUser, setLoggedUser] = useState(null);
@@ -35,6 +37,12 @@ export default function Home(props) {
   const [randomInt, setRandomInt] = useState(0);
   const [associatedDevice, setAssociatedDevice] = useState(null);
   const [settingData, setSettingData] = useState(null);
+  const [coords, setCoords] = useState({
+    latitude: 37.78825,
+    longitude: -122.4324,
+    latitudeDelta: 0.0922,
+    longitudeDelta: 0.0421
+  });
 
   const isPageFocused = useIsFocused();
 
@@ -43,6 +51,27 @@ export default function Home(props) {
     getRandomInt();
     getSettingData();
   }, [isPageFocused]);
+
+  async function getGeoLocation() {
+    await Geolocation.getCurrentPosition((success) => {
+      const { latitude, longitude, accuracy } = success.coords;
+
+      const oneDegreeOfLatitudeInMeters = 111.32 * 1000;
+      const latDelta = accuracy / oneDegreeOfLatitudeInMeters;
+      const longDelta = accuracy / (oneDegreeOfLatitudeInMeters * Math.cos(latitude * (Math.PI / 180)));
+
+      setCoords({
+        latitude: latitude,
+        longitude: longitude,
+        latitudeDelta: latDelta,
+        longitudeDelta: longDelta,
+        // accuracy: accuracy,
+      }
+      );
+    }, (error) => {
+      props.handleSnackbar({ type: 'error', message: 'Habilite o GPS do seu dispositivo.' })
+    });
+  }
 
   function getRandomInt() {
     const randomIntFound = Math.floor(Math.random() * securityTips.length);
@@ -87,6 +116,7 @@ export default function Home(props) {
       props.handleSnackbar({ type: 'error', message: 'Erro ao buscar configurações.Tente reiniciar o app.' });
     } else {
       setSettingData(settingResponse.data);
+      getGeoLocation();
     }
   }
 
@@ -383,7 +413,17 @@ export default function Home(props) {
           {
             settingData == null || !settingData.saveLastLocation ?
               <Text style={generalStyles.secondaryLabel}>Habilite o app a salvar sua localização para uma maior segurança.</Text> :
-              <Text>Mapa</Text>
+              <MapView
+                initialRegion={coords}
+                style={{ height: 200 }}>
+                <Marker
+                  key={0}
+                  coordinate={{ latitude: coords.latitude, longitude: coords.longitude }}
+                  title={'Localização atual'}
+                  description={'Você está aqui'}
+                  pinColor='purple'
+                />
+              </MapView>
           }
         </View>
 
