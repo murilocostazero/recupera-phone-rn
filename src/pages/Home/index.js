@@ -14,7 +14,7 @@ import {
 import generalStyles from '../../styles/general.style';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import styles from './styles';
-import { currentUser, getUserFromCollections } from '../../utils/firebase.utils';
+import { currentUser, getUserFromCollections, saveLastLocation } from '../../utils/firebase.utils';
 import colors from '../../styles/colors.style';
 import { useIsFocused } from '@react-navigation/native';
 import brandImageArray from '../../utils/brandImageArray.utils';
@@ -24,6 +24,7 @@ import accountImageArray from '../../utils/accountTypeImage.utils';
 import { getSetting } from '../../utils/asyncStorage.utils';
 import MapView, { Marker } from 'react-native-maps';
 import Geolocation from '@react-native-community/geolocation';
+import Clipboard from '@react-native-clipboard/clipboard';
 
 export default function Home(props) {
   const [loggedUser, setLoggedUser] = useState(null);
@@ -52,13 +53,15 @@ export default function Home(props) {
     getSettingData();
   }, [isPageFocused]);
 
-  async function getGeoLocation() {
+  async function getGeoLocation(associatedLocalDevice) {
     await Geolocation.getCurrentPosition((success) => {
       const { latitude, longitude, accuracy } = success.coords;
 
       const oneDegreeOfLatitudeInMeters = 111.32 * 1000;
       const latDelta = accuracy / oneDegreeOfLatitudeInMeters;
       const longDelta = accuracy / (oneDegreeOfLatitudeInMeters * Math.cos(latitude * (Math.PI / 180)));
+
+      saveLocationInFirebase(latitude, longitude, associatedLocalDevice);
 
       setCoords({
         latitude: latitude,
@@ -71,6 +74,11 @@ export default function Home(props) {
     }, (error) => {
       props.handleSnackbar({ type: 'error', message: 'Habilite o GPS do seu dispositivo.' })
     });
+  }
+
+  async function saveLocationInFirebase(lat, long, associatedLocalDevice){
+    const saveLocationResponse = await saveLastLocation(lat, long, associatedLocalDevice);
+    console.log('Location response', saveLocationResponse);
   }
 
   function getRandomInt() {
@@ -116,7 +124,6 @@ export default function Home(props) {
       props.handleSnackbar({ type: 'error', message: 'Erro ao buscar configurações.Tente reiniciar o app.' });
     } else {
       setSettingData(settingResponse.data);
-      getGeoLocation();
     }
   }
 
@@ -124,6 +131,7 @@ export default function Home(props) {
     const associatedIndex = userDevices.findIndex(element => element.isAssociated == true);
     if (associatedIndex !== -1) {
       setAssociatedDevice(userDevices[associatedIndex]);
+      getGeoLocation(userDevices[associatedIndex]);
     }
   }
 
@@ -282,6 +290,14 @@ export default function Home(props) {
     );
   };
 
+  function copyToClipboard(stringToSave) {
+    Clipboard.setString(stringToSave);
+    props.handleSnackbar({
+      type: 'success',
+      message: 'Localização copiada para a área de transferência',
+    });
+  }
+
   return loadingUserData ? (
     <View style={[generalStyles.pageContainer, { justifyContent: 'center' }]}>
       <ActivityIndicator size="large" color={colors.secondary} />
@@ -407,12 +423,17 @@ export default function Home(props) {
         </View>
 
         <View style={styles.card}>
-          <View style={[generalStyles.row, { justifyContent: 'space-between' }]}>
+          <View style={[generalStyles.row, { justifyContent: 'space-between'}]}>
             <Text style={generalStyles.titleDark}>Localização</Text>
           </View>
           {
             settingData == null || !settingData.saveLastLocation ?
               <Text style={generalStyles.secondaryLabel}>Habilite o app a salvar sua localização para uma maior segurança.</Text> :
+              <>
+              <View style={generalStyles.row}>
+              <Text style={[generalStyles.secondaryLabel, {marginVertical: 8, flex: 1, fontSize: 12}]}>Última localização: lat {coords.latitude}, long {coords.longitude}</Text>
+              <CircleIconButton buttonSize={30} buttonColor='#FFF' iconName='content-copy' iconSize={20} haveShadow={true} iconColor={colors.primary} handleCircleIconButtonPress={() => copyToClipboard(`Latitude ${coords.latitude}, Longitude: ${coords.longitude}`)} />
+              </View>
               <MapView
                 initialRegion={coords}
                 style={{ height: 200 }}>
@@ -421,9 +442,10 @@ export default function Home(props) {
                   coordinate={{ latitude: coords.latitude, longitude: coords.longitude }}
                   title={'Localização atual'}
                   description={'Você está aqui'}
-                  pinColor='purple'
+                  pinColor={colors.secondary}
                 />
               </MapView>
+              </>
           }
         </View>
 

@@ -645,31 +645,31 @@ export async function associateDevice(device) {
   const userDevices = fullUser.user._data.devices;
 
   const deviceAssociatedIndex = await userDevices.findIndex(element => element.isAssociated === true);
-  if(deviceAssociatedIndex !== -1){
+  if (deviceAssociatedIndex !== -1) {
     userDevices[deviceAssociatedIndex].isAssociated = false;
   }
 
-  for(let i = 0;i < userDevices.length;i++){
-    if(userDevices[i].isAssociated){
+  for (let i = 0; i < userDevices.length; i++) {
+    if (userDevices[i].isAssociated) {
       userDevices[i].isAssociated = false;
     }
   }
 
   const deviceToReplaceIndex = await userDevices.findIndex(element => element.imei === device.imei);
-  if(deviceToReplaceIndex !== -1){
-    if(userDevices[deviceToReplaceIndex].hasAlert){
-      associateDeviceResponse = {success: false, message: 'Não é possível pegar a localização de um dispositivo que não está em sua posse.'};
+  if (deviceToReplaceIndex !== -1) {
+    if (userDevices[deviceToReplaceIndex].hasAlert) {
+      associateDeviceResponse = { success: false, message: 'Não é possível pegar a localização de um dispositivo que não está em sua posse.' };
     } else {
-    userDevices[deviceToReplaceIndex] = device;
-    const addDeviceResponse = await addDevice(userDevices, email);
-    if(!addDeviceResponse.success){
-      associateDeviceResponse = {success: false, message: addDeviceResponse.message};
-    } else {
-      associateDeviceResponse = {success: true};
+      userDevices[deviceToReplaceIndex] = device;
+      const addDeviceResponse = await addDevice(userDevices, email);
+      if (!addDeviceResponse.success) {
+        associateDeviceResponse = { success: false, message: addDeviceResponse.message };
+      } else {
+        associateDeviceResponse = { success: true };
+      }
     }
-  }
   } else {
-    associateDeviceResponse = {success: false, message: 'O imei recebido não corresponde a nenhum dispositivo deste uruário'};
+    associateDeviceResponse = { success: false, message: 'O imei recebido não corresponde a nenhum dispositivo deste uruário' };
   }
 
   return associateDeviceResponse;
@@ -784,4 +784,34 @@ export async function deleteUser() {
     .then(() => (deleteUserResponse = true))
     .catch(error => console.log('Erro ao remover user', error));
   return deleteUserResponse;
+}
+
+export async function saveLastLocation(latitude, longitude, device) {
+  let saveLastLocationResponse = null;
+  const userDoc = await getUserFromCollections(currentUser().email);
+  const userFound = userDoc.user._data;
+
+  const deviceIndex = userFound.devices.findIndex(object => { return object.imei === device.imei });
+  if (deviceIndex !== -1) {
+    userFound.devices[deviceIndex].lastLocation = { latitude: latitude, longitude: longitude };
+
+    await firestore()
+      .collection('Users')
+      .doc(userFound.email)
+      .update({
+        devices: userFound.devices,
+      })
+      .then(() => {
+        saveLastLocationResponse = { success: true };
+      })
+      .catch(error => {
+        console.error(error);
+        saveLastLocationResponse = {
+          success: false,
+          message: 'Erro ao salvar localização do dispositivo',
+        };
+      });
+  }
+
+  return saveLastLocationResponse;
 }

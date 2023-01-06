@@ -7,6 +7,8 @@ import {
   ScrollView,
   Switch,
   Image,
+  Platform,
+  Linking,
 } from 'react-native';
 import generalStyles from '../../styles/general.style';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -38,6 +40,7 @@ export default function HandleDevices(props) {
   const [fiscalDocumentPicture, setFiscalDocumentPicture] = useState('');
   const [uploadingFiscalDocument, setUploadingFiscalDocument] = useState(false);
   const [whereToFind, setWhereToFind] = useState(null);
+  const [lastLocation, setLastLocation] = useState(null);
 
   /* REFERENCES */
   const brandRef = useRef('brandRef');
@@ -69,6 +72,7 @@ export default function HandleDevices(props) {
     setImei(deviceReceived.imei);
     setHasAlert(deviceReceived.hasAlert);
     setIsAssociated(deviceReceived.isAssociated);
+    setLastLocation(deviceReceived.lastLocation);
 
     const url = await storage()
       .ref(`FiscalDocuments/${userEmail}/${deviceReceived.imei}.jpg`)
@@ -99,6 +103,20 @@ export default function HandleDevices(props) {
       [{ text: 'ENTENDI', onPress: () => { } }],
     );
   }
+
+  const openLocationOnMap = (labelMap, lat, lng) => {
+    const scheme = Platform.select({
+      ios: 'maps:0,0?q=',
+      android: 'geo:0,0?q=',
+    });
+    const latLng = `${lat},${lng}`;
+    const label = labelMap;
+    const url = Platform.select({
+      ios: `${scheme}${label}@${latLng}`,
+      android: `${scheme}${latLng}(${label})`,
+    });
+    Linking.openURL(url);
+  };
 
   async function saveOrUpdateDevice() {
     setLoadingSaveDevice(true);
@@ -559,6 +577,16 @@ export default function HandleDevices(props) {
               value={isAssociated}
             />
           </View>
+
+          {
+            lastLocation !== null && loggedUser ?
+              <View style={generalStyles.row}>
+                <Text style={[generalStyles.primaryLabel, { marginVertical: 8, flex: 1 }]}>Última localização: lat {lastLocation.latitude}, long {lastLocation.longitude}</Text>
+                <CircleIconButton buttonSize={30} buttonColor='#FFF' iconName='location-on' iconSize={20} haveShadow={true} iconColor={colors.secondary} handleCircleIconButtonPress={() => openLocationOnMap(`Dispositivo: ${imei}`, lastLocation.latitude, lastLocation.longitude)} />
+              </View> :
+              <Text style={[generalStyles.secondaryLabel, { marginVertical: 8, flex: 1 }]}>Este dispositivo não possui localização salva</Text>
+          }
+
         </View>
       </ScrollView>
       {isEditingMode ? (

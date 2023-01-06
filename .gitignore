@@ -63,3 +63,4 @@ buck-out/
 #Private
 android/app/google-services.json
 android/gradle.properties
+android/app/src/main/res/values/keys.xml
