@@ -21,6 +21,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import colors from '../../styles/colors.style';
 import {launchImageLibrary} from 'react-native-image-picker';
 import storage from '@react-native-firebase/storage';
+import { removeSetting } from '../../utils/asyncStorage.utils';
 
 export default function UserPage(props) {
   const [loggedUser, setLoggedUser] = useState(null);
@@ -55,7 +56,7 @@ export default function UserPage(props) {
   function onLogout() {
     Alert.alert(
       'Deseja sair?',
-      'Ao sair, as suas informações de login serão esquecidas.',
+      'Ao sair, as suas informações de login serão esquecidas e as configurações salvas no dispositivo serão apagadas.',
       [
         {
           text: 'Cancelar',
@@ -65,6 +66,10 @@ export default function UserPage(props) {
         {
           text: 'SAIR',
           onPress: async () => {
+
+            const removeSettingResponse = await removeSetting();
+            if(!removeSettingResponse.success) console.error(removeSettingResponse.message)
+
             const logoutResponse = await logout();
             if (logoutResponse.success) {
               props.onAuthStateChanged(null);

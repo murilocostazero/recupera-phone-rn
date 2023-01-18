@@ -24,3 +24,14 @@ export async function getSetting() {
     }
     return storeSettingResponse;
 }
+
+export async function removeSetting(){
+    let removeSettingResponse = null;
+    try {
+        const jsonValue = await AsyncStorage.removeItem('settingData');
+        removeSettingResponse = {success: true, data: jsonValue != null ? JSON.parse(jsonValue) : null};
+    } catch (e) {
+        removeSettingResponse = {success: false, message: e};
+    }
+    return removeSettingResponse;
+}
