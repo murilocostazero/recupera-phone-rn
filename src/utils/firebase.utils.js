@@ -791,9 +791,13 @@ export async function saveLastLocation(latitude, longitude, device) {
   const userDoc = await getUserFromCollections(currentUser().email);
   const userFound = userDoc.user._data;
 
+  const lastDate = new Date();
+  const today = `${lastDate.getDate()}/${lastDate.getMonth()+1}/${lastDate.getFullYear()}`;
+  const hour = `${lastDate.getHours()}:${lastDate.getMinutes()}:${lastDate.getSeconds()}`;
+
   const deviceIndex = userFound.devices.findIndex(object => { return object.imei === device.imei });
   if (deviceIndex !== -1) {
-    userFound.devices[deviceIndex].lastLocation = { latitude: latitude, longitude: longitude };
+    userFound.devices[deviceIndex].lastLocation = { latitude: latitude, longitude: longitude, lastDate: today, lastTime: hour };
 
     await firestore()
       .collection('Users')

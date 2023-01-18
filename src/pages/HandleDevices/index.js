@@ -580,9 +580,15 @@ export default function HandleDevices(props) {
 
           {
             lastLocation !== null && loggedUser ?
-              <View style={generalStyles.row}>
-                <Text style={[generalStyles.primaryLabel, { marginVertical: 8, flex: 1 }]}>Última localização: lat {lastLocation.latitude}, long {lastLocation.longitude}</Text>
-                <CircleIconButton buttonSize={30} buttonColor='#FFF' iconName='location-on' iconSize={20} haveShadow={true} iconColor={colors.secondary} handleCircleIconButtonPress={() => openLocationOnMap(`Dispositivo: ${imei}`, lastLocation.latitude, lastLocation.longitude)} />
+              <View style={{margimBottom: 8}}>
+                <View style={generalStyles.row}>
+                  <Text style={[generalStyles.primaryLabel, { marginVertical: 8, flex: 1 }]}>Última localização</Text>
+
+                  <CircleIconButton buttonSize={30} buttonColor='#FFF' iconName='location-on' iconSize={20} haveShadow={true} iconColor={colors.secondary} handleCircleIconButtonPress={() => openLocationOnMap(`Dispositivo: ${imei}`, lastLocation.latitude, lastLocation.longitude)} />
+                </View>
+
+                <Text style={generalStyles.secondaryLabel}>Salvo em {lastLocation.lastDate} às {lastLocation.lastTime}</Text>
+                <Text style={generalStyles.secondaryLabel}>Latitude: {lastLocation.latitude} | Longitude: {lastLocation.longitude}</Text>
               </View> :
               <Text style={[generalStyles.secondaryLabel, { marginVertical: 8, flex: 1 }]}>Este dispositivo não possui localização salva</Text>
           }
