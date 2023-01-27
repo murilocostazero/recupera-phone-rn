@@ -66,6 +66,12 @@ const generalStyles = StyleSheet.create({
     color: colors.text.darkOpacity,
     fontSize: 14
   },
+  secondaryOpacityLabel: {
+    fontFamily: 'JosefinSans-Bold',
+    color: colors.text.darkOpacity,
+    opacity: 0.6,
+    fontSize: 14
+  },
   /* INPUTS */
   textInputContainer: {
     backgroundColor: '#FFF',

@@ -24,6 +24,7 @@ import { newDeviceFieldsVerification } from '../../utils/fieldsVerification.util
 import Clipboard from '@react-native-clipboard/clipboard';
 import { launchImageLibrary } from 'react-native-image-picker';
 import storage from '@react-native-firebase/storage';
+import { saveDeviceInfo } from '../../utils/asyncStorage.utils';
 
 export default function HandleDevices(props) {
   /* STATES */
@@ -333,6 +334,32 @@ export default function HandleDevices(props) {
     setUploadingFiscalDocument(false);
   }
 
+  async function changeAssociatedDevice() {
+    if (!isAssociated) {
+      const device = {
+        brand: brand,
+        model: model,
+        mainColor: mainColor,
+        imei: imei,
+        hasAlert: hasAlert,
+        isAssociated: isAssociated,
+        whereToFind: whereToFind && hasAlert ? whereToFind : null
+      };
+
+      const saveDeviceInfoResponse = await saveDeviceInfo(device);
+      if (!saveDeviceInfoResponse.success) {
+        props.handleSnackbar({ type: 'error', message: 'Erro ao guardar informações do aparelho' });
+      }
+    } else {
+      const removeDeviceResponse = await removeDevice();
+      if (!removeDeviceResponse.success) {
+        props.handleSnackbar({ type: 'error', message: 'Erro ao remover informações do aparelho' });
+      }
+    }
+
+    setIsAssociated(!isAssociated);
+  }
+
   return (
     <View style={generalStyles.pageContainer}>
       <Header
@@ -573,14 +600,15 @@ export default function HandleDevices(props) {
               style={{ flex: 1 }}
               trackColor={{ false: '#767577', true: colors.secondary }}
               thumbColor={isAssociated ? colors.primary : '#f4f3f4'}
-              onValueChange={() => hasAlert ? props.handleSnackbar({ type: 'warning', message: 'Não é possível pegar a localização de um dispositivo que não está em sua posse.' }) : setIsAssociated(!isAssociated)}
+              onValueChange={() => hasAlert ? props.handleSnackbar({ type: 'warning', message: 'Não é possível pegar a localização de um dispositivo que não está em sua posse.' }) : changeAssociatedDevice()}
               value={isAssociated}
             />
           </View>
 
           {
-            lastLocation !== null && loggedUser ?
-              <View style={{margimBottom: 8}}>
+            !lastLocation ?
+            <Text style={[generalStyles.secondaryLabel, { marginVertical: 8, flex: 1 }]}>Este dispositivo não possui localização salva</Text> :
+              <View style={{ margimBottom: 8 }}>
                 <View style={generalStyles.row}>
                   <Text style={[generalStyles.primaryLabel, { marginVertical: 8, flex: 1 }]}>Última localização</Text>
 
@@ -589,8 +617,7 @@ export default function HandleDevices(props) {
 
                 <Text style={generalStyles.secondaryLabel}>Salvo em {lastLocation.lastDate} às {lastLocation.lastTime}</Text>
                 <Text style={generalStyles.secondaryLabel}>Latitude: {lastLocation.latitude} | Longitude: {lastLocation.longitude}</Text>
-              </View> :
-              <Text style={[generalStyles.secondaryLabel, { marginVertical: 8, flex: 1 }]}>Este dispositivo não possui localização salva</Text>
+              </View>
           }
 
         </View>

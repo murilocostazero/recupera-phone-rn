@@ -429,6 +429,11 @@ export default function Home(props) {
           {
             settingData == null || !settingData.saveLastLocation ?
               <Text style={generalStyles.secondaryLabel}>Habilite o app a salvar sua localização para uma maior segurança.</Text> :
+              !associatedDevice ?
+              <View>
+              <Text style={generalStyles.secondaryLabel}>Associe o cadastro de um de seus dispositivos ao aparelho físico.</Text>
+              <Text style={generalStyles.secondaryOpacityLabel}>Em Meus Dispositivos, selecione um aparelho e marque a opção Associar Dispositivo.</Text>
+              </View> :
               <>
               <View style={generalStyles.row}>
               <Text style={[generalStyles.secondaryLabel, {marginVertical: 8, flex: 1, fontSize: 12}]}>Última localização: lat {coords.latitude}, long {coords.longitude}</Text>
