@@ -22,6 +22,7 @@ import BackgroundService from 'react-native-background-actions';
 import Geolocation from '@react-native-community/geolocation';
 import { saveLastLocation } from './src/utils/firebase.utils';
 import { getSavedDevice } from './src/utils/asyncStorage.utils';
+import messaging from '@react-native-firebase/messaging';
 
 const Stack = createNativeStackNavigator();
 
@@ -96,7 +97,29 @@ export default function App() {
   }
 
   async function startBackgroundTask() {
+    requestUserPermissions();
+
     await BackgroundService.start(veryIntensiveTask, options);
+  }
+
+  const requestUserPermissions = async () => {
+    const status = await messaging().requestPermission();
+    const enable = status === 1 || status === 2;
+    if(enable){
+      const tokenFCM = messaging().getToken(); //Save this in a global variable
+      console.log('User token:', tokenFCM);
+
+      messaging().onTokenRefresh(newToken => {
+        console.log('User new token:', newToken);
+      });
+
+      const unsubscribe = messaging().onMessage(async remoteMessage => {
+        //Notification inside app
+        Alert.alert(''+remoteMessage.notification.title, ''+remoteMessage.notification.body);
+      });
+  
+      return unsubscribe;
+    }
   }
 
   // Handle user state changes
