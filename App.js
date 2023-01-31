@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, StatusBar } from 'react-native';
+import { View, StatusBar, Alert } from 'react-native';
 import auth from '@react-native-firebase/auth';
 import {
   Login,
@@ -46,14 +46,14 @@ export default function App() {
           // const longDelta = accuracy / (oneDegreeOfLatitudeInMeters * Math.cos(latitude * (Math.PI / 180)));
 
           const associatedDevice = await getSavedDevice();
-          
+
           if (!associatedDevice.success) {
             //If get error, is because is the first execution of app or user did not choosed any deveice to be associated
             console.log('Erro ao buscar dispositivo salvo');
           } else {
             saveLocationInFirebase(latitude, longitude, associatedDevice.data);
           }
-          
+
         }, (error) => {
           console.error(error);
         });
@@ -74,7 +74,8 @@ export default function App() {
     // color: '#ff00ff',
     linkingURI: 'yourSchemeHere://chat/jane',
     parameters: {
-      delay: 600000,
+      delay: 600000, //10minutos
+      // delay: 5000, //5segundos
     },
   };
   //Background task ends
@@ -86,14 +87,16 @@ export default function App() {
 
   async function saveLocationInFirebase(lat, long, associatedLocalDevice) {
     const saveLocationResponse = await saveLastLocation(lat, long, associatedLocalDevice);
-    console.log('Localização salva em background', saveLocationResponse);
+    // console.log('Localização salva em background', saveLocationResponse);
+    if (saveLocationResponse.success) {
+      const lastDate = new Date();
+      const hour = `${lastDate.getHours()}:${lastDate.getMinutes() < 10 ? '0' + lastDate.getMinutes() : lastDate.getMinutes()}:${lastDate.getSeconds()}`;
+      await BackgroundService.updateNotification({ taskDesc: `Localização salva às ${hour}`});
+    }
   }
 
   async function startBackgroundTask() {
     await BackgroundService.start(veryIntensiveTask, options);
-    // await BackgroundService.updateNotification({ taskDesc: 'New ExampleTask description' }); // Only Android, iOS will ignore this call
-    // iOS will also run everything here in the background until .stop() is called
-    // await BackgroundService.stop();
   }
 
   // Handle user state changes
