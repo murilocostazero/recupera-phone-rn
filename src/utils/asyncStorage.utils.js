@@ -54,14 +54,14 @@ export async function getSavedDevice() {
     let saveDeviceInfoResponse = null;
     try {
         const jsonValue = await AsyncStorage.getItem('deviceSaved');
-        saveDeviceInfoResponse = {success: true, data: jsonValue != null ? JSON.parse(jsonValue) : null};
+        saveDeviceInfoResponse = {success: jsonValue != null ? true : false, data: jsonValue != null ? JSON.parse(jsonValue) : null};
     } catch (e) {
         saveDeviceInfoResponse = {success: false, message: e};
     }
     return saveDeviceInfoResponse;
 }
 
-export async function removeDevice(){
+export async function removeSavedDevice(){
     let removeDeviceResponse = null;
     try {
         const jsonValue = await AsyncStorage.removeItem('deviceSaved');

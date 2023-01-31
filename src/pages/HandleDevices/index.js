@@ -24,7 +24,7 @@ import { newDeviceFieldsVerification } from '../../utils/fieldsVerification.util
 import Clipboard from '@react-native-clipboard/clipboard';
 import { launchImageLibrary } from 'react-native-image-picker';
 import storage from '@react-native-firebase/storage';
-import { saveDeviceInfo } from '../../utils/asyncStorage.utils';
+import { removeSavedDevice, saveDeviceInfo } from '../../utils/asyncStorage.utils';
 
 export default function HandleDevices(props) {
   /* STATES */
@@ -342,7 +342,7 @@ export default function HandleDevices(props) {
         mainColor: mainColor,
         imei: imei,
         hasAlert: hasAlert,
-        isAssociated: isAssociated,
+        isAssociated: true,
         whereToFind: whereToFind && hasAlert ? whereToFind : null
       };
 
@@ -351,7 +351,7 @@ export default function HandleDevices(props) {
         props.handleSnackbar({ type: 'error', message: 'Erro ao guardar informações do aparelho' });
       }
     } else {
-      const removeDeviceResponse = await removeDevice();
+      const removeDeviceResponse = await removeSavedDevice();
       if (!removeDeviceResponse.success) {
         props.handleSnackbar({ type: 'error', message: 'Erro ao remover informações do aparelho' });
       }

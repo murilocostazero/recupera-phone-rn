@@ -46,10 +46,14 @@ export default function App() {
           // const longDelta = accuracy / (oneDegreeOfLatitudeInMeters * Math.cos(latitude * (Math.PI / 180)));
 
           const associatedDevice = await getSavedDevice();
+          
           if (!associatedDevice.success) {
-            console.error('Erro ao buscar dispositivo salvo');
+            //If get error, is because is the first execution of app or user did not choosed any deveice to be associated
+            console.log('Erro ao buscar dispositivo salvo');
+          } else {
+            saveLocationInFirebase(latitude, longitude, associatedDevice.data);
           }
-          saveLocationInFirebase(latitude, longitude, associatedDevice.data);
+          
         }, (error) => {
           console.error(error);
         });

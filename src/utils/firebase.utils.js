@@ -151,7 +151,7 @@ export async function loginUser(email, password) {
       loginError =>
       (loginResponse = {
         success: false,
-        message: 'Verifique os dados de login e tente novamente',
+        message: 'Verifique os dados de login, a sua conexão com a rede e tente novamente',
       }),
     );
 
