@@ -335,17 +335,16 @@ export default function HandleDevices(props) {
   }
 
   async function changeAssociatedDevice() {
+    const device = {
+      brand: brand,
+      model: model,
+      mainColor: mainColor,
+      imei: imei,
+      hasAlert: hasAlert,
+      isAssociated: !isAssociated,
+      whereToFind: whereToFind && hasAlert ? whereToFind : null
+    };
     if (!isAssociated) {
-      const device = {
-        brand: brand,
-        model: model,
-        mainColor: mainColor,
-        imei: imei,
-        hasAlert: hasAlert,
-        isAssociated: true,
-        whereToFind: whereToFind && hasAlert ? whereToFind : null
-      };
-
       const saveDeviceInfoResponse = await saveDeviceInfo(device);
       if (!saveDeviceInfoResponse.success) {
         props.handleSnackbar({ type: 'error', message: 'Erro ao guardar informações do aparelho' });

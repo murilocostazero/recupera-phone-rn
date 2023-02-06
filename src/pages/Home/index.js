@@ -76,7 +76,7 @@ export default function Home(props) {
     });
   }
 
-  async function saveLocationInFirebase(lat, long, associatedLocalDevice){
+  async function saveLocationInFirebase(lat, long, associatedLocalDevice) {
     const saveLocationResponse = await saveLastLocation(lat, long, associatedLocalDevice);
     console.log('Location response', saveLocationResponse);
   }
@@ -423,34 +423,37 @@ export default function Home(props) {
         </View>
 
         <View style={styles.card}>
-          <View style={[generalStyles.row, { justifyContent: 'space-between'}]}>
+          <View style={[generalStyles.row, { justifyContent: 'space-between' }]}>
             <Text style={generalStyles.titleDark}>Localização</Text>
           </View>
           {
             settingData == null || !settingData.saveLastLocation ?
-              <Text style={generalStyles.secondaryLabel}>Habilite o app a salvar sua localização para uma maior segurança.</Text> :
-              !associatedDevice ?
               <View>
-              <Text style={generalStyles.secondaryLabel}>Associe o cadastro de um de seus dispositivos ao aparelho físico.</Text>
-              <Text style={generalStyles.secondaryOpacityLabel}>Em Meus Dispositivos, selecione um aparelho e marque a opção Associar Dispositivo.</Text>
+                <Text style={generalStyles.secondaryLabel}>Para uma maior segurança, permita com que o app salve a sua localização.</Text>
+                <FlatButton label='Ir para configurações' height={42} labelColor='#FFF' buttonColor={colors.secondary} handleFlatButtonPress={() => props.navigation.navigate('Settings')} isLoading={false} style={{marginTop: 8}} />
               </View> :
-              <>
-              <View style={generalStyles.row}>
-              <Text style={[generalStyles.secondaryLabel, {marginVertical: 8, flex: 1, fontSize: 12}]}>Última localização: lat {coords.latitude}, long {coords.longitude}</Text>
-              <CircleIconButton buttonSize={30} buttonColor='#FFF' iconName='content-copy' iconSize={20} haveShadow={true} iconColor={colors.primary} handleCircleIconButtonPress={() => copyToClipboard(`Latitude ${coords.latitude}, Longitude: ${coords.longitude}`)} />
-              </View>
-              <MapView
-                initialRegion={coords}
-                style={{ height: 200 }}>
-                <Marker
-                  key={0}
-                  coordinate={{ latitude: coords.latitude, longitude: coords.longitude }}
-                  title={'Localização atual'}
-                  description={'Você está aqui'}
-                  pinColor={colors.secondary}
-                />
-              </MapView>
-              </>
+              !associatedDevice ?
+                <View>
+                  <Text style={generalStyles.secondaryLabel}>Associe o cadastro de um de seus dispositivos ao aparelho físico.</Text>
+                  <Text style={generalStyles.secondaryOpacityLabel}>Em Meus Dispositivos, selecione um aparelho e marque a opção Associar Dispositivo.</Text>
+                </View> :
+                <>
+                  <View style={generalStyles.row}>
+                    <Text style={[generalStyles.secondaryLabel, { marginVertical: 8, flex: 1, fontSize: 12 }]}>Última localização: lat {coords.latitude}, long {coords.longitude}</Text>
+                    <CircleIconButton buttonSize={30} buttonColor='#FFF' iconName='content-copy' iconSize={20} haveShadow={true} iconColor={colors.primary} handleCircleIconButtonPress={() => copyToClipboard(`Latitude ${coords.latitude}, Longitude: ${coords.longitude}`)} />
+                  </View>
+                  <MapView
+                    initialRegion={coords}
+                    style={{ height: 200 }}>
+                    <Marker
+                      key={0}
+                      coordinate={{ latitude: coords.latitude, longitude: coords.longitude }}
+                      title={'Localização atual'}
+                      description={'Você está aqui'}
+                      pinColor={colors.secondary}
+                    />
+                  </MapView>
+                </>
           }
         </View>
 

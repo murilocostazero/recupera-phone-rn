@@ -47,7 +47,6 @@ export default function App() {
           // const longDelta = accuracy / (oneDegreeOfLatitudeInMeters * Math.cos(latitude * (Math.PI / 180)));
 
           const associatedDevice = await getSavedDevice();
-
           if (!associatedDevice.success) {
             //If get error, is because is the first execution of app or user did not choosed any deveice to be associated
             console.log('Erro ao buscar dispositivo salvo');
