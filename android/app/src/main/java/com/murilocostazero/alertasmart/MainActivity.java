@@ -1,4 +1,4 @@
-package com.recuperaphone;
+package com.murilocostazero.alertasmart;
 
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;

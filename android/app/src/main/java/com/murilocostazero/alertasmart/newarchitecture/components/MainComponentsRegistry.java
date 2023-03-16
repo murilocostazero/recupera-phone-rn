@@ -1,4 +1,4 @@
-package com.recuperaphone.newarchitecture.components;
+package com.murilocostazero.alertasmart.newarchitecture.components;
 
 import com.facebook.jni.HybridData;
 import com.facebook.proguard.annotations.DoNotStrip;

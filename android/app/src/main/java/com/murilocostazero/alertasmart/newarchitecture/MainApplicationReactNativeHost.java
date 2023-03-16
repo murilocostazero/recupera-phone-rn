@@ -1,4 +1,4 @@
-package com.recuperaphone.newarchitecture;
+package com.murilocostazero.alertasmart.newarchitecture;
 
 import android.app.Application;
 import androidx.annotation.NonNull;
@@ -19,9 +19,9 @@ import com.facebook.react.fabric.CoreComponentsRegistry;
 import com.facebook.react.fabric.EmptyReactNativeConfig;
 import com.facebook.react.fabric.FabricJSIModuleProvider;
 import com.facebook.react.uimanager.ViewManagerRegistry;
-import com.recuperaphone.BuildConfig;
-import com.recuperaphone.newarchitecture.components.MainComponentsRegistry;
-import com.recuperaphone.newarchitecture.modules.MainApplicationTurboModuleManagerDelegate;
+import com.murilocostazero.alertasmart.BuildConfig;
+import com.murilocostazero.alertasmart.newarchitecture.components.MainComponentsRegistry;
+import com.murilocostazero.alertasmart.newarchitecture.modules.MainApplicationTurboModuleManagerDelegate;
 import java.util.ArrayList;
 import java.util.List;
 

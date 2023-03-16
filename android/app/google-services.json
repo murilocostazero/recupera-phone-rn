@@ -7,6 +7,35 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:1048810175013:android:0a7b2dbdffd370db3a9dcc",
+        "android_client_info": {
+          "package_name": "com.murilocostazero.alertasmart"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1048810175013-kjv0912gh8ahd17vekbhv7800nclq9fd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB-NrqCeCjf_fcRFrzb2Ku4B0E3AgDAUGM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1048810175013-kjv0912gh8ahd17vekbhv7800nclq9fd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:1048810175013:android:b92b289abc4b05bf3a9dcc",
         "android_client_info": {
           "package_name": "com.recuperaphone"
