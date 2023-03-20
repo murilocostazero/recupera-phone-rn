@@ -1,4 +1,4 @@
-import React, {useState, useRef, useEffect} from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,7 @@ import {
   TextInput,
   ActivityIndicator,
 } from 'react-native';
-import {FlatButton, Header, SelectInstitution} from '../../components';
+import { FlatButton, Header, SelectInstitution } from '../../components';
 import colors from '../../styles/colors.style';
 import generalStyles from '../../styles/general.style';
 import styles from './styles.style';
@@ -55,122 +55,133 @@ export default function MyInfo(props) {
       });
     } else {
       setUser(userCollectionResponse.user._data);
-      if (userCollectionResponse.user._data.agentInfo) {
-        setIsAgentAccount(true);
-        setJob(userCollectionResponse.user._data.agentInfo.job);
-        setRegistrationNumber(
-          userCollectionResponse.user._data.agentInfo.registrationNumber,
-        );
+      if (userCollectionResponse.user._data !== 'institution') {
+        if (userCollectionResponse.user._data.agentInfo) {
+          setIsAgentAccount(true);
+          setJob(userCollectionResponse.user._data.agentInfo.job);
+          setRegistrationNumber(
+            userCollectionResponse.user._data.agentInfo.registrationNumber,
+          );
 
-        const institutionGot = await getSingleInstitution(
-          userCollectionResponse.user._data.agentInfo.institution,
-        );
-        if (!institutionGot) {
-          props.handleSnackbar({
-            type: 'error',
-            message: 'Instituição não encontrada',
-          });
-        } else {
-          setSelectedInstitution(institutionGot);
+          const institutionGot = await getSingleInstitution(
+            userCollectionResponse.user._data.agentInfo.institution,
+          );
+          if (!institutionGot) {
+            props.handleSnackbar({
+              type: 'error',
+              message: 'Instituição não encontrada',
+            });
+          } else {
+            setSelectedInstitution(institutionGot);
+          }
         }
       }
     }
   }
 
   async function saveInfo() {
-    //Verificar se usuário já é agente
-    if (isAgentAccount) {
-      //Torná-lo agente
-      if (isNaN(registrationNumber) || registrationNumber.length < 4) {
-        props.handleSnackbar({
-          type: 'warning',
-          message: 'Matrícula precisa ser um número maior que 4',
-        });
-      } else if (job.length < 3) {
-        props.handleSnackbar({
-          type: 'warning',
-          message: 'Função não pode ser menor que 3 caracteres',
-        });
-      } else if (!selectedInstitution) {
-        props.handleSnackbar({
-          type: 'warning',
-          message: 'Selecione uma instituição',
-        });
-      } else {
-        setLoadingSaveInfo(true);
-        //Verifica se já existe um usuário utilizando uma combinação de instituição e matricula
-        const foundExistingUser =
-          await foundUserByRegistrationNumberAndInstitution(
-            registrationNumber,
-            selectedInstitution.email,
-          );
-        if (foundExistingUser.success) {
-          setLoadingSaveInfo(false);
+    //Verificar o tipo da conta
+    if (user.userType !== 'institution') {
+      //Verificar se usuário já é agente
+      if (isAgentAccount) {
+        //Torná-lo agente
+        if (isNaN(registrationNumber) || registrationNumber.length < 4) {
           props.handleSnackbar({
             type: 'warning',
-            message:
-              'Já existe um usuário nessa instituição com a matrícula informada',
+            message: 'Matrícula precisa ser um número maior que 4',
+          });
+        } else if (job.length < 3) {
+          props.handleSnackbar({
+            type: 'warning',
+            message: 'Função não pode ser menor que 3 caracteres',
+          });
+        } else if (!selectedInstitution) {
+          props.handleSnackbar({
+            type: 'warning',
+            message: 'Selecione uma instituição',
           });
         } else {
-          //Pegar o usuário, montar ele todo e alterar
-          //Precisa montar todo para poder montar a notificação - ALTERAR ISSO DEPOIS
-          const userToUpdate = {
-            email: user.email,
-            devices: user.devices,
-            // userType: 'agent',
-            agentInfo: {
-              isAgentAuthStatus: 'pending',
-              registrationNumber: registrationNumber,
-              job: job,
-              institution: selectedInstitution.email,
-            },
-          };
-
-          const userUpdateResponse = await requestUserTypeChange(userToUpdate);
-          if (!userUpdateResponse.success) {
+          setLoadingSaveInfo(true);
+          //Verifica se já existe um usuário utilizando uma combinação de instituição e matricula
+          const foundExistingUser =
+            await foundUserByRegistrationNumberAndInstitution(
+              registrationNumber,
+              selectedInstitution.email,
+            );
+          if (foundExistingUser.success) {
+            setLoadingSaveInfo(false);
             props.handleSnackbar({
-              type: 'error',
-              message: 'Erro ao atualizar usuário',
+              type: 'warning',
+              message:
+                'Já existe um usuário nessa instituição com a matrícula informada',
             });
-            setLoadingSaveInfo(false);
           } else {
-            setLoadingSaveInfo(false);
-            props.navigation.goBack();
+            //Pegar o usuário, montar ele todo e alterar
+            //Precisa montar todo para poder montar a notificação - ALTERAR ISSO DEPOIS
+            const userToUpdate = {
+              email: user.email,
+              devices: user.devices,
+              // userType: 'agent',
+              agentInfo: {
+                isAgentAuthStatus: 'pending',
+                registrationNumber: registrationNumber,
+                job: job,
+                institution: selectedInstitution.email,
+              },
+            };
+
+            const userUpdateResponse = await requestUserTypeChange(userToUpdate);
+            if (!userUpdateResponse.success) {
+              props.handleSnackbar({
+                type: 'error',
+                message: 'Erro ao atualizar usuário',
+              });
+              setLoadingSaveInfo(false);
+            } else {
+              setLoadingSaveInfo(false);
+              props.navigation.goBack();
+            }
           }
+        }
+      } else {
+        //Torná-lo regular
+        setLoadingSaveInfo(true);
+        const agentToRegularResponse = await agentToRegular(user.email);
+        setLoadingSaveInfo(false);
+        if (!agentToRegularResponse) {
+          props.handleSnackbar({
+            type: 'error',
+            message: 'Houve um problema ao mudar o tipo de conta.',
+          });
+        } else {
+          getUser();
         }
       }
     } else {
-      //Torná-lo regular
-      setLoadingSaveInfo(true);
-      const agentToRegularResponse = await agentToRegular(user.email);
-      setLoadingSaveInfo(false);
-      if (!agentToRegularResponse) {
-        props.handleSnackbar({
-          type: 'error',
-          message: 'Houve um problema ao mudar o tipo de conta.',
-        });
-      } else {
-        getUser();
-      }
+      //Colocar aqui as alterações feitas na conta de instituição
     }
   }
 
   async function onChangingDisplayName() {
     setLoadingSaveName(true);
-    const changeNameResponse = await changeDisplayName(name);
-    setLoadingSaveName(false);
-    if (!changeNameResponse.success) {
-      props.handleSnackbar({
-        type: 'error',
-        message: changeNameResponse.message,
-      });
+    if (name.length < 3) {
+      props.handleSnackbar({ type: 'warning', message: 'Insira um nome válido' })
     } else {
-      props.handleSnackbar({
-        type: 'success',
-        message: changeNameResponse.message,
-      });
-      getUser();
+      const changeNameResponse = await changeDisplayName(name);
+      if (!changeNameResponse.success) {
+        props.handleSnackbar({
+          type: 'error',
+          message: changeNameResponse.message,
+        });
+      } else {
+        props.handleSnackbar({
+          type: 'success',
+          message: changeNameResponse.message,
+        });
+        getUser();
+      }
     }
+    setLoadingSaveName(false);
   }
 
   return (
@@ -183,13 +194,13 @@ export default function MyInfo(props) {
         primaryButtonLabel="PRONTO"
       />
 
-      <ScrollView contentContainerStyle={{padding: 8, flex: 1}}>
+      <ScrollView contentContainerStyle={{ padding: 8, flex: 1 }}>
         <View>
           <View
             style={[
               generalStyles.textInputContainer,
               generalStyles.shadow,
-              {marginTop: 32},
+              { marginTop: 32 },
             ]}>
             <Text style={generalStyles.secondaryLabel}>Nome</Text>
             <View style={generalStyles.row}>
@@ -206,7 +217,7 @@ export default function MyInfo(props) {
                 style={[
                   generalStyles.textInput,
                   generalStyles.primaryLabel,
-                  {marginLeft: 8},
+                  { marginLeft: 8 },
                 ]}
               />
             </View>
@@ -231,7 +242,7 @@ export default function MyInfo(props) {
         {!user ? (
           <ActivityIndicator size="large" color={colors.secondary} />
         ) : user.userType != 'institution' ? (
-          <View style={[styles.optionContainer, {marginTop: 0}]}>
+          <View style={[styles.optionContainer, { marginTop: 0 }]}>
             <Text style={generalStyles.primaryLabel}>Tipo de conta</Text>
             <View style={[generalStyles.row, styles.optionRow]}>
               <Text style={generalStyles.secondaryLabel}>
@@ -240,7 +251,7 @@ export default function MyInfo(props) {
                   : 'Não sou agente de segurança pública'}
               </Text>
               <Switch
-                trackColor={{false: '#767577', true: colors.secondaryOpacity}}
+                trackColor={{ false: '#767577', true: colors.secondaryOpacity }}
                 thumbColor={isAgentAccount ? colors.secondary : '#f4f3f4'}
                 onValueChange={() => setIsAgentAccount(!isAgentAccount)}
                 value={isAgentAccount}
@@ -249,7 +260,7 @@ export default function MyInfo(props) {
             {!isAgentAccount ? (
               <View />
             ) : (
-              <View style={{marginTop: 16}}>
+              <View style={{ marginTop: 16 }}>
                 <View
                   style={[
                     generalStyles.textInputContainer,
@@ -268,7 +279,7 @@ export default function MyInfo(props) {
                       style={[
                         generalStyles.textInput,
                         generalStyles.primaryLabel,
-                        {marginLeft: 8},
+                        { marginLeft: 8 },
                       ]}
                     />
                   </View>
@@ -285,13 +296,13 @@ export default function MyInfo(props) {
                       ref={jobRef}
                       value={job}
                       onChangeText={text => setJob(text)}
-                      onSubmitEditing={() => {}}
+                      onSubmitEditing={() => { }}
                       placeholder="Ex.: P3, Escrivão, Auxiliar de P4..."
                       placeholderTextColor={colors.icon}
                       style={[
                         generalStyles.textInput,
                         generalStyles.primaryLabel,
-                        {marginLeft: 8},
+                        { marginLeft: 8 },
                       ]}
                     />
                   </View>
@@ -318,8 +329,8 @@ export default function MyInfo(props) {
                   user.agentInfo.isAgentAuthStatus == 'pending'
                     ? colors.warning
                     : user.agentInfo.isAgentAuthStatus == 'denied'
-                    ? colors.error
-                    : colors.success,
+                      ? colors.error
+                      : colors.success,
                 padding: 8,
                 borderRadius: 8,
                 alignItems: 'center',
@@ -331,8 +342,8 @@ export default function MyInfo(props) {
             {user.agentInfo.isAgentAuthStatus == 'pending'
               ? 'Pendente'
               : user.agentInfo.isAgentAuthStatus == 'denied'
-              ? 'Negado'
-              : 'Ativo'}
+                ? 'Negado'
+                : 'Ativo'}
           </Text>
         )}
       </ScrollView>

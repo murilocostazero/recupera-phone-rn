@@ -104,13 +104,14 @@ export default function Home(props) {
       props.handleSnackbar({ type: 'error', message: 'Usuário não encontrado' });
     } else {
       setUserDoc(user.user._data);
-      setDevices(user.user._data.devices);
+      if (user.user._data.userType !== 'institution') {
+        setDevices(user.user._data.devices);
+        thereIsAnyAssociated(user.user._data.devices);
 
-      thereIsAnyAssociated(user.user._data.devices);
-
-      setFavoriteDevices(
-        !user.user._data.favoriteDevices ? [] : user.user._data.favoriteDevices,
-      );
+        setFavoriteDevices(
+          !user.user._data.favoriteDevices ? [] : user.user._data.favoriteDevices,
+        );
+      }
       setHaveNotifications(
         user.user._data.notifications.length > 0 ? true : false,
       );
@@ -369,58 +370,63 @@ export default function Home(props) {
             onRefresh={() => getCurrentUser()}
           />
         }>
-        <View style={styles.card}>
-          <View style={[generalStyles.row, { justifyContent: 'space-between' }]}>
-            <Text style={generalStyles.titleDark}>Meus dispositivos</Text>
-            <CircleIconButton
-              buttonSize={28}
-              buttonColor="#FFF"
-              iconName="add"
-              iconSize={26}
-              haveShadow={true}
-              iconColor={colors.primary}
-              handleCircleIconButtonPress={() =>
-                props.navigation.navigate('HandleDevices', { device: null })
-              }
-            />
-          </View>
-          <FlatList
-            horizontal={true}
-            contentContainerStyle={{ paddingVertical: 8 }}
-            data={devices}
-            renderItem={renderDevices}
-            keyExtractor={item => item.imei}
-            ListEmptyComponent={<DevicesListEmpty />}
-          />
-        </View>
-
-        <View style={styles.card}>
-          <View style={[generalStyles.row, { justifyContent: 'space-between' }]}>
-            <Text style={generalStyles.titleDark}>Favoritos</Text>
-            <CircleIconButton
-              buttonSize={28}
-              buttonColor="#FFF"
-              iconName="lightbulb"
-              iconSize={24}
-              haveShadow={true}
-              iconColor={colors.primary}
-              handleCircleIconButtonPress={() =>
-                Alert.alert(
-                  'Sobre os favoritos',
-                  'Adicione dispositivos a sua lista de favoritos para que você consiga buscá-los com mais praticidade.',
-                )
-              }
-            />
-          </View>
-          <FlatList
-            horizontal={true}
-            contentContainerStyle={{ paddingVertical: 8 }}
-            data={favoriteDevices}
-            renderItem={renderFavoriteDevices}
-            keyExtractor={item => item.imei}
-            ListEmptyComponent={<DevicesListEmpty />}
-          />
-        </View>
+        {
+          !userDoc ?
+            <Text style={generalStyles.secondaryLabel}>Carregando informações</Text> :
+            userDoc.userType !== 'institution' ?
+              <View style={styles.card}>
+                <View style={[generalStyles.row, { justifyContent: 'space-between' }]}>
+                  <Text style={generalStyles.titleDark}>Meus dispositivos</Text>
+                  <CircleIconButton
+                    buttonSize={28}
+                    buttonColor="#FFF"
+                    iconName="add"
+                    iconSize={26}
+                    haveShadow={true}
+                    iconColor={colors.primary}
+                    handleCircleIconButtonPress={() =>
+                      props.navigation.navigate('HandleDevices', { device: null })
+                    }
+                  />
+                </View>
+                <FlatList
+                  horizontal={true}
+                  contentContainerStyle={{ paddingVertical: 8 }}
+                  data={devices}
+                  renderItem={renderDevices}
+                  keyExtractor={item => item.imei}
+                  ListEmptyComponent={<DevicesListEmpty />}
+                />
+                <View style={styles.card}>
+                  <View style={[generalStyles.row, { justifyContent: 'space-between' }]}>
+                    <Text style={generalStyles.titleDark}>Favoritos</Text>
+                    <CircleIconButton
+                      buttonSize={28}
+                      buttonColor="#FFF"
+                      iconName="lightbulb"
+                      iconSize={24}
+                      haveShadow={true}
+                      iconColor={colors.primary}
+                      handleCircleIconButtonPress={() =>
+                        Alert.alert(
+                          'Sobre os favoritos',
+                          'Adicione dispositivos a sua lista de favoritos para que você consiga buscá-los com mais praticidade.',
+                        )
+                      }
+                    />
+                  </View>
+                  <FlatList
+                    horizontal={true}
+                    contentContainerStyle={{ paddingVertical: 8 }}
+                    data={favoriteDevices}
+                    renderItem={renderFavoriteDevices}
+                    keyExtractor={item => item.imei}
+                    ListEmptyComponent={<DevicesListEmpty />}
+                  />
+                </View>
+              </View> :
+              <View />
+        }
 
         <View style={styles.card}>
           <View style={[generalStyles.row, { justifyContent: 'space-between' }]}>
@@ -430,7 +436,7 @@ export default function Home(props) {
             settingData == null || !settingData.saveLastLocation ?
               <View>
                 <Text style={generalStyles.secondaryLabel}>Para uma maior segurança, permita com que o app salve a sua localização.</Text>
-                <FlatButton label='Ir para configurações' height={42} labelColor='#FFF' buttonColor={colors.secondary} handleFlatButtonPress={() => props.navigation.navigate('Settings')} isLoading={false} style={{marginTop: 8}} />
+                <FlatButton label='Ir para configurações' height={42} labelColor='#FFF' buttonColor={colors.secondary} handleFlatButtonPress={() => props.navigation.navigate('Settings')} isLoading={false} style={{ marginTop: 8 }} />
               </View> :
               !associatedDevice ?
                 <View>
