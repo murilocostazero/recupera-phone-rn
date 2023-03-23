@@ -134,6 +134,7 @@ export default function Login(props) {
               value={password}
               onChangeText={text => setPassword(text)}
               secureTextEntry={isSecureTextEntry}
+              onSubmitEditing={() => onLoggin()}
               placeholder="senhasupersegura"
               placeholderTextColor={colors.icon}
               style={[

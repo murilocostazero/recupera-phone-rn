@@ -362,18 +362,18 @@ export default function Home(props) {
           </View>
         </TouchableHighlight>
       </View>
-
-      <ScrollView
-        refreshControl={
-          <RefreshControl
-            refreshing={loadingUserData}
-            onRefresh={() => getCurrentUser()}
-          />
-        }>
-        {
-          !userDoc ?
-            <Text style={generalStyles.secondaryLabel}>Carregando informações</Text> :
-            userDoc.userType !== 'institution' ?
+      {
+        !userDoc ?
+          <Text style={generalStyles.secondaryLabel}>Carregando informações</Text> :
+          userDoc.userType !== 'institution' ?
+            /* Home do usuário */
+            <ScrollView
+              refreshControl={
+                <RefreshControl
+                  refreshing={loadingUserData}
+                  onRefresh={() => getCurrentUser()}
+                />
+              }>
               <View style={styles.card}>
                 <View style={[generalStyles.row, { justifyContent: 'space-between' }]}>
                   <Text style={generalStyles.titleDark}>Meus dispositivos</Text>
@@ -424,78 +424,86 @@ export default function Home(props) {
                     ListEmptyComponent={<DevicesListEmpty />}
                   />
                 </View>
-              </View> :
-              <View />
-        }
+              </View>
+              <View style={styles.card}>
+                <View style={[generalStyles.row, { justifyContent: 'space-between' }]}>
+                  <Text style={generalStyles.titleDark}>Localização</Text>
+                </View>
+                {
+                  settingData == null || !settingData.saveLastLocation ?
+                    <View>
+                      <Text style={generalStyles.secondaryLabel}>Para uma maior segurança, permita com que o app salve a sua localização.</Text>
+                      <FlatButton label='Ir para configurações' height={42} labelColor='#FFF' buttonColor={colors.secondary} handleFlatButtonPress={() => props.navigation.navigate('Settings')} isLoading={false} style={{ marginTop: 8 }} />
+                    </View> :
+                    !associatedDevice ?
+                      <View>
+                        <Text style={generalStyles.secondaryLabel}>Associe o cadastro de um de seus dispositivos ao aparelho físico.</Text>
+                        <Text style={generalStyles.secondaryOpacityLabel}>Em Meus Dispositivos, selecione um aparelho e marque a opção Associar Dispositivo.</Text>
+                      </View> :
+                      <View>
+                        <View style={generalStyles.row}>
+                          <Text style={[generalStyles.secondaryLabel, { marginVertical: 8, flex: 1, fontSize: 12 }]}>Última localização: lat {coords.latitude}, long {coords.longitude}</Text>
+                          <CircleIconButton buttonSize={30} buttonColor='#FFF' iconName='content-copy' iconSize={20} haveShadow={true} iconColor={colors.primary} handleCircleIconButtonPress={() => copyToClipboard(`Latitude ${coords.latitude}, Longitude: ${coords.longitude}`)} />
+                        </View>
+                        <MapView
+                          initialRegion={coords}
+                          style={{ height: 200 }}>
+                          <Marker
+                            key={0}
+                            coordinate={{ latitude: coords.latitude, longitude: coords.longitude }}
+                            title={'Localização atual'}
+                            description={'Você está aqui'}
+                            pinColor={colors.secondary}
+                          />
+                        </MapView>
+                      </View>
+                }
+              </View>
 
-        <View style={styles.card}>
-          <View style={[generalStyles.row, { justifyContent: 'space-between' }]}>
-            <Text style={generalStyles.titleDark}>Localização</Text>
-          </View>
-          {
-            settingData == null || !settingData.saveLastLocation ?
-              <View>
-                <Text style={generalStyles.secondaryLabel}>Para uma maior segurança, permita com que o app salve a sua localização.</Text>
-                <FlatButton label='Ir para configurações' height={42} labelColor='#FFF' buttonColor={colors.secondary} handleFlatButtonPress={() => props.navigation.navigate('Settings')} isLoading={false} style={{ marginTop: 8 }} />
-              </View> :
-              !associatedDevice ?
-                <View>
-                  <Text style={generalStyles.secondaryLabel}>Associe o cadastro de um de seus dispositivos ao aparelho físico.</Text>
-                  <Text style={generalStyles.secondaryOpacityLabel}>Em Meus Dispositivos, selecione um aparelho e marque a opção Associar Dispositivo.</Text>
-                </View> :
-                <>
-                  <View style={generalStyles.row}>
-                    <Text style={[generalStyles.secondaryLabel, { marginVertical: 8, flex: 1, fontSize: 12 }]}>Última localização: lat {coords.latitude}, long {coords.longitude}</Text>
-                    <CircleIconButton buttonSize={30} buttonColor='#FFF' iconName='content-copy' iconSize={20} haveShadow={true} iconColor={colors.primary} handleCircleIconButtonPress={() => copyToClipboard(`Latitude ${coords.latitude}, Longitude: ${coords.longitude}`)} />
-                  </View>
-                  <MapView
-                    initialRegion={coords}
-                    style={{ height: 200 }}>
-                    <Marker
-                      key={0}
-                      coordinate={{ latitude: coords.latitude, longitude: coords.longitude }}
-                      title={'Localização atual'}
-                      description={'Você está aqui'}
-                      pinColor={colors.secondary}
-                    />
-                  </MapView>
-                </>
-          }
-        </View>
+              <View style={styles.card}>
+                <View style={[generalStyles.row, { justifyContent: 'space-between' }]}>
+                  <Text style={generalStyles.titleDark}>Dicas de segurança</Text>
+                  <CircleIconButton
+                    buttonSize={28}
+                    buttonColor="#FFF"
+                    iconName="autorenew"
+                    iconSize={26}
+                    haveShadow={true}
+                    iconColor={colors.primary}
+                    handleCircleIconButtonPress={() => getRandomInt()}
+                  />
+                </View>
 
-        <View style={styles.card}>
-          <View style={[generalStyles.row, { justifyContent: 'space-between' }]}>
-            <Text style={generalStyles.titleDark}>Dicas de segurança</Text>
-            <CircleIconButton
-              buttonSize={28}
-              buttonColor="#FFF"
-              iconName="autorenew"
-              iconSize={26}
-              haveShadow={true}
-              iconColor={colors.primary}
-              handleCircleIconButtonPress={() => getRandomInt()}
-            />
-          </View>
-
-          <View
-            style={{
-              marginVertical: 16,
-              backgroundColor: colors.secondaryOpacity,
-              borderRadius: 16,
-              padding: 8,
-            }}>
-            <Text
-              style={{
-                color: colors.primary,
-                fontFamily: 'JosefinSans-Medium',
-                fontSize: 16,
-                textAlign: 'justify',
-              }}>
-              {securityTips[randomInt].tip}
-            </Text>
-          </View>
-        </View>
-      </ScrollView>
+                <View
+                  style={{
+                    marginVertical: 16,
+                    backgroundColor: colors.secondaryOpacity,
+                    borderRadius: 16,
+                    padding: 8,
+                  }}>
+                  <Text
+                    style={{
+                      color: colors.primary,
+                      fontFamily: 'JosefinSans-Medium',
+                      fontSize: 16,
+                      textAlign: 'justify',
+                    }}>
+                    {securityTips[randomInt].tip}
+                  </Text>
+                </View>
+              </View>
+            </ScrollView>
+            :
+            <ScrollView
+              refreshControl={
+                <RefreshControl
+                  refreshing={loadingUserData}
+                  onRefresh={() => getCurrentUser()}
+                />
+              }>
+              <Text style={generalStyles.primaryLabel}>Home da instituição</Text>
+            </ScrollView>
+      }
       <FlatButton
         label="Buscar dispositivo"
         height={48}
