@@ -367,132 +367,143 @@ export default function Home(props) {
           <Text style={generalStyles.secondaryLabel}>Carregando informações</Text> :
           userDoc.userType !== 'institution' ?
             /* Home do usuário */
-            <ScrollView
-              refreshControl={
-                <RefreshControl
-                  refreshing={loadingUserData}
-                  onRefresh={() => getCurrentUser()}
-                />
-              }>
-              <View style={styles.card}>
-                <View style={[generalStyles.row, { justifyContent: 'space-between' }]}>
-                  <Text style={generalStyles.titleDark}>Meus dispositivos</Text>
-                  <CircleIconButton
-                    buttonSize={28}
-                    buttonColor="#FFF"
-                    iconName="add"
-                    iconSize={26}
-                    haveShadow={true}
-                    iconColor={colors.primary}
-                    handleCircleIconButtonPress={() =>
-                      props.navigation.navigate('HandleDevices', { device: null })
-                    }
+            <>
+              <ScrollView
+                refreshControl={
+                  <RefreshControl
+                    refreshing={loadingUserData}
+                    onRefresh={() => getCurrentUser()}
                   />
-                </View>
-                <FlatList
-                  horizontal={true}
-                  contentContainerStyle={{ paddingVertical: 8 }}
-                  data={devices}
-                  renderItem={renderDevices}
-                  keyExtractor={item => item.imei}
-                  ListEmptyComponent={<DevicesListEmpty />}
-                />
+                }>
                 <View style={styles.card}>
                   <View style={[generalStyles.row, { justifyContent: 'space-between' }]}>
-                    <Text style={generalStyles.titleDark}>Favoritos</Text>
+                    <Text style={generalStyles.titleDark}>Meus dispositivos</Text>
                     <CircleIconButton
                       buttonSize={28}
                       buttonColor="#FFF"
-                      iconName="lightbulb"
-                      iconSize={24}
+                      iconName="add"
+                      iconSize={26}
                       haveShadow={true}
                       iconColor={colors.primary}
                       handleCircleIconButtonPress={() =>
-                        Alert.alert(
-                          'Sobre os favoritos',
-                          'Adicione dispositivos a sua lista de favoritos para que você consiga buscá-los com mais praticidade.',
-                        )
+                        props.navigation.navigate('HandleDevices', { device: null })
                       }
                     />
                   </View>
                   <FlatList
                     horizontal={true}
-                    contentContainerStyle={{ paddingVertical: 8 }}
-                    data={favoriteDevices}
-                    renderItem={renderFavoriteDevices}
+                    contentContainerStyle={{ padding: 4 }}
+                    data={devices}
+                    renderItem={renderDevices}
                     keyExtractor={item => item.imei}
                     ListEmptyComponent={<DevicesListEmpty />}
                   />
+                  <View style={styles.card}>
+                    <View style={[generalStyles.row, { justifyContent: 'space-between' }]}>
+                      <Text style={generalStyles.titleDark}>Favoritos</Text>
+                      <CircleIconButton
+                        buttonSize={28}
+                        buttonColor="#FFF"
+                        iconName="lightbulb"
+                        iconSize={24}
+                        haveShadow={true}
+                        iconColor={colors.primary}
+                        handleCircleIconButtonPress={() =>
+                          Alert.alert(
+                            'Sobre os favoritos',
+                            'Adicione dispositivos a sua lista de favoritos para que você consiga buscá-los com mais praticidade.',
+                          )
+                        }
+                      />
+                    </View>
+                    <FlatList
+                      horizontal={true}
+                      contentContainerStyle={{ padding: 4 }}
+                      data={favoriteDevices}
+                      renderItem={renderFavoriteDevices}
+                      keyExtractor={item => item.imei}
+                      ListEmptyComponent={<DevicesListEmpty />}
+                    />
+                  </View>
                 </View>
-              </View>
-              <View style={styles.card}>
-                <View style={[generalStyles.row, { justifyContent: 'space-between' }]}>
-                  <Text style={generalStyles.titleDark}>Localização</Text>
-                </View>
-                {
-                  settingData == null || !settingData.saveLastLocation ?
-                    <View>
-                      <Text style={generalStyles.secondaryLabel}>Para uma maior segurança, permita com que o app salve a sua localização.</Text>
-                      <FlatButton label='Ir para configurações' height={42} labelColor='#FFF' buttonColor={colors.secondary} handleFlatButtonPress={() => props.navigation.navigate('Settings')} isLoading={false} style={{ marginTop: 8 }} />
-                    </View> :
-                    !associatedDevice ?
+                <View style={styles.card}>
+                  <View style={[generalStyles.row, { justifyContent: 'space-between' }]}>
+                    <Text style={generalStyles.titleDark}>Localização</Text>
+                  </View>
+                  {
+                    settingData == null || !settingData.saveLastLocation ?
                       <View>
-                        <Text style={generalStyles.secondaryLabel}>Associe o cadastro de um de seus dispositivos ao aparelho físico.</Text>
-                        <Text style={generalStyles.secondaryOpacityLabel}>Em Meus Dispositivos, selecione um aparelho e marque a opção Associar Dispositivo.</Text>
+                        <Text style={generalStyles.secondaryLabel}>Para uma maior segurança, permita com que o app salve a sua localização.</Text>
+                        <FlatButton label='Ir para configurações' height={42} labelColor='#FFF' buttonColor={colors.secondary} handleFlatButtonPress={() => props.navigation.navigate('Settings')} isLoading={false} style={{ marginTop: 8 }} />
                       </View> :
-                      <View>
-                        <View style={generalStyles.row}>
-                          <Text style={[generalStyles.secondaryLabel, { marginVertical: 8, flex: 1, fontSize: 12 }]}>Última localização: lat {coords.latitude}, long {coords.longitude}</Text>
-                          <CircleIconButton buttonSize={30} buttonColor='#FFF' iconName='content-copy' iconSize={20} haveShadow={true} iconColor={colors.primary} handleCircleIconButtonPress={() => copyToClipboard(`Latitude ${coords.latitude}, Longitude: ${coords.longitude}`)} />
+                      !associatedDevice ?
+                        <View>
+                          <Text style={generalStyles.secondaryLabel}>Associe o cadastro de um de seus dispositivos ao aparelho físico.</Text>
+                          <Text style={generalStyles.secondaryOpacityLabel}>Em Meus Dispositivos, selecione um aparelho e marque a opção Associar Dispositivo.</Text>
+                        </View> :
+                        <View>
+                          <View style={generalStyles.row}>
+                            <Text style={[generalStyles.secondaryLabel, { marginVertical: 8, flex: 1, fontSize: 12 }]}>Última localização: lat {coords.latitude}, long {coords.longitude}</Text>
+                            <CircleIconButton buttonSize={30} buttonColor='#FFF' iconName='content-copy' iconSize={20} haveShadow={true} iconColor={colors.primary} handleCircleIconButtonPress={() => copyToClipboard(`Latitude ${coords.latitude}, Longitude: ${coords.longitude}`)} />
+                          </View>
+                          <MapView
+                            initialRegion={coords}
+                            style={{ height: 200 }}>
+                            <Marker
+                              key={0}
+                              coordinate={{ latitude: coords.latitude, longitude: coords.longitude }}
+                              title={'Localização atual'}
+                              description={'Você está aqui'}
+                              pinColor={colors.secondary}
+                            />
+                          </MapView>
                         </View>
-                        <MapView
-                          initialRegion={coords}
-                          style={{ height: 200 }}>
-                          <Marker
-                            key={0}
-                            coordinate={{ latitude: coords.latitude, longitude: coords.longitude }}
-                            title={'Localização atual'}
-                            description={'Você está aqui'}
-                            pinColor={colors.secondary}
-                          />
-                        </MapView>
-                      </View>
-                }
-              </View>
-
-              <View style={styles.card}>
-                <View style={[generalStyles.row, { justifyContent: 'space-between' }]}>
-                  <Text style={generalStyles.titleDark}>Dicas de segurança</Text>
-                  <CircleIconButton
-                    buttonSize={28}
-                    buttonColor="#FFF"
-                    iconName="autorenew"
-                    iconSize={26}
-                    haveShadow={true}
-                    iconColor={colors.primary}
-                    handleCircleIconButtonPress={() => getRandomInt()}
-                  />
+                  }
                 </View>
 
-                <View
-                  style={{
-                    marginVertical: 16,
-                    backgroundColor: colors.secondaryOpacity,
-                    borderRadius: 16,
-                    padding: 8,
-                  }}>
-                  <Text
+                <View style={styles.card}>
+                  <View style={[generalStyles.row, { justifyContent: 'space-between' }]}>
+                    <Text style={generalStyles.titleDark}>Dicas de segurança</Text>
+                    <CircleIconButton
+                      buttonSize={28}
+                      buttonColor="#FFF"
+                      iconName="autorenew"
+                      iconSize={26}
+                      haveShadow={true}
+                      iconColor={colors.primary}
+                      handleCircleIconButtonPress={() => getRandomInt()}
+                    />
+                  </View>
+
+                  <View
                     style={{
-                      color: colors.primary,
-                      fontFamily: 'JosefinSans-Medium',
-                      fontSize: 16,
-                      textAlign: 'justify',
+                      marginVertical: 16,
+                      backgroundColor: colors.secondaryOpacity,
+                      borderRadius: 16,
+                      padding: 8,
                     }}>
-                    {securityTips[randomInt].tip}
-                  </Text>
+                    <Text
+                      style={{
+                        color: colors.primary,
+                        fontFamily: 'JosefinSans-Medium',
+                        fontSize: 16,
+                        textAlign: 'justify',
+                      }}>
+                      {securityTips[randomInt].tip}
+                    </Text>
+                  </View>
                 </View>
-              </View>
-            </ScrollView>
+              </ScrollView>
+              <FlatButton
+                label="Buscar dispositivo"
+                height={48}
+                labelColor={colors.text.light}
+                buttonColor={colors.primary}
+                handleFlatButtonPress={() => props.navigation.navigate('SearchPage')}
+                isLoading={false}
+                style={{}}
+              />
+            </>
             :
             <ScrollView
               refreshControl={
@@ -504,15 +515,6 @@ export default function Home(props) {
               <Text style={generalStyles.primaryLabel}>Home da instituição</Text>
             </ScrollView>
       }
-      <FlatButton
-        label="Buscar dispositivo"
-        height={48}
-        labelColor={colors.text.light}
-        buttonColor={colors.primary}
-        handleFlatButtonPress={() => props.navigation.navigate('SearchPage')}
-        isLoading={false}
-        style={{}}
-      />
     </SafeAreaView>
   );
 }

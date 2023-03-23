@@ -21,6 +21,7 @@ import {
   requestUserTypeChange,
   foundUserByRegistrationNumberAndInstitution,
   agentToRegular,
+  changeInstitutionRegister,
 } from '../../utils/firebase.utils';
 
 export default function MyInfo(props) {
@@ -33,6 +34,10 @@ export default function MyInfo(props) {
   const [selectedInstitution, setSelectedInstitution] = useState(null);
   const [loadingSaveInfo, setLoadingSaveInfo] = useState(false);
   const [loadingSaveName, setLoadingSaveName] = useState(false);
+  //Institution
+  const [address, setAddress] = useState('');
+  const [phone, setPhone] = useState('');
+  const [isWhatsapp, setIsWhatsapp] = useState(false);
 
   const nameRef = useRef('nameRef');
   const jobRef = useRef('jobRef');
@@ -55,7 +60,7 @@ export default function MyInfo(props) {
       });
     } else {
       setUser(userCollectionResponse.user._data);
-      if (userCollectionResponse.user._data !== 'institution') {
+      if (userCollectionResponse.user._data.userType !== 'institution') {
         if (userCollectionResponse.user._data.agentInfo) {
           setIsAgentAccount(true);
           setJob(userCollectionResponse.user._data.agentInfo.job);
@@ -75,6 +80,10 @@ export default function MyInfo(props) {
             setSelectedInstitution(institutionGot);
           }
         }
+      } else {
+        setAddress(userCollectionResponse.user._data.address);
+        setPhone(userCollectionResponse.user._data.phone.number);
+        setIsWhatsapp(userCollectionResponse.user._data.phone.isWhatsapp);
       }
     }
   }
@@ -159,6 +168,17 @@ export default function MyInfo(props) {
       }
     } else {
       //Colocar aqui as alterações feitas na conta de instituição
+      setLoadingSaveInfo(true);
+
+      const changeInstitutionResponse = await changeInstitutionRegister({email: user.email, address: address, phone: {number: phone, isWhatsapp: isWhatsapp}});
+      if(!changeInstitutionResponse.success){
+        props.handleSnackbar({type: 'error', message: 'Não foi possível salvar as alterações da conta'});
+        console.error(changeInstitutionResponse);
+      } else {
+        props.handleSnackbar({type: 'success', message: 'Alterações salvas com sucesso'});
+      }
+      
+      setLoadingSaveInfo(false);
     }
   }
 
@@ -241,7 +261,7 @@ export default function MyInfo(props) {
         </View>
         {!user ? (
           <ActivityIndicator size="large" color={colors.secondary} />
-        ) : user.userType != 'institution' ? (
+        ) : user.userType !== 'institution' ? (
           <View style={[styles.optionContainer, { marginTop: 0 }]}>
             <Text style={generalStyles.primaryLabel}>Tipo de conta</Text>
             <View style={[generalStyles.row, styles.optionRow]}>
@@ -316,7 +336,60 @@ export default function MyInfo(props) {
             )}
           </View>
         ) : (
-          <View />
+          <View>
+          <View
+              style={[
+                generalStyles.textInputContainer,
+                generalStyles.shadow,
+              ]}>
+              <Text style={generalStyles.secondaryLabel}>Endereço</Text>
+              <View style={generalStyles.row}>
+                <MaterialIcons name="house" color={colors.icon} size={22} />
+                <TextInput
+                  value={address}
+                  onChangeText={text => setAddress(text)}
+                  placeholder="Ex.: Av. 5, 34, Centro, Paraibano-MA"
+                  placeholderTextColor={colors.icon}
+                  style={[
+                    generalStyles.textInput,
+                    generalStyles.primaryLabel,
+                    { marginLeft: 8 },
+                  ]}
+                />
+              </View>
+            </View>
+            <View
+              style={[
+                generalStyles.textInputContainer,
+                generalStyles.shadow,
+              ]}>
+              <Text style={generalStyles.secondaryLabel}>Telefone</Text>
+              <View style={generalStyles.row}>
+                <MaterialIcons name="call" color={colors.icon} size={22} />
+                <TextInput
+                  value={phone}
+                  onChangeText={text => setPhone(text)}
+                  keyboardType="phone-pad"
+                  placeholder="Ex.: (99)98877-6655"
+                  placeholderTextColor={colors.icon}
+                  style={[
+                    generalStyles.textInput,
+                    generalStyles.primaryLabel,
+                    { marginLeft: 8 },
+                  ]}
+                />
+              </View>
+            </View>
+            <View style={[generalStyles.row, {justifyContent: 'space-between'}]}>
+              <Text style={generalStyles.secondaryLabel}>É Whatsapp</Text>
+              <Switch
+                trackColor={{ false: '#767577', true: colors.secondaryOpacity }}
+                thumbColor={isWhatsapp ? colors.secondary : '#f4f3f4'}
+                onValueChange={() => setIsWhatsapp(!isWhatsapp)}
+                value={isWhatsapp}
+              />
+            </View>
+          </View>
         )}
         {!user || !user.agentInfo ? (
           <View />

@@ -11,6 +11,7 @@ import {
   currentUser,
   deleteCollection,
   deleteUser,
+  getUserFromCollections,
 } from '../../utils/firebase.utils';
 import { getSetting, storeSetting } from '../../utils/asyncStorage.utils';
 
@@ -43,7 +44,9 @@ export default function Settings(props) {
 
   async function getLoggedUser() {
     const userResponse = await currentUser();
-    setUser(userResponse);
+    const userDocResponse = await getUserFromCollections(userResponse.email);
+
+    setUser(userDocResponse.user._data);
   }
 
   async function addOrRemoveEmail() {
@@ -219,76 +222,85 @@ export default function Settings(props) {
 
       <ScrollView
         contentContainerStyle={{ flexGrow: 1, padding: 8, marginTop: 32 }}>
-        <View style={[styles.card, generalStyles.shadow]}>
-          <View style={[generalStyles.row, { marginBottom: 12 }]}>
-            <View style={{ marginRight: 8, flex: 2 }}>
-              <Text style={generalStyles.primaryLabel}>
-                Receber notificação por email
-              </Text>
-              <Text style={[generalStyles.secondaryLabel]}>
-                Ative se você deseja ser alertado via email secundário quando
-                seu dispositivo for encontrado. Atenção: Você já será notificado
-                na sua conta e em seu email de cadastro.
-              </Text>
-            </View>
-            <Switch
-              style={{ flex: 1 }}
-              trackColor={{ false: '#767577', true: colors.secondaryOpacity }}
-              thumbColor={
-                receiveNotificationEmail ? colors.secondary : '#f4f3f4'
-              }
-              onValueChange={() => addOrRemoveEmail()}
-              value={receiveNotificationEmail}
-            />
-          </View>
-          <View
-            style={[
-              generalStyles.textInputContainer,
-              generalStyles.shadow,
-              { marginBottom: 0 },
-            ]}>
-            <Text style={generalStyles.secondaryLabel}>Email alternativo</Text>
-            <View style={generalStyles.row}>
-              <MaterialIcons name="email" color={colors.icon} size={22} />
-              <TextInput
-                value={email}
-                onChangeText={text => setEmail(text)}
-                onSubmitEditing={() => { }}
-                keyboardType="email-address"
-                placeholder="fulanofulanoso@gmail.com"
-                autoCapitalize="none"
-                placeholderTextColor={colors.icon}
-                style={[
-                  generalStyles.textInput,
-                  generalStyles.primaryLabel,
-                  { marginLeft: 8 },
-                ]}
-              />
-            </View>
-          </View>
-        </View>
+        {
+          !user ?
+            <Text style={generalStyles.secondaryLabel}>Carregando informações do usuário</Text> :
+            user.userType !== 'institution' ?
+              <View>
+                <View style={[styles.card, generalStyles.shadow]}>
+                  <View style={[generalStyles.row, { marginBottom: 12 }]}>
+                    <View style={{ marginRight: 8, flex: 2 }}>
+                      <Text style={generalStyles.primaryLabel}>
+                        Receber notificação por email
+                      </Text>
+                      <Text style={[generalStyles.secondaryLabel]}>
+                        Ative se você deseja ser alertado via email secundário quando
+                        seu dispositivo for encontrado. Atenção: Você já será notificado
+                        na sua conta e em seu email de cadastro.
+                      </Text>
+                    </View>
+                    <Switch
+                      style={{ flex: 1 }}
+                      trackColor={{ false: '#767577', true: colors.secondaryOpacity }}
+                      thumbColor={
+                        receiveNotificationEmail ? colors.secondary : '#f4f3f4'
+                      }
+                      onValueChange={() => addOrRemoveEmail()}
+                      value={receiveNotificationEmail}
+                    />
+                  </View>
+                  <View
+                    style={[
+                      generalStyles.textInputContainer,
+                      generalStyles.shadow,
+                      { marginBottom: 0 },
+                    ]}>
+                    <Text style={generalStyles.secondaryLabel}>Email alternativo</Text>
+                    <View style={generalStyles.row}>
+                      <MaterialIcons name="email" color={colors.icon} size={22} />
+                      <TextInput
+                        value={email}
+                        onChangeText={text => setEmail(text)}
+                        onSubmitEditing={() => { }}
+                        keyboardType="email-address"
+                        placeholder="fulanofulanoso@gmail.com"
+                        autoCapitalize="none"
+                        placeholderTextColor={colors.icon}
+                        style={[
+                          generalStyles.textInput,
+                          generalStyles.primaryLabel,
+                          { marginLeft: 8 },
+                        ]}
+                      />
+                    </View>
+                  </View>
+                </View>
 
-        <View style={[styles.card, generalStyles.shadow]}>
-          <View style={[generalStyles.row, { marginBottom: 12 }]}>
-            <View style={{ marginRight: 8, flex: 2 }}>
-              <Text style={generalStyles.primaryLabel}>
-                Salvar última localização
-              </Text>
-              <Text style={[generalStyles.secondaryLabel]}>
-                Ative se você deseja que a localização deste dispositivo seja guardada de tempos em tempos.
-              </Text>
-            </View>
-            <Switch
-              style={{ flex: 1 }}
-              trackColor={{ false: '#767577', true: colors.secondaryOpacity }}
-              thumbColor={
-                saveLocation ? colors.secondary : '#f4f3f4'
-              }
-              onValueChange={() => saveLastLocation()}
-              value={saveLocation}
-            />
-          </View>
-        </View>
+                <View style={[styles.card, generalStyles.shadow]}>
+                  <View style={[generalStyles.row, { marginBottom: 12 }]}>
+                    <View style={{ marginRight: 8, flex: 2 }}>
+                      <Text style={generalStyles.primaryLabel}>
+                        Salvar última localização
+                      </Text>
+                      <Text style={[generalStyles.secondaryLabel]}>
+                        Ative se você deseja que a localização deste dispositivo seja guardada de tempos em tempos.
+                      </Text>
+                    </View>
+                    <Switch
+                      style={{ flex: 1 }}
+                      trackColor={{ false: '#767577', true: colors.secondaryOpacity }}
+                      thumbColor={
+                        saveLocation ? colors.secondary : '#f4f3f4'
+                      }
+                      onValueChange={() => saveLastLocation()}
+                      value={saveLocation}
+                    />
+                  </View>
+                </View>
+              </View>
+              :
+              <View />
+        }
 
         <View style={[styles.card, generalStyles.shadow]}>
           <Text style={generalStyles.primaryLabel}>Excluir conta</Text>

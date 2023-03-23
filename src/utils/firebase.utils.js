@@ -792,8 +792,8 @@ export async function saveLastLocation(latitude, longitude, device) {
   const userFound = userDoc.user._data;
 
   const lastDate = new Date();
-  const today = `${lastDate.getDate()}/${lastDate.getMonth()+1}/${lastDate.getFullYear()}`;
-  const hour = `${lastDate.getHours()}:${lastDate.getMinutes() < 10 ? '0'+lastDate.getMinutes() : lastDate.getMinutes()}:${lastDate.getSeconds()}`;
+  const today = `${lastDate.getDate()}/${lastDate.getMonth() + 1}/${lastDate.getFullYear()}`;
+  const hour = `${lastDate.getHours()}:${lastDate.getMinutes() < 10 ? '0' + lastDate.getMinutes() : lastDate.getMinutes()}:${lastDate.getSeconds()}`;
 
   const deviceIndex = userFound.devices.findIndex(object => { return object.imei === device.imei });
   if (deviceIndex !== -1) {
@@ -818,4 +818,24 @@ export async function saveLastLocation(latitude, longitude, device) {
   }
 
   return saveLastLocationResponse;
+}
+
+export async function changeInstitutionRegister(institution) {
+  let changeInstitutionRegisterResponse = null;
+
+  await firestore()
+    .collection('Users')
+    .doc(institution.email)
+    .update({
+      address: institution.address,
+      phone: institution.phone
+    })
+    .then(() => {
+      changeInstitutionRegisterResponse = { success: true };
+    })
+    .catch(error => {
+      changeInstitutionRegisterResponse = { success: false, message: error };
+    });
+
+  return changeInstitutionRegisterResponse;
 }
