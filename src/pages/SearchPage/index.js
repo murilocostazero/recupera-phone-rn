@@ -285,7 +285,7 @@ export default function SearchPage(props) {
             </View>
 
             {device.owner !== loggedUser.email &&
-              device.deviceInfo.hasAlert === true ? (
+              device.deviceInfo.hasAlert === true && user.userType === 'agent' ? (
               <FlatButton
                 label="Encontrei este aparelho"
                 height={48}

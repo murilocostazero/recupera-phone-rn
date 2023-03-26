@@ -280,17 +280,42 @@ export async function agentToRegular(userEmail) {
   return agentToRegularResponse;
 }
 
-export async function addUserNotifications(notification, sender, receiver) {
+async function saveRecoveryInInstitution(whoFoundDevice, device) {
+
+  delete device.deviceInfo.whereToFind;
+  const localAgent = await getUserFromCollections(whoFoundDevice);
+  const localInstitution = await getUserFromCollections(localAgent.user._data.agentInfo.institution);
+  const recoveries = !localInstitution.user._data.recoveries ? [] : localInstitution.user._data.recoveries;
+  const newRecovery = { device: device.deviceInfo, agent: whoFoundDevice };
+  recoveries.push(newRecovery);
+
+  await firestore()
+    .collection('Users')
+    .doc(localAgent.user._data.agentInfo.institution)
+    .update({
+      recoveries: recoveries,
+    })
+    .then(() => {
+      console.log('Recuperação salva');
+    })
+    .catch(error => {
+      console.error(error);
+    });
+}
+
+export async function addUserNotifications(notification, sender, device) {
   let addNotificationResponse = null;
 
-  const receiverFound = await getUserFromCollections(receiver);
+  saveRecoveryInInstitution(sender, device);
+
+  const receiverFound = await getUserFromCollections(device.owner);
   if (!receiverFound.success) {
     addNotificationResponse = {
       success: false,
       message: 'Usuário não encontrado',
     };
   } else {
-    const localNotifications = receiverFound.user._data.notifications;
+    const localNotifications = !receiverFound.user._data.notifications ? [] : receiverFound.user._data.notifications;
 
     localNotifications.push({
       message: notification,
@@ -299,7 +324,7 @@ export async function addUserNotifications(notification, sender, receiver) {
 
     await firestore()
       .collection('Users')
-      .doc(receiver)
+      .doc(device.owner)
       .update({
         notifications: localNotifications,
       })

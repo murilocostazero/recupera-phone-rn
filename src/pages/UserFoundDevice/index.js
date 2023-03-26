@@ -1,6 +1,6 @@
-import React, {useEffect, useState} from 'react';
-import {View, Text, Alert} from 'react-native';
-import {CircleIconButton, Header, SelectInstitution} from '../../components';
+import React, { useEffect, useState } from 'react';
+import { View, Text, Alert } from 'react-native';
+import { CircleIconButton, Header, SelectInstitution } from '../../components';
 import colors from '../../styles/colors.style';
 import generalStyles from '../../styles/general.style';
 import {
@@ -66,7 +66,6 @@ export default function UserFoundDevice(props) {
         message: 'Escolha a instituição onde o dispositivo está.',
       });
     } else {
-      //Enviar notificação
       const notificationMessage =
         'Seu dispositivo ' +
         device.deviceInfo.brand +
@@ -85,10 +84,12 @@ export default function UserFoundDevice(props) {
         selectedInstitution.email;
 
       setLoadingFinishDelivery(true);
+
+      //Enviar a notificação
       const notificationSent = await addUserNotifications(
         notificationMessage,
         whoFound,
-        device.owner,
+        device,
       );
 
       if (!notificationSent.success) {
@@ -96,11 +97,8 @@ export default function UserFoundDevice(props) {
           type: 'error',
           message: 'Erro ao concluir entrega de dispositivo',
         });
-        console.log(
-          'Erro ao concluir entrega de dispositivo',
-          notificationSent.message,
-        );
       } else {
+        //Dizer aonde encontrar o dispositivo
         const whereToFindResponse = await whereToFindDevice(
           device,
           selectedInstitution,
@@ -111,6 +109,7 @@ export default function UserFoundDevice(props) {
             message: whereToFindResponse.message,
           });
         } else {
+        //Enviar notificação no email principal
           await sendEmailNotification(device.owner, notificationMessage);
           const fullUser = await getUserFromCollections(device.owner);
           if (!fullUser.success) {
@@ -121,22 +120,23 @@ export default function UserFoundDevice(props) {
           } else {
             !fullUser.user._data.secondaryLabel
               ? setTimeout(() => {
-                  sendEmailNotification(
-                    fullUser.user._data.secondaryEmail,
-                    notificationMessage,
-                  );
-                }, 1500)
+                //Enviar notificação no email secundário
+                sendEmailNotification(
+                  fullUser.user._data.secondaryEmail,
+                  notificationMessage,
+                );
+              }, 1500)
               : {};
           }
         }
 
-        props.handleSnackbar({type: 'success', message: 'Obrigado! Você ajudou alguém a recuperar um bem.'});
+        props.handleSnackbar({ type: 'success', message: 'Obrigado! Você ajudou alguém a recuperar um bem.' });
 
         setLoadingFinishDelivery(false);
         setTimeout(() => {
           props.navigation.reset({
             index: 0,
-            routes: [{name: 'Home'}],
+            routes: [{ name: 'Home' }],
           });
         }, 2000);
       }
@@ -160,11 +160,11 @@ export default function UserFoundDevice(props) {
           2- Clique em CONCLUIR após verificar os campos.
         </Text>
 
-        <View style={{marginTop: 32}}>
+        <View style={{ marginTop: 32 }}>
           <View
             style={[
               generalStyles.row,
-              {justifyContent: 'space-between', marginBottom: 4},
+              { justifyContent: 'space-between', marginBottom: 4 },
             ]}>
             <Text style={generalStyles.secondaryLabel}>
               Onde o dispositivo está?
@@ -189,6 +189,19 @@ export default function UserFoundDevice(props) {
             selectInstitution={item => setSelectedInstitution(item)}
           />
 
+          {
+            !selectedInstitution ?
+              <View /> :
+              <View style={{ marginVertical: 8 }}>
+                <Text style={generalStyles.secondaryLabel}>
+                  Endereço:
+                </Text>
+                <Text style={generalStyles.primaryLabel}>
+                  {selectedInstitution.address}
+                </Text>
+              </View>
+          }
+
           {whoFound.length === 0 || device === null ? (
             <View />
           ) : (
@@ -202,7 +215,7 @@ export default function UserFoundDevice(props) {
 
               <View style={styles.section}>
                 <Text style={generalStyles.secondaryLabel}>Proprietário:</Text>
-                <Text style={generalStyles.primaryLabel}>{device.owner}</Text>
+                <Text style={generalStyles.primaryLabel}>Por questão de segurança, não informamos o nome ou email do proprietário</Text>
               </View>
 
               <View style={styles.section}>

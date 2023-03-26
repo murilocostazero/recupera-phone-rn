@@ -25,6 +25,7 @@ import { getSetting } from '../../utils/asyncStorage.utils';
 import MapView, { Marker } from 'react-native-maps';
 import Geolocation from '@react-native-community/geolocation';
 import Clipboard from '@react-native-clipboard/clipboard';
+import { calculateDifferenceHour } from '../../utils/mathOrDate.utils';
 
 export default function Home(props) {
   const [loggedUser, setLoggedUser] = useState(null);
@@ -54,26 +55,32 @@ export default function Home(props) {
   }, [isPageFocused]);
 
   async function getGeoLocation(associatedLocalDevice) {
-    await Geolocation.getCurrentPosition((success) => {
-      const { latitude, longitude, accuracy } = success.coords;
+    const lastDate = new Date();
+    const hour = `${lastDate.getHours()}:${lastDate.getMinutes() < 10 ? '0' + lastDate.getMinutes() : lastDate.getMinutes()}:${lastDate.getSeconds()}`;
 
-      const oneDegreeOfLatitudeInMeters = 111.32 * 1000;
-      const latDelta = accuracy / oneDegreeOfLatitudeInMeters;
-      const longDelta = accuracy / (oneDegreeOfLatitudeInMeters * Math.cos(latitude * (Math.PI / 180)));
+    const differenceTime = calculateDifferenceHour(associatedLocalDevice.lastLocation.lastTime, hour);
+    if (differenceTime > '00:10:00') {
+      await Geolocation.getCurrentPosition((success) => {
+        const { latitude, longitude, accuracy } = success.coords;
 
-      saveLocationInFirebase(latitude, longitude, associatedLocalDevice);
+        const oneDegreeOfLatitudeInMeters = 111.32 * 1000;
+        const latDelta = accuracy / oneDegreeOfLatitudeInMeters;
+        const longDelta = accuracy / (oneDegreeOfLatitudeInMeters * Math.cos(latitude * (Math.PI / 180)));
 
-      setCoords({
-        latitude: latitude,
-        longitude: longitude,
-        latitudeDelta: latDelta,
-        longitudeDelta: longDelta,
-        // accuracy: accuracy,
-      }
-      );
-    }, (error) => {
-      props.handleSnackbar({ type: 'error', message: 'Habilite o GPS do seu dispositivo.' })
-    });
+        saveLocationInFirebase(latitude, longitude, associatedLocalDevice);
+
+        setCoords({
+          latitude: latitude,
+          longitude: longitude,
+          latitudeDelta: latDelta,
+          longitudeDelta: longDelta,
+          // accuracy: accuracy,
+        }
+        );
+      }, (error) => {
+        props.handleSnackbar({ type: 'error', message: 'Habilite o GPS do seu dispositivo.' })
+      });
+    }
   }
 
   async function saveLocationInFirebase(lat, long, associatedLocalDevice) {
