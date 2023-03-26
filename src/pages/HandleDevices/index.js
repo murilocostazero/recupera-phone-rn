@@ -126,9 +126,9 @@ export default function HandleDevices(props) {
       brand,
       model,
       mainColor,
-      imei,
-      hasAlert
+      imei
     );
+
     if (!fieldsVerificationResponse.success) {
       props.handleSnackbar({
         message: fieldsVerificationResponse.message,
@@ -142,7 +142,7 @@ export default function HandleDevices(props) {
         mainColor: mainColor,
         imei: imei,
         hasAlert: hasAlert,
-        isAssociated: isAssociated,
+        isAssociated: !isAssociated ? false : isAssociated,
         whereToFind: whereToFind && hasAlert ? whereToFind : null
       };
 

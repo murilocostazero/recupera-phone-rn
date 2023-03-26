@@ -143,7 +143,7 @@ export default function Home(props) {
     }
   }
 
-  const DevicesListEmpty = () => {
+  const EmptyList = () => {
     return (
       <View style={[generalStyles.row, { paddingVertical: 8 }]}>
         <View
@@ -157,7 +157,7 @@ export default function Home(props) {
             },
           ]}>
           <Text style={[generalStyles.secondaryLabel, { textAlign: 'center' }]}>
-            Lista de dispositivos vazia
+            Lista vazia
           </Text>
           <MaterialIcons
             name="sentiment-dissatisfied"
@@ -298,6 +298,35 @@ export default function Home(props) {
     );
   };
 
+  const renderAgents = ({ item }) => {
+    return (
+      <TouchableHighlight>
+        <View style={[
+          styles.deviceContainer,
+          generalStyles.shadow,
+          { backgroundColor: '#FFF' },
+        ]}>
+          <Text style={[generalStyles.secondaryLabel, { maxWidth: 140 }]} numberOfLines={1}>{item}</Text>
+        </View>
+      </TouchableHighlight>
+    );
+  }
+
+  const renderRecoveries = ({ item }) => {
+    return (
+      <TouchableHighlight>
+        <View style={[
+          styles.deviceContainer,
+          generalStyles.shadow,
+          { backgroundColor: '#FFF', justifyContent: 'center' },
+        ]}>
+          <Text style={[generalStyles.primaryLabel]} numberOfLines={1}>{item.device.brand} {item.device.model} {item.device.mainColor}</Text>
+          <Text style={[generalStyles.secondaryLabel, { maxWidth: 140 }]} numberOfLines={1}>{item.agent}</Text>
+        </View>
+      </TouchableHighlight>
+    );
+  }
+
   function copyToClipboard(stringToSave) {
     Clipboard.setString(stringToSave);
     props.handleSnackbar({
@@ -403,7 +432,7 @@ export default function Home(props) {
                     data={devices}
                     renderItem={renderDevices}
                     keyExtractor={item => item.imei}
-                    ListEmptyComponent={<DevicesListEmpty />}
+                    ListEmptyComponent={<EmptyList />}
                   />
                   <View style={styles.card}>
                     <View style={[generalStyles.row, { justifyContent: 'space-between' }]}>
@@ -429,7 +458,7 @@ export default function Home(props) {
                       data={favoriteDevices}
                       renderItem={renderFavoriteDevices}
                       keyExtractor={item => item.imei}
-                      ListEmptyComponent={<DevicesListEmpty />}
+                      ListEmptyComponent={<EmptyList />}
                     />
                   </View>
                 </View>
@@ -519,7 +548,54 @@ export default function Home(props) {
                   onRefresh={() => getCurrentUser()}
                 />
               }>
-              <Text style={generalStyles.primaryLabel}>Home da instituição</Text>
+
+              <View style={styles.card}>
+                <View style={[generalStyles.row, { justifyContent: 'space-between' }]}>
+                  <Text style={generalStyles.titleDark}>Agentes</Text>
+                  <CircleIconButton
+                    buttonSize={28}
+                    buttonColor="#FFF"
+                    iconName="group"
+                    iconSize={26}
+                    haveShadow={true}
+                    iconColor={colors.primary}
+                    handleCircleIconButtonPress={() => { }
+                    }
+                  />
+                </View>
+                <FlatList
+                  horizontal={true}
+                  contentContainerStyle={{ padding: 4 }}
+                  data={userDoc.agents}
+                  renderItem={renderAgents}
+                  keyExtractor={item => item}
+                  ListEmptyComponent={<EmptyList />}
+                />
+              </View>
+
+              <View style={styles.card}>
+                <View style={[generalStyles.row, { justifyContent: 'space-between' }]}>
+                  <Text style={generalStyles.titleDark}>Recuperações</Text>
+                  <Text style={generalStyles.secondaryLabel}>{userDoc.recoveries.length}</Text>
+                </View>
+                <FlatList
+                  horizontal={true}
+                  contentContainerStyle={{ padding: 4 }}
+                  data={userDoc.recoveries}
+                  renderItem={renderRecoveries}
+                  keyExtractor={item => item.device.imei}
+                  ListEmptyComponent={<EmptyList />}
+                />
+                <FlatButton
+                  label='VER TODAS'
+                  height={48}
+                  labelColor={colors.primary}
+                  buttonColor='transparent'
+                  handleFlatButtonPress={() => { }}
+                  isLoading={false}
+                  style={{}} />
+              </View>
+
             </ScrollView>
       }
     </SafeAreaView>

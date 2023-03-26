@@ -215,6 +215,36 @@ export function currentUser() {
   return auth().currentUser;
 }
 
+export async function addAgentToInstitution(agent, institution){
+  let addAgentResponse = null;
+
+  const localInstitution = await getUserFromCollections(institution);
+  const agents = !localInstitution.user._data.agents ? [] : localInstitution.user._data.agents;
+  agents.push(agent);
+
+  await firestore()
+      .collection('Users')
+      .doc(institution)
+      .update({
+        agents: agents,
+      })
+      .then(() => {
+        addAgentResponse = {
+          success: true,
+          message: 'Agente adicionado',
+        };
+      })
+      .catch(error => {
+        console.error(error);
+        addAgentResponse = {
+          success: false,
+          message: 'Erro ao adicionar agente',
+        };
+      });
+
+  return addAgentResponse;
+}
+
 export async function requestUserTypeChange(user) {
   let userUpdateResponse = null;
   await firestore()

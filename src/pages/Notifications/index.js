@@ -5,6 +5,7 @@ import {FlatButton, Header} from '../../components';
 import styles from './styles.style';
 import colors from '../../styles/colors.style';
 import {
+  addAgentToInstitution,
   changeAgentAuthStatus,
   currentUser,
   getUserFromCollections,
@@ -33,7 +34,7 @@ export default function Notifications(props) {
     }
   }
 
-  async function authorizeRequest(userToAuth, status) {
+  async function authorizeRequest(userToAuth, status, agent) {
     setLoadingDismissNotification(true);
     const changeAgentAuthStatusResponse = await changeAgentAuthStatus(
       userToAuth,
@@ -47,6 +48,7 @@ export default function Notifications(props) {
         message: changeAgentAuthStatusResponse.message,
       });
     } else {
+      await addAgentToList(agent);
       setLoadingDismissNotification(false);
       getUser(user.email);
     }
@@ -62,6 +64,11 @@ export default function Notifications(props) {
       setLoadingDismissNotification(false);
       getUser(user.email)
     }
+  }
+
+  async function addAgentToList(agent){
+    const addAgentToListResponse = await addAgentToInstitution(agent.sender.email, agent.sender.agentInfo.institution);
+    if(!addAgentToListResponse.success) props.handleSnackbar({type: 'error', message: addAgentToListResponse.message});
   }
 
   const EmptyNotifications = () => {
@@ -101,7 +108,9 @@ export default function Notifications(props) {
             </TouchableHighlight>
             <TouchableHighlight
               underlayColor="transparent"
-              onPress={() => authorizeRequest(item.sender, 'authorized')}
+              onPress={() => {
+                authorizeRequest(item.sender, 'authorized', item);
+              }}
               style={[
                 styles.notificationButton,
                 {backgroundColor: colors.primary},
