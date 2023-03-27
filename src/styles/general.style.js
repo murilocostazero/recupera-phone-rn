@@ -78,11 +78,15 @@ const generalStyles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 8,
     marginBottom: 16,
-    borderRadius: 20
+    borderRadius: 20,
+    height: 42
   },
   textInput: {
     padding: 0,
-    flex: 1
+    flex: 1,
+    fontFamily: 'JosefinSans-Bold',
+    color: colors.text.dark,
+    fontSize: 14
   },
   textButton: {
     fontFamily: 'JosefinSans-Bold',

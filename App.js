@@ -13,6 +13,7 @@ import {
   UserFoundDevice,
   RecoverPassword,
   Settings,
+  Agents
 } from './src/pages';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -289,6 +290,26 @@ export default function App() {
               {props => (
                 <>
                   <Settings
+                    handleSnackbar={receivedSnackBar =>
+                      handleSnackbar(receivedSnackBar)
+                    }
+                    onAuthStateChanged={loggedUser =>
+                      onAuthStateChanged(loggedUser)
+                    }
+                    {...props}
+                  />
+                  {isSnackbarVisible ? (
+                    <SnackBar snackbar={snackbar} />
+                  ) : (
+                    <View />
+                  )}
+                </>
+              )}
+            </Stack.Screen>
+            <Stack.Screen name="Agents" options={{ headerShown: false }}>
+              {props => (
+                <>
+                  <Agents
                     handleSnackbar={receivedSnackBar =>
                       handleSnackbar(receivedSnackBar)
                     }

@@ -9,3 +9,4 @@ export { default as Notifications } from './Notifications';
 export { default as UserFoundDevice } from './UserFoundDevice';
 export { default as RecoverPassword } from './RecoverPassword';
 export { default as Settings } from './Settings';
+export { default as Agents } from './Agents';

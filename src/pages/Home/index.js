@@ -18,7 +18,7 @@ import { currentUser, getUserFromCollections, saveLastLocation } from '../../uti
 import colors from '../../styles/colors.style';
 import { useIsFocused } from '@react-navigation/native';
 import brandImageArray from '../../utils/brandImageArray.utils';
-import { CircleIconButton, FlatButton } from '../../components';
+import { CircleIconButton, EmptyList, FlatButton } from '../../components';
 import securityTips from '../../utils/securityTips';
 import accountImageArray from '../../utils/accountTypeImage.utils';
 import { getSetting } from '../../utils/asyncStorage.utils';
@@ -142,32 +142,6 @@ export default function Home(props) {
       getGeoLocation(userDevices[associatedIndex]);
     }
   }
-
-  const EmptyList = () => {
-    return (
-      <View style={[generalStyles.row, { paddingVertical: 8 }]}>
-        <View
-          style={[
-            styles.deviceContainer,
-            {
-              borderWidth: 1,
-              borderColor: colors.secondary,
-              borderStyle: 'dashed',
-              alignItems: 'center',
-            },
-          ]}>
-          <Text style={[generalStyles.secondaryLabel, { textAlign: 'center' }]}>
-            Lista vazia
-          </Text>
-          <MaterialIcons
-            name="sentiment-dissatisfied"
-            color={colors.icon}
-            size={32}
-          />
-        </View>
-      </View>
-    );
-  };
 
   const renderDevices = ({ item }) => {
     return (
@@ -559,8 +533,7 @@ export default function Home(props) {
                     iconSize={26}
                     haveShadow={true}
                     iconColor={colors.primary}
-                    handleCircleIconButtonPress={() => { }
-                    }
+                    handleCircleIconButtonPress={() => props.navigation.navigate('Agents')}
                   />
                 </View>
                 <FlatList
