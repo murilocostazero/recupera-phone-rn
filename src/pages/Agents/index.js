@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableHighlight, TextInput } from 'react-native';
+import { View, Text, FlatList, TouchableHighlight, TextInput, TouchableWithoutFeedback, Alert } from 'react-native';
 import { Header, EmptyList, CircleIconButton } from '../../components';
 import generalStyles from '../../styles/general.style';
-import { currentUser, getUserFromCollections } from '../../utils/firebase.utils';
+import { currentUser, getUserFromCollections, removeAgentFromInstitution } from '../../utils/firebase.utils';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import colors from '../../styles/colors.style';
 import styles from './styles';
@@ -10,6 +10,8 @@ import styles from './styles';
 export default function Agents(props) {
     const [agents, setAgents] = useState([]);
     const [query, setQuery] = useState('');
+    const [selectedOption, setSelectedOption] = useState('');
+    const [showDetailsMap, setShowDetailsMap] = useState({});
 
     useEffect(() => {
         getAgents();
@@ -26,15 +28,40 @@ export default function Agents(props) {
     }
 
     const filteredAgents = query
-    ? agents.filter(object =>
-        object.toLowerCase().includes(query.toLowerCase()),
-      )
-    : agents;
+        ? agents.filter(object =>
+            object.toLowerCase().includes(query.toLowerCase()),
+        )
+        : agents;
+
+    async function removeAgent(agent) {
+        const removeAgentResponse = await removeAgentFromInstitution(agent);
+        if(!removeAgentResponse.success){
+            props.handleSnackbar({type: 'error', message: removeAgentResponse.message});
+        } else {
+            props.handleSnackbar({type: 'success', message: removeAgentResponse.message});
+            getAgents();
+        }
+    }
+
+    function onRemovingAgent(agent) {
+        console.log('Agent', agent);
+        Alert.alert('Deseja remover este agente?', 'Ao confirmar, o agente será removido da sua base e voltará a ter os privilégios de um usuário regular.', [
+            {
+                text: 'Sim',
+                onPress: () => removeAgent(agent)
+            },
+            { text: 'NÃO', onPress: () => console.log('Cancel pressed') },
+        ]);
+    }
 
     const renderAgents = ({ item }) => {
+        const showDetails = showDetailsMap[item] || false;
         return (
-            <TouchableHighlight style={[styles.card, generalStyles.shadow]}>
-                <Text style={generalStyles.primaryLabel}>{item}</Text>
+            <TouchableHighlight underlayColor={colors.secondaryOpacity} style={[styles.card, generalStyles.shadow]}>
+                <View style={{ flexDirection: 'row' }}>
+                    <Text style={[generalStyles.primaryLabel, { flex: 1 }]}>{item}</Text>
+                    <CircleIconButton buttonSize={26} buttonColor='transparent' iconName='delete' iconSize={22} haveShadow={false} iconColor={colors.primary} handleCircleIconButtonPress={() => onRemovingAgent(item)} />
+                </View>
             </TouchableHighlight>
         );
     }

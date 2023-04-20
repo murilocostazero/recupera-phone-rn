@@ -611,7 +611,8 @@ export async function getSingleInstitution(email) {
       if (documentSnapshot.exists) {
         institution = documentSnapshot.data();
       }
-    });
+    })
+    .catch(error => console.error('Get single institution error',error));
 
   return institution;
 }
@@ -893,4 +894,37 @@ export async function changeInstitutionRegister(institution) {
     });
 
   return changeInstitutionRegisterResponse;
+}
+
+export async function removeAgentFromInstitution(agent){
+  let removeAgentInstitutionResponse = null;
+
+  const institutionEmail = await currentUser();
+  const institutionFound = await getSingleInstitution(institutionEmail.email);
+  
+  const localAgents = institutionFound.agents;
+  const agentIndex = localAgents.findIndex(element => element === agent);
+  localAgents.splice(agentIndex, 1);
+
+  await firestore()
+      .collection('Users')
+      .doc(institutionEmail.email)
+      .update({
+        agents: localAgents
+      })
+      .then(() => {
+        removeAgentInstitutionResponse = {
+          success: true,
+          message: 'Agente removido com sucesso',
+        };
+      })
+      .catch(error => {
+        console.error(error);
+        removeAgentInstitutionResponse = {
+          success: false,
+          message: 'Erro ao remover agente',
+        };
+      }); 
+
+  return removeAgentInstitutionResponse;
 }
