@@ -292,10 +292,11 @@ export default function Home(props) {
         <View style={[
           styles.deviceContainer,
           generalStyles.shadow,
-          { backgroundColor: '#FFF', justifyContent: 'center' },
+          { backgroundColor: '#FFF', justifyContent: 'center', marginBottom: 8 },
         ]}>
           <Text style={[generalStyles.primaryLabel]} numberOfLines={1}>{item.device.brand} {item.device.model} {item.device.mainColor}</Text>
-          <Text style={[generalStyles.secondaryLabel, { maxWidth: 140 }]} numberOfLines={1}>{item.agent}</Text>
+          <Text style={generalStyles.secondaryLabel}>Agente:</Text>
+          <Text style={[generalStyles.secondaryLabel, { maxWidth: 180 }]} numberOfLines={1}>{item.agent}</Text>
         </View>
       </TouchableHighlight>
     );
@@ -515,14 +516,7 @@ export default function Home(props) {
               />
             </>
             :
-            <ScrollView
-              refreshControl={
-                <RefreshControl
-                  refreshing={loadingUserData}
-                  onRefresh={() => getCurrentUser()}
-                />
-              }>
-
+            <View style={generalStyles.pageContainer}>
               <View style={styles.card}>
                 <View style={[generalStyles.row, { justifyContent: 'space-between' }]}>
                   <Text style={generalStyles.titleDark}>Agentes</Text>
@@ -552,24 +546,15 @@ export default function Home(props) {
                   <Text style={generalStyles.secondaryLabel}>{userDoc.recoveries.length}</Text>
                 </View>
                 <FlatList
-                  horizontal={true}
+                  horizontal={false}
                   contentContainerStyle={{ padding: 4 }}
                   data={userDoc.recoveries}
                   renderItem={renderRecoveries}
                   keyExtractor={item => item.device.imei}
                   ListEmptyComponent={<EmptyList />}
                 />
-                <FlatButton
-                  label='VER TODAS'
-                  height={48}
-                  labelColor={colors.primary}
-                  buttonColor='transparent'
-                  handleFlatButtonPress={() => { }}
-                  isLoading={false}
-                  style={{}} />
               </View>
-
-            </ScrollView>
+            </View>
       }
     </SafeAreaView>
   );
