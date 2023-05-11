@@ -18,7 +18,7 @@ export default function EmptyList(){
                         backgroundColor: colors.background,
                         borderRadius: 16,
                         justifyContent: 'space-between',
-                        alignItems: 'stretch',
+                        alignItems: 'center',
                         marginRight: 10
                     },
                 ]}>

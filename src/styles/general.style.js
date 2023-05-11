@@ -78,6 +78,7 @@ const generalStyles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 8,
     marginBottom: 16,
+    marginHorizontal: 4,
     borderRadius: 20
   },
   textInput: {
