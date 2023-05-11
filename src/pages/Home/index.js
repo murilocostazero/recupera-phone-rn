@@ -14,7 +14,7 @@ import {
 import generalStyles from '../../styles/general.style';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import styles from './styles';
-import { currentUser, getUserFromCollections, saveLastLocation } from '../../utils/firebase.utils';
+import { currentUser, getUserFromCollections } from '../../utils/firebase.utils';
 import colors from '../../styles/colors.style';
 import { useIsFocused } from '@react-navigation/native';
 import brandImageArray from '../../utils/brandImageArray.utils';
@@ -22,8 +22,6 @@ import { CircleIconButton, EmptyList, FlatButton } from '../../components';
 import securityTips from '../../utils/securityTips';
 import accountImageArray from '../../utils/accountTypeImage.utils';
 import { getSetting } from '../../utils/asyncStorage.utils';
-import MapView, { Marker } from 'react-native-maps';
-import Geolocation from '@react-native-community/geolocation';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { calculateDifferenceHour } from '../../utils/mathOrDate.utils';
 
@@ -39,12 +37,6 @@ export default function Home(props) {
   const [randomInt, setRandomInt] = useState(0);
   const [associatedDevice, setAssociatedDevice] = useState(null);
   const [settingData, setSettingData] = useState(null);
-  const [coords, setCoords] = useState({
-    latitude: 37.78825,
-    longitude: -122.4324,
-    latitudeDelta: 0.0922,
-    longitudeDelta: 0.0421
-  });
 
   const isPageFocused = useIsFocused();
 
@@ -53,40 +45,6 @@ export default function Home(props) {
     getRandomInt();
     getSettingData();
   }, [isPageFocused]);
-
-  async function getGeoLocation(associatedLocalDevice) {
-    const lastDate = new Date();
-    const hour = `${lastDate.getHours()}:${lastDate.getMinutes() < 10 ? '0' + lastDate.getMinutes() : lastDate.getMinutes()}:${lastDate.getSeconds()}`;
-
-    const differenceTime = calculateDifferenceHour(associatedLocalDevice.lastLocation.lastTime, hour);
-    if (differenceTime > '00:10:00') {
-      await Geolocation.getCurrentPosition((success) => {
-        const { latitude, longitude, accuracy } = success.coords;
-
-        const oneDegreeOfLatitudeInMeters = 111.32 * 1000;
-        const latDelta = accuracy / oneDegreeOfLatitudeInMeters;
-        const longDelta = accuracy / (oneDegreeOfLatitudeInMeters * Math.cos(latitude * (Math.PI / 180)));
-
-        saveLocationInFirebase(latitude, longitude, associatedLocalDevice);
-
-        setCoords({
-          latitude: latitude,
-          longitude: longitude,
-          latitudeDelta: latDelta,
-          longitudeDelta: longDelta,
-          // accuracy: accuracy,
-        }
-        );
-      }, (error) => {
-        props.handleSnackbar({ type: 'error', message: 'Habilite o GPS do seu dispositivo.' })
-      });
-    }
-  }
-
-  async function saveLocationInFirebase(lat, long, associatedLocalDevice) {
-    const saveLocationResponse = await saveLastLocation(lat, long, associatedLocalDevice);
-    console.log('Location response', saveLocationResponse);
-  }
 
   function getRandomInt() {
     const randomIntFound = Math.floor(Math.random() * securityTips.length);
@@ -139,7 +97,6 @@ export default function Home(props) {
     const associatedIndex = userDevices.findIndex(element => element.isAssociated == true);
     if (associatedIndex !== -1) {
       setAssociatedDevice(userDevices[associatedIndex]);
-      getGeoLocation(userDevices[associatedIndex]);
     }
   }
 
@@ -441,35 +398,6 @@ export default function Home(props) {
                   <View style={[generalStyles.row, { justifyContent: 'space-between' }]}>
                     <Text style={generalStyles.titleDark}>Localização</Text>
                   </View>
-                  {
-                    settingData == null || !settingData.saveLastLocation ?
-                      <View>
-                        <Text style={generalStyles.secondaryLabel}>Para uma maior segurança, permita com que o app salve a sua localização.</Text>
-                        <FlatButton label='Ir para configurações' height={42} labelColor='#FFF' buttonColor={colors.secondary} handleFlatButtonPress={() => props.navigation.navigate('Settings')} isLoading={false} style={{ marginTop: 8 }} />
-                      </View> :
-                      !associatedDevice ?
-                        <View>
-                          <Text style={generalStyles.secondaryLabel}>Associe o cadastro de um de seus dispositivos ao aparelho físico.</Text>
-                          <Text style={generalStyles.secondaryOpacityLabel}>Em Meus Dispositivos, selecione um aparelho e marque a opção Associar Dispositivo.</Text>
-                        </View> :
-                        <View>
-                          <View style={generalStyles.row}>
-                            <Text style={[generalStyles.secondaryLabel, { marginVertical: 8, flex: 1, fontSize: 12 }]}>Última localização: lat {coords.latitude}, long {coords.longitude}</Text>
-                            <CircleIconButton buttonSize={30} buttonColor='#FFF' iconName='content-copy' iconSize={20} haveShadow={true} iconColor={colors.primary} handleCircleIconButtonPress={() => copyToClipboard(`Latitude ${coords.latitude}, Longitude: ${coords.longitude}`)} />
-                          </View>
-                          <MapView
-                            initialRegion={coords}
-                            style={{ height: 200 }}>
-                            <Marker
-                              key={0}
-                              coordinate={{ latitude: coords.latitude, longitude: coords.longitude }}
-                              title={'Localização atual'}
-                              description={'Você está aqui'}
-                              pinColor={colors.secondary}
-                            />
-                          </MapView>
-                        </View>
-                  }
                 </View>
 
                 <View style={styles.card}>
