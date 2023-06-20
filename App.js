@@ -27,17 +27,11 @@ export default function App() {
   const [user, setUser] = useState();
   const [snackbar, setSnackbar] = useState(null);
   const [isSnackbarVisible, setIsSnackbarVisible] = useState(false);
-  const [coords, setCoords] = useState({});
 
   useEffect(() => {
     setUser(auth().currentUser);
-    startBackgroundAction(locationGot);
+    startBackgroundAction();
   }, []);
-
-  function locationGot(location){
-    // console.log('Location nice', location);
-    setCoords(location);
-  }
 
   // Handle user state changes
   function onAuthStateChanged(user) {
@@ -73,7 +67,6 @@ export default function App() {
                     onAuthStateChanged={loggedUser =>
                       onAuthStateChanged(loggedUser)
                     }
-                    coords={coords}
                     {...props}
                   />
                   {isSnackbarVisible ? (

@@ -38,7 +38,6 @@ export async function removeSavedDevice(){
 
 export async function storeCoords(coords) {
     let storeCoordsResponse = null;
-
     try {
         const jsonValue = JSON.stringify(coords);
         await AsyncStorage.setItem('coords', jsonValue);

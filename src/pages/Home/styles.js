@@ -1,4 +1,4 @@
-import {StyleSheet} from 'react-native';
+import { StyleSheet } from 'react-native';
 import colors from '../../styles/colors.style';
 
 const styles = StyleSheet.create({
@@ -29,7 +29,17 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 4,
     alignItems: 'center'
-  }
+  },
+  container: {
+    // ...StyleSheet.absoluteFillObject,
+    height: 400,
+    width: 400,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  map: {
+    ...StyleSheet.absoluteFillObject,
+  },
 });
 
 export default styles;

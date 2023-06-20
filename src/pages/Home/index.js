@@ -24,6 +24,7 @@ import accountImageArray from '../../utils/accountTypeImage.utils';
 import { getCoords, getSetting, saveDeviceInfo } from '../../utils/asyncStorage.utils';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { calculateDifferenceHour } from '../../utils/mathOrDate.utils';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
 export default function Home(props) {
   const [loggedUser, setLoggedUser] = useState(null);
@@ -55,8 +56,8 @@ export default function Home(props) {
 
   async function locationExists() {
     const localCoords = await getCoords();
+    setCoords(localCoords.data);
     console.log('Local coords', localCoords)
-    if (localCoords.success) setCoords(localCoords.data);
   }
 
   async function getCurrentUser() {
@@ -481,6 +482,26 @@ export default function Home(props) {
                           /> :
                           <View />
                       }
+
+                      <View style={styles.container}>
+                        <MapView
+                          provider={PROVIDER_GOOGLE} // remove if not using Google Maps
+                          style={styles.map}
+                          region={{
+                            latitude: coords.latitude,
+                            longitude: coords.longitude,
+                            latitudeDelta: 0.0043,
+                            longitudeDelta: 0.0034
+                          }}
+                        >
+                          <Marker
+                            coordinate={{ latitude: coords.latitude, longitude: coords.longitude }}
+                            title={`${associatedDevice.brand} ${associatedDevice.model}`}
+                            description={associatedDevice.imei}
+                            // image={{ uri: 'custom_pin' }}
+                          />
+                        </MapView>
+                      </View>
                     </View>
                 }
 
