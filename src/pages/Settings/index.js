@@ -25,22 +25,10 @@ export default function Settings(props) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [loadingHeader, setLoadingHeader] = useState(false);
-  const [settingData, setSettingData] = useState(null);
 
   useEffect(() => {
     getLoggedUser();
-    getSettingData();
   }, []);
-
-  async function getSettingData() {
-    const settingResponse = await getSetting();
-    if (!settingResponse.success) {
-      props.handleSnackbar({ type: 'error', message: 'Erro ao buscar configurações.Tente reiniciar o app.' });
-    } else {
-      if (settingResponse.data) setSaveLocation(settingResponse.data.saveLastLocation);
-      setSettingData(settingResponse.data);
-    }
-  }
 
   async function getLoggedUser() {
     const userResponse = await currentUser();
@@ -197,19 +185,6 @@ export default function Settings(props) {
     );
   }
 
-  async function saveLastLocation() {
-    setLoadingHeader(true);
-    const settingData = { saveLastLocation: !saveLocation };
-    const storeSettingResponse = await storeSetting(settingData);
-    if (!storeSettingResponse.success) {
-      props.handleSnackbar({ type: 'error', message: 'Erro ao salvar configuração' });
-    } else {
-      props.handleSnackbar({ type: 'success', message: 'Configuração salva com sucesso.' });
-      setSaveLocation(!saveLocation);
-    }
-    setLoadingHeader(false);
-  }
-
   return (
     <View style={generalStyles.pageContainer}>
       <Header
@@ -273,28 +248,6 @@ export default function Settings(props) {
                         ]}
                       />
                     </View>
-                  </View>
-                </View>
-
-                <View style={[styles.card, generalStyles.shadow]}>
-                  <View style={[generalStyles.row, { marginBottom: 12 }]}>
-                    <View style={{ marginRight: 8, flex: 2 }}>
-                      <Text style={generalStyles.primaryLabel}>
-                        Salvar última localização
-                      </Text>
-                      <Text style={[generalStyles.secondaryLabel]}>
-                        Ative se você deseja que a localização deste dispositivo seja guardada de tempos em tempos.
-                      </Text>
-                    </View>
-                    <Switch
-                      style={{ flex: 1 }}
-                      trackColor={{ false: '#767577', true: colors.secondaryOpacity }}
-                      thumbColor={
-                        saveLocation ? colors.secondary : '#f4f3f4'
-                      }
-                      onValueChange={() => saveLastLocation()}
-                      value={saveLocation}
-                    />
                   </View>
                 </View>
               </View>

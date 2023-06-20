@@ -9,19 +9,19 @@ import {
   ScrollView,
   RefreshControl,
   ActivityIndicator,
-  Alert,
+  Alert
 } from 'react-native';
 import generalStyles from '../../styles/general.style';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import styles from './styles';
-import { currentUser, getUserFromCollections } from '../../utils/firebase.utils';
+import { associateDevice, currentUser, getUserFromCollections } from '../../utils/firebase.utils';
 import colors from '../../styles/colors.style';
 import { useIsFocused } from '@react-navigation/native';
 import brandImageArray from '../../utils/brandImageArray.utils';
 import { CircleIconButton, EmptyList, FlatButton } from '../../components';
 import securityTips from '../../utils/securityTips';
 import accountImageArray from '../../utils/accountTypeImage.utils';
-import { getSetting } from '../../utils/asyncStorage.utils';
+import { getCoords, getSetting, saveDeviceInfo } from '../../utils/asyncStorage.utils';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { calculateDifferenceHour } from '../../utils/mathOrDate.utils';
 
@@ -36,19 +36,27 @@ export default function Home(props) {
   const [loadingUserData, setLoadingUserData] = useState(false);
   const [randomInt, setRandomInt] = useState(0);
   const [associatedDevice, setAssociatedDevice] = useState(null);
-  const [settingData, setSettingData] = useState(null);
+  const [coords, setCoords] = useState(null);
+  const [showDeviceList, setShowDeviceList] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const isPageFocused = useIsFocused();
 
   useEffect(() => {
     getCurrentUser();
     getRandomInt();
-    getSettingData();
+    locationExists();
   }, [isPageFocused]);
 
   function getRandomInt() {
     const randomIntFound = Math.floor(Math.random() * securityTips.length);
     setRandomInt(randomIntFound);
+  }
+
+  async function locationExists() {
+    const localCoords = await getCoords();
+    console.log('Local coords', localCoords)
+    if (localCoords.success) setCoords(localCoords.data);
   }
 
   async function getCurrentUser() {
@@ -81,15 +89,6 @@ export default function Home(props) {
         user.user._data.notifications.length > 0 ? true : false,
       );
       setLoadingUserData(false);
-    }
-  }
-
-  async function getSettingData() {
-    const settingResponse = await getSetting();
-    if (!settingResponse.success) {
-      props.handleSnackbar({ type: 'error', message: 'Erro ao buscar configurações.Tente reiniciar o app.' });
-    } else {
-      setSettingData(settingResponse.data);
     }
   }
 
@@ -267,6 +266,66 @@ export default function Home(props) {
     });
   }
 
+  const renderDeviceList = ({ item }) => {
+    console.log(item);
+    return (
+      <TouchableHighlight style={{ marginRight: 4 }} underlayColor='transparent' onPress={() => associateLocation(item)}>
+        <View style={[styles.deviceItem, generalStyles.shadow]}>
+          <Image
+            style={{
+              maxWidth: 20,
+              height: 20,
+              resizeMode: 'contain',
+              alignSelf: 'center',
+              marginVertical: 4,
+            }}
+            source={brandImageArray(item.brand)}
+          />
+          <View>
+            <Text style={generalStyles.primaryLabel}>Modelo: {item.model}</Text>
+            <Text style={generalStyles.secondaryLabel}>IMEI: {item.imei}</Text>
+          </View>
+        </View>
+      </TouchableHighlight>
+    );
+  }
+
+  async function associateLocation(item) {
+    //PEGA A LOCALIZACAO E ASSOCIA A UM DISPOSITIVO DA LISTA
+    //Abre uma lista dos dispositivos para o usuário selecionar 1
+    Alert.alert("Deseja associar este dispositivo?", "Ao continuar, as informações de localização deste dispositivo serão associadas ao cadastro do " + item.model, [
+      {
+        text: "Cancelar",
+        onPress: () => { },
+        style: 'cancel'
+      },
+      {
+        text: 'Continuar',
+        onPress: async () => {
+          //Loading
+          //Associar no firebase
+          //Associar no AS
+          //Loading end
+          setLoading(true);
+          setShowDeviceList(false);
+          const localDevice = item;
+          localDevice.isAssociated = true;
+
+          const associateDeviceResponse = await associateDevice(localDevice);
+          if (!associateDeviceResponse.success) {
+            props.handleSnackbar({ type: 'error', message: associateDeviceResponse.message });
+          } else {
+            const saveDeviceInfoResponse = await saveDeviceInfo(localDevice);
+            if (!saveDeviceInfoResponse.success) props.handleSnackbar({ type: 'error', message: 'Não foi possível salvar localmente a sua escolha.' });
+          }
+
+          setLoading(false);
+
+        }
+      }
+    ]);
+  }
+
   return loadingUserData ? (
     <View style={[generalStyles.pageContainer, { justifyContent: 'center' }]}>
       <ActivityIndicator size="large" color={colors.secondary} />
@@ -394,11 +453,36 @@ export default function Home(props) {
                     />
                   </View>
                 </View>
-                <View style={styles.card}>
-                  <View style={[generalStyles.row, { justifyContent: 'space-between' }]}>
-                    <Text style={generalStyles.titleDark}>Localização</Text>
-                  </View>
-                </View>
+
+                {
+                  !coords ?
+                    <Text style={generalStyles.secondaryLabel}>Carregando localização...</Text> :
+                    <View style={styles.card}>
+                      <View style={[generalStyles.row, { justifyContent: 'space-between' }]}>
+                        <Text style={generalStyles.titleDark}>Localização</Text>
+                        {
+                          loading ?
+                            <ActivityIndicator size="large" color={colors.secondary} /> :
+                            !showDeviceList ?
+                              <FlatButton label='Associar localização' height={28} labelColor='#FFF' buttonColor={colors.secondary} handleFlatButtonPress={() => setShowDeviceList(true)} isLoading={false} style={{ paddingHorizontal: 4 }} /> :
+                              <FlatButton label='Cancelar' height={28} labelColor='#FFF' buttonColor={colors.error} handleFlatButtonPress={() => setShowDeviceList(false)} isLoading={false} style={{ paddingHorizontal: 4 }} />
+                        }
+                        <CircleIconButton buttonSize={28} buttonColor='#FFF' iconName='content-copy' iconSize={20} haveShadow={true} iconColor={colors.primary} handleCircleIconButtonPress={() => copyToClipboard(`Latitude: ${coords.latitude} Longitude: ${coords.longitude}`)} />
+                      </View>
+                      {
+                        showDeviceList ?
+                          <FlatList
+                            horizontal={true}
+                            contentContainerStyle={{ padding: 4 }}
+                            data={devices}
+                            renderItem={renderDeviceList}
+                            keyExtractor={item => item.imei}
+                            ListEmptyComponent={<EmptyList />}
+                          /> :
+                          <View />
+                      }
+                    </View>
+                }
 
                 <View style={styles.card}>
                   <View style={[generalStyles.row, { justifyContent: 'space-between' }]}>

@@ -1,41 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export async function storeSetting(settingData) {
-    let storeSettingResponse = null;
-
-    try {
-        const jsonValue = JSON.stringify(settingData);
-        await AsyncStorage.setItem('settingData', jsonValue);
-        storeSettingResponse = { success: true };
-    } catch (e) {
-        storeSettingResponse = { success: false, message: e };
-    }
-
-    return storeSettingResponse;
-}
-
-export async function getSetting() {
-    let storeSettingResponse = null;
-    try {
-        const jsonValue = await AsyncStorage.getItem('settingData');
-        storeSettingResponse = {success: true, data: jsonValue != null ? JSON.parse(jsonValue) : null};
-    } catch (e) {
-        storeSettingResponse = {success: false, message: e};
-    }
-    return storeSettingResponse;
-}
-
-export async function removeSetting(){
-    let removeSettingResponse = null;
-    try {
-        const jsonValue = await AsyncStorage.removeItem('settingData');
-        removeSettingResponse = {success: true, data: jsonValue != null ? JSON.parse(jsonValue) : null};
-    } catch (e) {
-        removeSettingResponse = {success: false, message: e};
-    }
-    return removeSettingResponse;
-}
-
 export async function saveDeviceInfo(deviceData) {
     let saveDeviceInfoResponse = null;
 
@@ -70,4 +34,29 @@ export async function removeSavedDevice(){
         removeDeviceResponse = {success: false, message: e};
     }
     return removeDeviceResponse;
+}
+
+export async function storeCoords(coords) {
+    let storeCoordsResponse = null;
+
+    try {
+        const jsonValue = JSON.stringify(coords);
+        await AsyncStorage.setItem('coords', jsonValue);
+        storeCoordsResponse = { success: true };
+    } catch (e) {
+        storeCoordsResponse = { success: false, message: e };
+    }
+
+    return storeCoordsResponse;
+}
+
+export async function getCoords() {
+    let getCoordsResponse = null;
+    try {
+        const jsonValue = await AsyncStorage.getItem('coords');
+        getCoordsResponse = {success: true, data: jsonValue != null ? JSON.parse(jsonValue) : null};
+    } catch (e) {
+        getCoordsResponse = {success: false, message: e};
+    }
+    return getCoordsResponse;
 }

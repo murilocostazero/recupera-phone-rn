@@ -19,6 +19,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SnackBar } from './src/components';
 import colors from './src/styles/colors.style';
+import startBackgroundAction from './src/utils/backgroundActions.utils';
 
 const Stack = createNativeStackNavigator();
 
@@ -29,6 +30,7 @@ export default function App() {
 
   useEffect(() => {
     setUser(auth().currentUser);
+    startBackgroundAction();
   }, []);
 
   // Handle user state changes

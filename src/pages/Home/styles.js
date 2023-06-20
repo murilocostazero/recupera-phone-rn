@@ -23,6 +23,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'stretch',
     marginRight: 10
+  },
+  deviceItem: {
+    backgroundColor: '#FFF',
+    borderRadius: 10,
+    padding: 4,
+    alignItems: 'center'
   }
 });
 

@@ -37,7 +37,6 @@ export default function HandleDevices(props) {
   const [isEditingMode, setIsEditingMode] = useState(false);
   const [loadingRemovingDevice, setLoadingRemoveDevice] = useState(false);
   const [hasAlert, setHasAlert] = useState(false);
-  const [isAssociated, setIsAssociated] = useState(false);
   const [fiscalDocumentPicture, setFiscalDocumentPicture] = useState('');
   const [uploadingFiscalDocument, setUploadingFiscalDocument] = useState(false);
   const [whereToFind, setWhereToFind] = useState(null);
@@ -72,7 +71,6 @@ export default function HandleDevices(props) {
     setMainColor(deviceReceived.mainColor);
     setImei(deviceReceived.imei);
     setHasAlert(deviceReceived.hasAlert);
-    setIsAssociated(deviceReceived.isAssociated);
     setLastLocation(deviceReceived.lastLocation);
 
     const url = await storage()
@@ -142,7 +140,6 @@ export default function HandleDevices(props) {
         mainColor: mainColor,
         imei: imei,
         hasAlert: hasAlert,
-        isAssociated: !isAssociated ? false : isAssociated,
         whereToFind: whereToFind && hasAlert ? whereToFind : null
       };
 
@@ -174,17 +171,9 @@ export default function HandleDevices(props) {
               type: 'error',
             });
             setLoadingSaveDevice(false);
-          } else {
-            const associateDeviceResponse = await associateDevice(device);
-            if (!associateDeviceResponse.success) {
-              props.handleSnackbar({ type: 'error', message: associateDeviceResponse.message });
-            } else {
-
-            }
-
-            setLoadingSaveDevice(false);
-            props.navigation.goBack();
           }
+          setLoadingSaveDevice(false);
+          props.navigation.goBack();
         } else {
           /* Imei exists */
           props.handleSnackbar({
@@ -218,14 +207,9 @@ export default function HandleDevices(props) {
               type: 'error',
             });
             setLoadingSaveDevice(false);
-          } else {
-            const associateDeviceResponse = await associateDevice(device);
-            if (!associateDeviceResponse.success) {
-              props.handleSnackbar({ type: 'error', message: associateDeviceResponse.message });
-            }
-            setLoadingSaveDevice(false);
-            props.navigation.goBack();
           }
+          setLoadingSaveDevice(false);
+          props.navigation.goBack();
         }
       }
     }
@@ -332,31 +316,6 @@ export default function HandleDevices(props) {
     setUploadingFiscalDocument(true);
     await reference.putFile(uri);
     setUploadingFiscalDocument(false);
-  }
-
-  async function changeAssociatedDevice() {
-    const device = {
-      brand: brand,
-      model: model,
-      mainColor: mainColor,
-      imei: imei,
-      hasAlert: hasAlert,
-      isAssociated: !isAssociated,
-      whereToFind: whereToFind && hasAlert ? whereToFind : null
-    };
-    if (!isAssociated) {
-      const saveDeviceInfoResponse = await saveDeviceInfo(device);
-      if (!saveDeviceInfoResponse.success) {
-        props.handleSnackbar({ type: 'error', message: 'Erro ao guardar informações do aparelho' });
-      }
-    } else {
-      const removeDeviceResponse = await removeSavedDevice();
-      if (!removeDeviceResponse.success) {
-        props.handleSnackbar({ type: 'error', message: 'Erro ao remover informações do aparelho' });
-      }
-    }
-
-    setIsAssociated(!isAssociated);
   }
 
   return (
@@ -579,28 +538,6 @@ export default function HandleDevices(props) {
               thumbColor={hasAlert ? colors.primary : '#f4f3f4'}
               onValueChange={() => setHasAlert(!hasAlert)}
               value={hasAlert}
-            />
-          </View>
-
-          <View
-            style={[
-              generalStyles.row,
-              { padding: 8, marginVertical: 4, justifyContent: 'space-between' },
-            ]}>
-            <View style={{ flex: 2 }}>
-              <Text style={generalStyles.primaryLabel}>
-                Associar este cadastro a esse dispositivo
-              </Text>
-              <Text style={generalStyles.secondaryLabel}>
-                Ao marcar, a localização desse dispositivo será associada a este cadastro. Assim você terá acesso a localização deste dispositivo quando ele não estiver em sua posse.
-              </Text>
-            </View>
-            <Switch
-              style={{ flex: 1 }}
-              trackColor={{ false: '#767577', true: colors.secondary }}
-              thumbColor={isAssociated ? colors.primary : '#f4f3f4'}
-              onValueChange={() => hasAlert ? props.handleSnackbar({ type: 'warning', message: 'Não é possível pegar a localização de um dispositivo que não está em sua posse.' }) : changeAssociatedDevice()}
-              value={isAssociated}
             />
           </View>
 
