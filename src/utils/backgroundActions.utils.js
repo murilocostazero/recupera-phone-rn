@@ -1,8 +1,7 @@
 import BackgroundService from 'react-native-background-actions';
-import {backgroundGeolocation} from './backgroundGeolocation.utils';
-import { storeCoords } from './asyncStorage.utils';
+import { backgroundGeolocation } from './backgroundGeolocation.utils';
 
-export default async function startBackgroundAction() {
+export default async function startBackgroundAction(locationGot) {
     const sleep = (time) => new Promise((resolve) => setTimeout(() => resolve(), time));
 
     // You can do anything in your task such as network requests, timers and so on,
@@ -17,22 +16,18 @@ export default async function startBackgroundAction() {
             for (let i = 0; BackgroundService.isRunning(); i++) {
 
                 const locationResponse = await backgroundGeolocation();
-                if(!locationResponse.success){
+                if (!locationResponse.success) {
                     console.error('Erro ao buscar localização', locationResponse.error);
                 } else {
-                    // console.log('BG coords', locationResponse.coords); //coords.latitude coords.longitude   
-                    
-                    //Salvar coords no AS
-                    const storeCoordsResponse = await storeCoords(locationResponse.coords);
-                    if(!storeCoordsResponse.success) console.error('Erro ao salvar coordenadas', storeCoordsResponse.message);
+                    locationGot(locationResponse.coords);
                 }
 
                 const date = new Date();
-                const time = date.getHours() + ':' + (date.getMinutes() < 10 ? '0'+date.getMinutes() : date.getMinutes());
+                const time = date.getHours() + ':' + (date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes());
                 // console.log(i + '-> ' + time);
-                
-                if(i>0){
-                    await BackgroundService.updateNotification({ taskDesc: 'Última localização: '+time });
+
+                if (i > 0) {
+                    await BackgroundService.updateNotification({ taskDesc: 'Última localização: ' + time });
                 }
 
                 await sleep(delay);
