@@ -21,10 +21,10 @@ import brandImageArray from '../../utils/brandImageArray.utils';
 import { CircleIconButton, EmptyList, FlatButton } from '../../components';
 import securityTips from '../../utils/securityTips';
 import accountImageArray from '../../utils/accountTypeImage.utils';
-import { getCoords, getSetting, saveDeviceInfo } from '../../utils/asyncStorage.utils';
+import { getCoords, getSetting, removeCoords, saveDeviceInfo } from '../../utils/asyncStorage.utils';
 import Clipboard from '@react-native-clipboard/clipboard';
-import { calculateDifferenceHour } from '../../utils/mathOrDate.utils';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import getGeolocation from '../../utils/getGeolocation.utils';
 
 export default function Home(props) {
   const [loggedUser, setLoggedUser] = useState(null);
@@ -57,7 +57,8 @@ export default function Home(props) {
   async function locationExists() {
     const localCoords = await getCoords();
     setCoords(localCoords.data);
-    console.log('Local coords', localCoords)
+
+    //Mandar coords pro FB
   }
 
   async function getCurrentUser() {
@@ -111,11 +112,12 @@ export default function Home(props) {
           style={[
             styles.deviceContainer,
             generalStyles.shadow,
-            { backgroundColor: '#FFF' },
+            { 
+              backgroundColor: '#FFF', 
+              borderColor: item.isAssociated ? colors.primaryOpacity : 'transparent',
+              borderWidth: 2
+            },
           ]}>
-          {
-            item.isAssociated ? <MaterialIcons name='mobile-friendly' color={colors.secondary} size={20} style={{ position: 'absolute', right: 4, top: 4 }} /> : <View />
-          }
           <Image
             style={{
               maxWidth: 60,
@@ -268,7 +270,6 @@ export default function Home(props) {
   }
 
   const renderDeviceList = ({ item }) => {
-    console.log(item);
     return (
       <TouchableHighlight style={{ marginRight: 4 }} underlayColor='transparent' onPress={() => associateLocation(item)}>
         <View style={[styles.deviceItem, generalStyles.shadow]}>
@@ -310,7 +311,6 @@ export default function Home(props) {
           setLoading(true);
           setShowDeviceList(false);
           const localDevice = item;
-          localDevice.isAssociated = true;
 
           const associateDeviceResponse = await associateDevice(localDevice);
           if (!associateDeviceResponse.success) {
@@ -320,11 +320,40 @@ export default function Home(props) {
             if (!saveDeviceInfoResponse.success) props.handleSnackbar({ type: 'error', message: 'Não foi possível salvar localmente a sua escolha.' });
           }
 
+          refreshHome();
+
           setLoading(false);
 
         }
       }
     ]);
+  }
+
+  function refreshHome() {
+    getCurrentUser();
+    getGeolocation();
+  }
+
+  function desassociateDevice() {
+
+    Alert.alert('Cuidado!', 'Ao desassociar, a localização para este dispositivo não será mais guardada.', [{ text: 'Cancelar', style: 'cancel', onPress: () => { } }, {
+      text: 'Continuar', onPress: async () => {
+        const removeCoordsResponse = await removeCoords();
+        if (!removeCoordsResponse.success) {
+          props.handleSnackbar({ type: 'error', message: 'Erro ao remover coordenadas da memória interna.' });
+        } else {
+          const desassociateDeviceResponse = await associateDevice(associatedDevice);
+          if (!desassociateDeviceResponse.success) {
+            props.handleSnackbar({ type: 'error', message: desassociateDeviceResponse.message });
+          } else {
+            props.handleSnackbar({ type: 'success', message: 'Dispositivo desassociado.' });
+            setAssociatedDevice(null);
+            //Refresh page
+            refreshHome();
+          }
+        }
+      }
+    }]);
   }
 
   return loadingUserData ? (
@@ -400,7 +429,7 @@ export default function Home(props) {
                 refreshControl={
                   <RefreshControl
                     refreshing={loadingUserData}
-                    onRefresh={() => getCurrentUser()}
+                    onRefresh={() => { getCurrentUser(); locationExists() }}
                   />
                 }>
                 <View style={styles.card}>
@@ -465,7 +494,7 @@ export default function Home(props) {
                           loading ?
                             <ActivityIndicator size="large" color={colors.secondary} /> :
                             !showDeviceList ?
-                              <FlatButton label='Associar localização' height={28} labelColor='#FFF' buttonColor={colors.secondary} handleFlatButtonPress={() => setShowDeviceList(true)} isLoading={false} style={{ paddingHorizontal: 4 }} /> :
+                              <FlatButton label={!associatedDevice ? 'Associar localização' : 'Desassociar dispositivo'} height={28} labelColor='#FFF' buttonColor={colors.secondary} handleFlatButtonPress={() => !associatedDevice ? setShowDeviceList(true) : desassociateDevice()} isLoading={false} style={{ paddingHorizontal: 4 }} /> :
                               <FlatButton label='Cancelar' height={28} labelColor='#FFF' buttonColor={colors.error} handleFlatButtonPress={() => setShowDeviceList(false)} isLoading={false} style={{ paddingHorizontal: 4 }} />
                         }
                         <CircleIconButton buttonSize={28} buttonColor='#FFF' iconName='content-copy' iconSize={20} haveShadow={true} iconColor={colors.primary} handleCircleIconButtonPress={() => copyToClipboard(`Latitude: ${coords.latitude} Longitude: ${coords.longitude}`)} />
@@ -483,25 +512,38 @@ export default function Home(props) {
                           <View />
                       }
 
-                      <View style={styles.container}>
-                        <MapView
-                          provider={PROVIDER_GOOGLE} // remove if not using Google Maps
-                          style={styles.map}
-                          region={{
-                            latitude: coords.latitude,
-                            longitude: coords.longitude,
-                            latitudeDelta: 0.0043,
-                            longitudeDelta: 0.0034
-                          }}
-                        >
-                          <Marker
-                            coordinate={{ latitude: coords.latitude, longitude: coords.longitude }}
-                            title={`${associatedDevice.brand} ${associatedDevice.model}`}
-                            description={associatedDevice.imei}
-                            // image={{ uri: 'custom_pin' }}
-                          />
-                        </MapView>
-                      </View>
+                      {
+                        associatedDevice ?
+
+                          <View>
+                            <View style={{ marginVertical: 4 }}>
+                              <Text style={generalStyles.secondaryLabel}>Última localização às {coords.time}</Text>
+                              <Text style={generalStyles.secondaryLabel}>Latitude: {coords.latitude}</Text>
+                              <Text style={generalStyles.secondaryLabel}>Longitude: {coords.longitude}</Text>
+                            </View>
+
+                            <View style={styles.container}>
+                              <MapView
+                                provider={PROVIDER_GOOGLE} // remove if not using Google Maps
+                                style={styles.map}
+                                region={{
+                                  latitude: coords.latitude,
+                                  longitude: coords.longitude,
+                                  latitudeDelta: 0.0043,
+                                  longitudeDelta: 0.0034
+                                }}
+                              >
+                                <Marker
+                                  coordinate={{ latitude: coords.latitude, longitude: coords.longitude }}
+                                  title={`${associatedDevice.brand} ${associatedDevice.model}`}
+                                  description={associatedDevice.imei}
+                                // image={{ uri: 'custom_pin' }}
+                                />
+                              </MapView>
+                            </View>
+                          </View> :
+                          <Text style={generalStyles.secondaryLabel}>Associe a localização deste dispositivo ao seu dispositivo cadastrado e tenha sempre controle das suas coordenadas.</Text>
+                      }
                     </View>
                 }
 

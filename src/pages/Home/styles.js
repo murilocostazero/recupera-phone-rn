@@ -40,6 +40,17 @@ const styles = StyleSheet.create({
   map: {
     ...StyleSheet.absoluteFillObject,
   },
+  labelDeviceAssociated: {
+    borderRadius: 12,
+    backgroundColor: colors.primary,
+    textAlign: 'center',
+    paddingHorizontal: 2,
+    color: '#FFF',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0
+  }
 });
 
 export default styles;

@@ -1,5 +1,6 @@
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
+import { getCoords } from './asyncStorage.utils';
 
 export async function createUser(email, password, displayName) {
   let userCreated = null;
@@ -215,7 +216,7 @@ export function currentUser() {
   return auth().currentUser;
 }
 
-export async function addAgentToInstitution(agent, institution){
+export async function addAgentToInstitution(agent, institution) {
   let addAgentResponse = null;
 
   const localInstitution = await getUserFromCollections(institution);
@@ -223,24 +224,24 @@ export async function addAgentToInstitution(agent, institution){
   agents.push(agent);
 
   await firestore()
-      .collection('Users')
-      .doc(institution)
-      .update({
-        agents: agents,
-      })
-      .then(() => {
-        addAgentResponse = {
-          success: true,
-          message: 'Agente adicionado',
-        };
-      })
-      .catch(error => {
-        console.error(error);
-        addAgentResponse = {
-          success: false,
-          message: 'Erro ao adicionar agente',
-        };
-      });
+    .collection('Users')
+    .doc(institution)
+    .update({
+      agents: agents,
+    })
+    .then(() => {
+      addAgentResponse = {
+        success: true,
+        message: 'Agente adicionado',
+      };
+    })
+    .catch(error => {
+      console.error(error);
+      addAgentResponse = {
+        success: false,
+        message: 'Erro ao adicionar agente',
+      };
+    });
 
   return addAgentResponse;
 }
@@ -612,7 +613,7 @@ export async function getSingleInstitution(email) {
         institution = documentSnapshot.data();
       }
     })
-    .catch(error => console.error('Get single institution error',error));
+    .catch(error => console.error('Get single institution error', error));
 
   return institution;
 }
@@ -693,30 +694,32 @@ export async function whereToFindDevice(device, location) {
 }
 
 export async function associateDevice(device) {
-  //Device já vem com isAssociated;
+  //Device não vem com isAssociated;
   let associateDeviceResponse = null;
 
   const { email } = await auth().currentUser;
   const fullUser = await getUserFromCollections(email);
   const userDevices = fullUser.user._data.devices;
 
-  const deviceAssociatedIndex = await userDevices.findIndex(element => element.isAssociated === true);
-  if (deviceAssociatedIndex !== -1) {
-    userDevices[deviceAssociatedIndex].isAssociated = false;
-  }
-
-  for (let i = 0; i < userDevices.length; i++) {
-    if (userDevices[i].isAssociated) {
-      userDevices[i].isAssociated = false;
-    }
-  }
+  const localDevice = device;
 
   const deviceToReplaceIndex = await userDevices.findIndex(element => element.imei === device.imei);
+
   if (deviceToReplaceIndex !== -1) {
     if (userDevices[deviceToReplaceIndex].hasAlert) {
       associateDeviceResponse = { success: false, message: 'Não é possível pegar a localização de um dispositivo que não está em sua posse.' };
     } else {
-      userDevices[deviceToReplaceIndex] = device;
+      localDevice.isAssociated = !userDevices[deviceToReplaceIndex].isAssociated;
+
+      if (localDevice.isAssociated === true) {
+        //Quando for associar um device, mandar junto, a localização
+        const currentCoords = await getCoords();
+        localDevice.coords = currentCoords.data;
+      } else {
+        delete localDevice.coords;
+      }
+
+      userDevices[deviceToReplaceIndex] = localDevice;
       const addDeviceResponse = await addDevice(userDevices, email);
       if (!addDeviceResponse.success) {
         associateDeviceResponse = { success: false, message: addDeviceResponse.message };
@@ -896,35 +899,35 @@ export async function changeInstitutionRegister(institution) {
   return changeInstitutionRegisterResponse;
 }
 
-export async function removeAgentFromInstitution(agent){
+export async function removeAgentFromInstitution(agent) {
   let removeAgentInstitutionResponse = null;
 
   const institutionEmail = await currentUser();
   const institutionFound = await getSingleInstitution(institutionEmail.email);
-  
+
   const localAgents = institutionFound.agents;
   const agentIndex = localAgents.findIndex(element => element === agent);
   localAgents.splice(agentIndex, 1);
 
   await firestore()
-      .collection('Users')
-      .doc(institutionEmail.email)
-      .update({
-        agents: localAgents
-      })
-      .then(() => {
-        removeAgentInstitutionResponse = {
-          success: true,
-          message: 'Agente removido com sucesso',
-        };
-      })
-      .catch(error => {
-        console.error(error);
-        removeAgentInstitutionResponse = {
-          success: false,
-          message: 'Erro ao remover agente',
-        };
-      }); 
+    .collection('Users')
+    .doc(institutionEmail.email)
+    .update({
+      agents: localAgents
+    })
+    .then(() => {
+      removeAgentInstitutionResponse = {
+        success: true,
+        message: 'Agente removido com sucesso',
+      };
+    })
+    .catch(error => {
+      console.error(error);
+      removeAgentInstitutionResponse = {
+        success: false,
+        message: 'Erro ao remover agente',
+      };
+    });
 
   return removeAgentInstitutionResponse;
 }

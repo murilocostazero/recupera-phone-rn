@@ -40,7 +40,8 @@ export default function HandleDevices(props) {
   const [fiscalDocumentPicture, setFiscalDocumentPicture] = useState('');
   const [uploadingFiscalDocument, setUploadingFiscalDocument] = useState(false);
   const [whereToFind, setWhereToFind] = useState(null);
-  const [lastLocation, setLastLocation] = useState(null);
+  const [isAssociated, setIsAssociated] = useState(false);
+  const [coords, setCoords] = useState(null);
 
   /* REFERENCES */
   const brandRef = useRef('brandRef');
@@ -71,7 +72,8 @@ export default function HandleDevices(props) {
     setMainColor(deviceReceived.mainColor);
     setImei(deviceReceived.imei);
     setHasAlert(deviceReceived.hasAlert);
-    setLastLocation(deviceReceived.lastLocation);
+    setIsAssociated(deviceReceived.isAssociated);
+    setCoords(deviceReceived.coords)
 
     const url = await storage()
       .ref(`FiscalDocuments/${userEmail}/${deviceReceived.imei}.jpg`)
@@ -140,7 +142,9 @@ export default function HandleDevices(props) {
         mainColor: mainColor,
         imei: imei,
         hasAlert: hasAlert,
-        whereToFind: whereToFind && hasAlert ? whereToFind : null
+        whereToFind: whereToFind && hasAlert ? whereToFind : null,
+        isAssociated: isAssociated,
+        coords: coords,
       };
 
       //SAVE NEW
@@ -542,17 +546,17 @@ export default function HandleDevices(props) {
           </View>
 
           {
-            !lastLocation ?
+            !coords ?
             <Text style={[generalStyles.secondaryLabel, { marginVertical: 8, flex: 1 }]}>Este dispositivo não possui localização salva</Text> :
               <View style={{ margimBottom: 8 }}>
                 <View style={generalStyles.row}>
                   <Text style={[generalStyles.primaryLabel, { marginVertical: 8, flex: 1 }]}>Última localização</Text>
 
-                  <CircleIconButton buttonSize={30} buttonColor='#FFF' iconName='location-on' iconSize={20} haveShadow={true} iconColor={colors.secondary} handleCircleIconButtonPress={() => openLocationOnMap(`Dispositivo: ${imei}`, lastLocation.latitude, lastLocation.longitude)} />
+                  <CircleIconButton buttonSize={30} buttonColor='#FFF' iconName='location-on' iconSize={20} haveShadow={true} iconColor={colors.secondary} handleCircleIconButtonPress={() => openLocationOnMap(`Dispositivo: ${imei}`, coords.latitude, coords.longitude)} />
                 </View>
 
-                <Text style={generalStyles.secondaryLabel}>Salvo em {lastLocation.lastDate} às {lastLocation.lastTime}</Text>
-                <Text style={generalStyles.secondaryLabel}>Latitude: {lastLocation.latitude} | Longitude: {lastLocation.longitude}</Text>
+                <Text style={generalStyles.secondaryLabel}>Salvo às {coords.time}</Text>
+                <Text style={generalStyles.secondaryLabel}>Latitude: {coords.latitude} | Longitude: {coords.longitude}</Text>
               </View>
           }
 

@@ -59,3 +59,14 @@ export async function getCoords() {
     }
     return getCoordsResponse;
 }
+
+export async function removeCoords(){
+    let removeCoordsResponse = null;
+    try {
+        const jsonValue = await AsyncStorage.removeItem('coords');
+        removeCoordsResponse = {success: true, data: jsonValue != null ? JSON.parse(jsonValue) : null};
+    } catch (e) {
+        removeCoordsResponse = {success: false, message: e};
+    }
+    return removeCoordsResponse;
+}

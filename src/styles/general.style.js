@@ -38,6 +38,16 @@ const generalStyles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 4,
   },
+  glow: {
+    shadowColor: colors.primary,
+    shadowOffset: {
+      width: 2,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 4,
+  },
   /* TEXT */
   titleDark: {
     fontFamily: 'JosefinSans-Bold',

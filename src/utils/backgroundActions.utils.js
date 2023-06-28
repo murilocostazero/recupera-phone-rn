@@ -1,8 +1,7 @@
 import BackgroundService from 'react-native-background-actions';
-import { backgroundGeolocation } from './backgroundGeolocation.utils';
-import { storeCoords } from './asyncStorage.utils';
+import getGeolocation from './getGeolocation.utils';
 
-export default async function startBackgroundAction(locationGot) {
+export default async function startBackgroundAction() {
     const sleep = (time) => new Promise((resolve) => setTimeout(() => resolve(), time));
 
     // You can do anything in your task such as network requests, timers and so on,
@@ -16,29 +15,10 @@ export default async function startBackgroundAction(locationGot) {
         await new Promise(async (resolve) => {
             for (let i = 0; BackgroundService.isRunning(); i++) {
 
-                const locationResponse = await backgroundGeolocation();
-                if (!locationResponse.success) {
-                    console.error('Erro ao buscar localização', locationResponse.error);
-                } else {
-                    // console.log('BG coords', locationResponse.coords); //coords.latitude coords.longitude   
+                getGeolocation();
 
-                    const date = new Date();
-                    const time = date.getHours() + ':' + (date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes());
-                    // console.log(i + '-> ' + time);
+                await sleep(delay);
 
-                    //Salvar coords no AS
-                    locationResponse.coords.time = time;
-                    const storeCoordsResponse = await storeCoords(locationResponse.coords);
-                    if (!storeCoordsResponse.success) console.error('Erro ao salvar coordenadas', storeCoordsResponse.message);
-
-
-
-                    if (i > 0) {
-                        await BackgroundService.updateNotification({ taskDesc: 'Última localização: ' + time });
-                    }
-
-                    await sleep(delay);
-                }
             }
         });
     };
