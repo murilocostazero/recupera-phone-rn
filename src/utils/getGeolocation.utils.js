@@ -1,5 +1,6 @@
 import { storeCoords } from "./asyncStorage.utils";
 import { backgroundGeolocation } from "./backgroundGeolocation.utils";
+import { saveLastLocation } from "./firebase.utils";
 
 export default async function getGeolocation(){
     const locationResponse = await backgroundGeolocation();
@@ -12,13 +13,17 @@ export default async function getGeolocation(){
         const time = date.getHours() + ':' + (date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes());
         // console.log(i + '-> ' + time);
 
-        console.log('------>', time)
-        console.log('Nova localização', locationResponse.coords)
+        // console.log('------>', time)
+        // console.log('Nova localização', locationResponse.coords)
 
         //Salvar coords no AS
         locationResponse.coords.time = time;
         const storeCoordsResponse = await storeCoords(locationResponse.coords);
         if (!storeCoordsResponse.success) console.error('Erro ao salvar coordenadas', storeCoordsResponse.message);
+
+        //Send to firebase
+        const saveLastLocationResponse = await saveLastLocation(locationResponse.coords);
+        if(!saveLastLocationResponse.success) console.error('Erro ao salvar coordenadas no firebase');
     }
 
 

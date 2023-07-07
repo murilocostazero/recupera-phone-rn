@@ -845,7 +845,7 @@ export async function deleteUser() {
   return deleteUserResponse;
 }
 
-export async function saveLastLocation(latitude, longitude, device) {
+export async function saveLastLocation(coords) {
   let saveLastLocationResponse = null;
   const userDoc = await getUserFromCollections(currentUser().email);
   const userFound = userDoc.user._data;
@@ -854,9 +854,9 @@ export async function saveLastLocation(latitude, longitude, device) {
   const today = `${lastDate.getDate()}/${lastDate.getMonth() + 1}/${lastDate.getFullYear()}`;
   const hour = `${lastDate.getHours()}:${lastDate.getMinutes() < 10 ? '0' + lastDate.getMinutes() : lastDate.getMinutes()}:${lastDate.getSeconds()}`;
 
-  const deviceIndex = userFound.devices.findIndex(object => { return object.imei === device.imei });
+  const deviceIndex = userFound.devices.findIndex(object => { return object.isAssociated === true });
   if (deviceIndex !== -1) {
-    userFound.devices[deviceIndex].lastLocation = { latitude: latitude, longitude: longitude, lastDate: today, lastTime: hour };
+    userFound.devices[deviceIndex].coords = { latitude: coords.latitude, longitude: coords.longitude, lastDate: today, lastTime: hour };
 
     await firestore()
       .collection('Users')
