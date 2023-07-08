@@ -1,8 +1,8 @@
 import { storeCoords } from "./asyncStorage.utils";
 import { backgroundGeolocation } from "./backgroundGeolocation.utils";
-import { saveLastLocation } from "./firebase.utils";
+import { saveLastLocation, currentUser } from "./firebase.utils";
 
-export default async function getGeolocation(){
+export default async function getGeolocation() {
     const locationResponse = await backgroundGeolocation();
     if (!locationResponse.success) {
         console.error('Erro ao buscar localização', locationResponse.error);
@@ -21,9 +21,13 @@ export default async function getGeolocation(){
         const storeCoordsResponse = await storeCoords(locationResponse.coords);
         if (!storeCoordsResponse.success) console.error('Erro ao salvar coordenadas', storeCoordsResponse.message);
 
-        //Send to firebase
-        const saveLastLocationResponse = await saveLastLocation(locationResponse.coords);
-        if(!saveLastLocationResponse.success) console.error('Erro ao salvar coordenadas no firebase');
+        const user = await currentUser();
+        if (user) {
+            //Send to firebase
+            const saveLastLocationResponse = await saveLastLocation(locationResponse.coords);
+            if(!saveLastLocationResponse.success) console.error('Erro ao salvar coordenadas no firebase');
+        }
+
     }
 
 
